@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khronon Jeans Fragmentation: Three Dark Matter Morphologies</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Khronon Jeans Fragmentation: Three Dark Matter Morphologies</h1>
+    <p class="subtitle">
+      When the Khronon field's effective sound speed
+      <span class="math">c<sub>s</sub> &rarr; 0</span> at sub-galactic scales,
+      all Fourier modes become simultaneously Jeans-unstable. Our simulations
+      show this produces <em>filamentary structure</em> &mdash; distinct from
+      both wave dark matter (periodic interference) and CDM (discrete subhalos).
+    </p>
+    <p class="subtitle note">
+      These are illustrative 3D visualizations. The Khronon morphology is based
+      on our 2D simulation results showing
+      <span class="math">P(k) ~ k<sup>&minus;2.2</sup></span> broad continuum
+      power spectrum.
+    </p>
+  </header>
+
+  <div id="controls">
+    <label>
+      Density threshold:
+      <input type="range" id="threshold-slider" min="0" max="100" value="30" />
+      <span id="threshold-value">0.30</span>
+    </label>
+    <label>
+      Opacity:
+      <input type="range" id="opacity-slider" min="10" max="100" value="85" />
+      <span id="opacity-value">0.85</span>
+    </label>
+    <button id="btn-regenerate">Regenerate</button>
+  </div>
+
+  <div id="panels">
+    <div class="panel">
+      <div class="panel-label">&psi;DM &mdash; Wave Dark Matter</div>
+      <div class="canvas-container" id="container-psiDM"></div>
+      <p class="panel-desc">
+        Periodic interference fringes from superposition of plane waves.<br />
+        <span class="math">&rho; = |&Sigma; A<sub>i</sub> exp(i <b>k</b><sub>i</sub>&middot;<b>r</b>)|&sup2;</span>
+      </p>
+    </div>
+    <div class="panel">
+      <div class="panel-label">Khronon (&tau; framework)</div>
+      <div class="canvas-container" id="container-khronon"></div>
+      <p class="panel-desc">
+        Filamentary structure &mdash; nodes, filaments, voids.<br />
+        Generated from multi-octave 3D noise mimicking cosmic-web topology.
+      </p>
+    </div>
+    <div class="panel">
+      <div class="panel-label">CDM &mdash; Cold Dark Matter</div>
+      <div class="canvas-container" id="container-CDM"></div>
+      <p class="panel-desc">
+        Discrete point-like subhalos &mdash; random Gaussian blobs<br />
+        scattered in space. <span class="math">&rho; &sim; &Sigma; M exp(&minus;r&sup2;/2&sigma;&sup2;)</span>
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    Anatropic &mdash; Sheng-Kai Huang (2026)
+  </footer>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
