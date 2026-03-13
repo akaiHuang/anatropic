@@ -252,6 +252,16 @@ footer {
   font-size: 0.8rem;
   color: #555555;
   letter-spacing: 0.04em;
+  line-height: 2;
+}
+footer a {
+  color: #e8860c;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+footer a:hover {
+  color: #ffaa33;
+  text-decoration: underline;
 }
 
 /* ── Loading overlay ─────────────────────────────────────── */
