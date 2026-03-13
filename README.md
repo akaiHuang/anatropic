@@ -21,6 +21,22 @@ Our 1D and 2D simulations of the Khronon Jeans instability reveal:
 - 2D simulations produce **filamentary structure** (nodes, filaments, voids) — a self-similar multi-scale fragmentation pattern
 - Power spectrum: P(k) ~ k⁻²·², a broad continuum with no preferred scale
 
+### 2D Morphology Comparison
+
+![Morphology Comparison](examples/morphology_comparison.png)
+
+### 1D Growth Rates
+
+![Growth Rates](examples/khronon_growth_rates.png)
+
+### Interactive 3D Visualization
+
+**[Live demo → anatropic.pages.dev](https://anatropic.pages.dev/)**
+
+Three-panel WebGL comparison (volume ray marching + voxel rendering) of ψDM, Khronon, and CDM morphologies. Switch between render modes with tabs.
+
+> **Note**: The 3D visualization shows **topology only** (filamentary vs periodic vs discrete), not physical amplitude. Real dark matter perturbations are δρ/ρ ~ 1–10% and are invisible — detectable only through gravitational lensing residuals.
+
 ## Architecture
 
 - **Phase 1** (current): Python prototype — 1D/2D Euler + Poisson solver
