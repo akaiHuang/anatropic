@@ -32,17 +32,60 @@ h1 {
   margin: 0 auto 0.6rem;
 }
 
-.subtitle.note {
-  font-size: 0.84rem;
-  color: #777777;
-  font-style: italic;
-}
-
 .math {
   font-family: "Cambria Math", "Latin Modern Math", Georgia, serif;
   font-style: italic;
   color: #cccccc;
 }
+
+/* ── Mode tabs ──────────────────────────────────────────── */
+#mode-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin: 0.5rem auto 0;
+  max-width: 400px;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.85rem;
+  background: #111111;
+  color: #777777;
+  border: 1px solid #222222;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.mode-tab:first-child { border-radius: 6px 0 0 6px; }
+.mode-tab:last-child  { border-radius: 0 6px 6px 0; border-left: none; }
+.mode-tab.active {
+  background: #1a1a1a;
+  color: #e8860c;
+  border-color: #e8860c;
+}
+.mode-tab:hover:not(.active) {
+  background: #161616;
+  color: #aaaaaa;
+}
+
+/* ── Caveat banner ──────────────────────────────────────── */
+#caveat-banner {
+  max-width: 800px;
+  margin: 0.6rem auto 0;
+  text-align: center;
+  min-height: 2.6rem;
+}
+.caveat-text {
+  display: none;
+  font-size: 0.82rem;
+  color: #777777;
+  padding: 0.3rem 1rem;
+}
+.caveat-text.active { display: block; }
+.caveat-text strong { color: #999999; }
+.caveat-text em { color: #e8860c; font-style: normal; }
 
 /* ── Controls ────────────────────────────────────────────── */
 #controls {
@@ -50,7 +93,7 @@ h1 {
   justify-content: center;
   align-items: center;
   gap: 2rem;
-  padding: 1rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   flex-wrap: wrap;
 }
 
@@ -85,6 +128,7 @@ h1 {
   font-size: 0.82rem;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
+  font-family: inherit;
 }
 #btn-regenerate:hover {
   background: #2a2a2a;
@@ -145,6 +189,62 @@ h1 {
   line-height: 1.5;
 }
 
+/* ── Physics note section ────────────────────────────────── */
+#physics-note {
+  max-width: 1200px;
+  margin: 2rem auto 0;
+  padding: 1.5rem 2rem 2rem;
+  border-top: 1px solid #1a1a1a;
+}
+
+#physics-note h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+.note-columns {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.note-col {
+  flex: 1;
+  max-width: 360px;
+}
+
+.note-col h3 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #e8860c;
+  margin-bottom: 0.6rem;
+}
+
+.note-col ul {
+  list-style: none;
+  padding: 0;
+}
+
+.note-col li {
+  font-size: 0.82rem;
+  color: #999999;
+  margin-bottom: 0.5rem;
+  padding-left: 1rem;
+  position: relative;
+}
+.note-col li::before {
+  content: "\2022";
+  position: absolute;
+  left: 0;
+  color: #444444;
+}
+.note-col li strong {
+  color: #cccccc;
+}
+
 /* ── Footer ──────────────────────────────────────────────── */
 footer {
   text-align: center;
@@ -181,5 +281,12 @@ footer {
   .panel {
     max-width: 560px;
     width: 100%;
+  }
+  .note-columns {
+    flex-direction: column;
+    align-items: center;
+  }
+  .note-col {
+    max-width: 560px;
   }
 }

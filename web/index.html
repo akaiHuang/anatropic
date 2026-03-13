@@ -16,13 +16,27 @@
       show this produces <em>filamentary structure</em> &mdash; distinct from
       both wave dark matter (periodic interference) and CDM (discrete subhalos).
     </p>
-    <p class="subtitle note">
-      These are illustrative 3D visualizations. The Khronon morphology is based
-      on our 2D simulation results showing
-      <span class="math">P(k) ~ k<sup>&minus;2.2</sup></span> broad continuum
-      power spectrum.
-    </p>
   </header>
+
+  <!-- Render mode tabs -->
+  <div id="mode-tabs">
+    <button class="mode-tab active" data-mode="volume">Volume Rendering</button>
+    <button class="mode-tab" data-mode="voxel">Voxel Rendering</button>
+  </div>
+
+  <!-- Caveat banner -->
+  <div id="caveat-banner">
+    <div id="caveat-volume" class="caveat-text active">
+      <strong>Volume rendering</strong> &mdash; ray marching through a continuous 3D density field.
+      Semi-transparent fog reveals internal filamentary structure and voids.
+      Best for seeing the <em>topology</em> of each model.
+    </div>
+    <div id="caveat-voxel" class="caveat-text">
+      <strong>Voxel rendering</strong> &mdash; discrete cubes colored by density.
+      Each cube = one grid cell of the 64&sup3; simulation mesh.
+      Best for seeing the <em>grid structure</em> and individual density values.
+    </div>
+  </div>
 
   <div id="controls">
     <label>
@@ -64,6 +78,38 @@
       </p>
     </div>
   </div>
+
+  <!-- Physics disclaimer -->
+  <section id="physics-note">
+    <h2>What you are (and are not) seeing</h2>
+    <div class="note-columns">
+      <div class="note-col">
+        <h3>What this visualization shows</h3>
+        <ul>
+          <li><strong>Topology only</strong> &mdash; the spatial pattern (filamentary vs periodic vs discrete) of each dark matter model</li>
+          <li>Density fields are generated procedurally at 64&sup3; resolution to illustrate the qualitative morphology</li>
+          <li>The Khronon pattern is based on our 2D simulation result: P(k) ~ k<sup>&minus;2.2</sup> broad continuum</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>What this does NOT show</h3>
+        <ul>
+          <li><strong>Correct amplitude</strong> &mdash; real density perturbations are &delta;&rho;/&rho; ~ 1&ndash;10%, not the 100&times; contrast shown here</li>
+          <li><strong>Visibility</strong> &mdash; dark matter does not emit, absorb, or scatter light in any wavelength. These structures are completely invisible</li>
+          <li><strong>Correct scale</strong> &mdash; the predicted sub-structure lives within galaxy halos (~100 kpc), at sub-kpc scales. This is NOT the large-scale cosmic web</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>How would we actually detect this?</h3>
+        <ul>
+          <li><strong>Gravitational lensing residuals</strong> &mdash; background light bent by the dark matter reveals ~1% brightness anomalies whose spatial statistics encode P(k)</li>
+          <li><strong>Flux ratio anomalies</strong> in multiply-imaged quasars (e.g. HS 0810+2554)</li>
+          <li><strong>Stellar stream gaps</strong> &mdash; dark perturbers create gaps in thin stellar streams (e.g. GD-1)</li>
+          <li>Distinguishing the three models requires measuring the <em>power spectrum slope</em> of lensing residuals across ~10 systems</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
   <footer>
     Anatropic &mdash; Sheng-Kai Huang (2026)
