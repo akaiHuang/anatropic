@@ -1,5 +1,7 @@
 # Anatropic
 
+> **This is a computational physics project, not an AI tool.** The name "Anatropic" refers to anisotropic entropy production in cosmological structure formation. It has no relation to Anthropic (the AI company).
+
 **Metal-accelerated cosmological hydrodynamics for the τ framework**
 
 Anatropic is a GPU-accelerated adaptive mesh refinement (AMR) code designed to simulate structure formation in the τ framework — a modified gravity theory where the Khronon field's DBI kinetic term produces scale-dependent sound speed c_s²(k) → 0 at sub-galactic scales, enabling Jeans fragmentation at sub-kpc scales.
