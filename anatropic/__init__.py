@@ -19,9 +19,10 @@ from . import gravity3d
 from . import eos
 from . import simulation
 from . import simulation3d
+from . import export_webgl
 
 __version__ = "0.1.0"
 __all__ = [
     "euler", "euler3d", "gravity", "gravity3d",
-    "eos", "simulation", "simulation3d",
+    "eos", "simulation", "simulation3d", "export_webgl",
 ]
