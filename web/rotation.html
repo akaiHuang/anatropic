@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rotation Curve Comparison — Khronon vs ΛCDM</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Rotation curve page styles */
+    .rc-layout {
+      display: flex; gap: 24px; max-width: 1300px;
+      margin: 0 auto; padding: 0 16px;
+    }
+    .rc-sidebar {
+      width: 280px; flex-shrink: 0;
+    }
+    .rc-main {
+      flex: 1; min-width: 0;
+    }
+
+    /* Galaxy selector */
+    #galaxy-search {
+      width: 100%; padding: 8px 12px; margin-bottom: 8px;
+      background: #1a1a1a; color: #e0e0e0; border: 1px solid #333;
+      border-radius: 4px; font-size: 0.9rem;
+    }
+    #galaxy-search::placeholder { color: #666; }
+    #galaxy-search:focus { outline: none; border-color: #e8860c; }
+
+    #galaxy-list {
+      height: 520px; overflow-y: auto; border: 1px solid #222;
+      border-radius: 4px; background: #0f0f0f;
+    }
+    .galaxy-item {
+      padding: 6px 12px; cursor: pointer; font-size: 0.82rem;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #1a1a1a;
+      transition: background 0.15s;
+    }
+    .galaxy-item:hover { background: #1a1a1a; }
+    .galaxy-item.active { background: #2a1a00; border-left: 3px solid #e8860c; }
+    .galaxy-item .name { color: #e0e0e0; font-weight: 500; }
+    .galaxy-item .meta { color: #666; font-size: 0.75rem; }
+    .galaxy-item .winner-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .winner-dot.khronon { background: #4fc3f7; }
+    .winner-dot.nfw { background: #ef5350; }
+    .winner-dot.tie { background: #666; }
+
+    .filter-bar {
+      display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 3px 10px; border: 1px solid #333; border-radius: 3px;
+      background: #1a1a1a; color: #999; cursor: pointer; font-size: 0.75rem;
+    }
+    .filter-btn.active { background: #e8860c; color: #000; border-color: #e8860c; }
+
+    /* Chart area */
+    #chart-container {
+      position: relative; width: 100%;
+      aspect-ratio: 16 / 10; background: #0a0a0a;
+      border: 1px solid #222; border-radius: 6px;
+      overflow: hidden;
+    }
+    #chart-canvas { width: 100%; height: 100%; }
+
+    /* Info panel */
+    #galaxy-info {
+      display: flex; gap: 16px; margin-top: 12px;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .info-card {
+      background: #111; border: 1px solid #222; border-radius: 6px;
+      padding: 12px 18px; min-width: 180px; text-align: center;
+    }
+    .info-card .label { color: #888; font-size: 0.75rem; margin-bottom: 4px; }
+    .info-card .value {
+      font-family: 'Menlo', monospace; font-size: 1.1rem; color: #e0e0e0;
+    }
+    .info-card .value.khronon { color: #4fc3f7; }
+    .info-card .value.nfw { color: #ef5350; }
+    .info-card .value.win { color: #66bb6a; }
+
+    /* Legend */
+    .chart-legend {
+      display: flex; gap: 20px; justify-content: center;
+      margin: 10px 0; font-size: 0.85rem;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-swatch {
+      width: 24px; height: 3px; border-radius: 2px;
+    }
+    .legend-swatch.obs { background: #e0e0e0; height: 3px; width: 8px; border-radius: 50%; }
+    .legend-swatch.bar { background: #666; border-style: dashed; }
+    .legend-swatch.khronon { background: #4fc3f7; }
+    .legend-swatch.nfw { background: #ef5350; }
+
+    /* Score summary */
+    #score-summary {
+      display: flex; gap: 12px; justify-content: center;
+      margin: 16px 0; flex-wrap: wrap;
+    }
+    .score-box {
+      padding: 10px 20px; border-radius: 6px; text-align: center;
+      min-width: 150px;
+    }
+    .score-box.khronon-bg { background: rgba(79,195,247,0.12); border: 1px solid rgba(79,195,247,0.3); }
+    .score-box.nfw-bg { background: rgba(239,83,80,0.12); border: 1px solid rgba(239,83,80,0.3); }
+    .score-box.tie-bg { background: rgba(255,255,255,0.05); border: 1px solid #333; }
+    .score-box .score-num {
+      font-size: 1.8rem; font-weight: 700;
+      font-family: 'Menlo', monospace;
+    }
+    .score-box .score-label { font-size: 0.75rem; color: #999; margin-top: 2px; }
+    .score-box.khronon-bg .score-num { color: #4fc3f7; }
+    .score-box.nfw-bg .score-num { color: #ef5350; }
+    .score-box.tie-bg .score-num { color: #888; }
+
+    /* Checkbox toggles */
+    .toggle-row {
+      display: flex; gap: 16px; justify-content: center; margin: 8px 0;
+      font-size: 0.85rem;
+    }
+    .toggle-row label { display: flex; align-items: center; gap: 4px; color: #aaa; cursor: pointer; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .rc-layout { flex-direction: column; }
+      .rc-sidebar { width: 100%; }
+      #galaxy-list { height: 200px; }
+    }
+
+    .nav-link { text-align: center; margin: 16px 0; }
+    .nav-link a { color: #e8860c; text-decoration: none; }
+    .nav-link a:hover { text-decoration: underline; color: #ffaa33; }
+
+    #loading-status {
+      text-align: center; padding: 60px; color: #888; font-size: 1.1rem;
+    }
+    #loading-status .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 2px solid #444; border-top-color: #e8860c;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      margin-right: 8px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Galaxy Rotation Curves: Khronon vs ΛCDM</h1>
+    <p class="subtitle">
+      175 galaxies from SPARC (Lelli, McGaugh &amp; Schombert 2016).
+      <strong style="color:#4fc3f7;">Khronon</strong>: 1 free param (M/L),
+      acceleration scale <span class="math">a₀ = cH₀/2π</span> <em>predicted</em>.
+      <strong style="color:#ef5350;">NFW</strong>: 3 free params (M/L + M₂₀₀ + c),
+      requires undetected dark matter particle.
+    </p>
+  </header>
+
+  <div class="nav-link">
+    <a href="index.html">← Three-model comparison</a> &middot;
+    <a href="sim.html">3D Simulation viewer</a>
+  </div>
+
+  <!-- Overall score -->
+  <div id="score-summary"></div>
+
+  <!-- Loading -->
+  <div id="loading-status">
+    <span class="spinner"></span> Loading SPARC data (175 galaxies)...
+  </div>
+
+  <!-- Main layout -->
+  <div class="rc-layout" id="rc-layout" style="display:none;">
+    <!-- Sidebar: galaxy list -->
+    <div class="rc-sidebar">
+      <input type="text" id="galaxy-search" placeholder="Search galaxy..." />
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="khronon">Khronon wins</button>
+        <button class="filter-btn" data-filter="nfw">NFW wins</button>
+        <button class="filter-btn" data-filter="featured">Featured</button>
+      </div>
+      <div id="galaxy-list"></div>
+    </div>
+
+    <!-- Main: chart -->
+    <div class="rc-main">
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-swatch obs"></div><span>Observed (SPARC)</span></div>
+        <div class="legend-item"><div class="legend-swatch bar" style="border-top:2px dashed #666;height:0;"></div><span style="color:#888;">Baryonic</span></div>
+        <div class="legend-item"><div class="legend-swatch khronon"></div><span style="color:#4fc3f7;">Khronon (1 param)</span></div>
+        <div class="legend-item"><div class="legend-swatch nfw"></div><span style="color:#ef5350;">NFW (3 params)</span></div>
+      </div>
+
+      <div id="chart-container">
+        <canvas id="chart-canvas"></canvas>
+      </div>
+
+      <div class="toggle-row">
+        <label><input type="checkbox" id="show-errorbars" checked /> Error bars</label>
+        <label><input type="checkbox" id="show-baryonic" checked /> Baryonic</label>
+        <label><input type="checkbox" id="show-khronon" checked /> Khronon</label>
+        <label><input type="checkbox" id="show-nfw" checked /> NFW</label>
+      </div>
+
+      <div id="galaxy-info"></div>
+    </div>
+  </div>
+
+  <!-- Physics note -->
+  <section id="physics-note">
+    <h2>Why this matters</h2>
+    <div class="note-columns">
+      <div class="note-col">
+        <h3>The rotation curve problem</h3>
+        <ul>
+          <li>Stars in galaxies orbit <strong>faster than visible matter can explain</strong></li>
+          <li>Standard cosmology (ΛCDM) posits invisible <strong>dark matter halos</strong> (NFW profile)</li>
+          <li>Each galaxy needs 2-3 free parameters to fit its halo &mdash; 525+ total for 175 galaxies</li>
+          <li>After 40+ years, <strong>no dark matter particle has been detected</strong></li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>The Khronon prediction</h3>
+        <ul>
+          <li>The τ framework predicts an acceleration scale <strong>a₀ = cH₀/(2π)</strong> from first principles</li>
+          <li>This equals 1.13 × 10⁻¹⁰ m/s² &mdash; <strong>within 6% of the empirical value</strong> (McGaugh 2016)</li>
+          <li>Only 1 free parameter per galaxy (mass-to-light ratio, physically motivated)</li>
+          <li>Zero "dark matter" parameters &mdash; the effect comes from <strong>spacetime entropy</strong></li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>How to read this chart</h3>
+        <ul>
+          <li><strong>White dots</strong>: observed rotation velocities from radio + optical data</li>
+          <li><strong>Gray dashed</strong>: baryonic (visible matter) contribution alone</li>
+          <li><strong>Blue line</strong>: Khronon prediction &mdash; a₀ fixed, only M/L fitted</li>
+          <li><strong>Red line</strong>: best-fit NFW halo &mdash; 3 parameters adjusted per galaxy</li>
+          <li>Where blue matches white without red's extra freedom: Khronon wins</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Anatropic &mdash; Sheng-Kai Huang (2026)<br />
+    <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
+    &middot;
+    <a href="index.html">Three-model comparison</a>
+    &middot;
+    <a href="sim.html">3D Simulation</a>
+    &middot;
+    Data: <a href="https://astroweb.cwru.edu/SPARC/" target="_blank" rel="noopener">SPARC</a>
+    (Lelli, McGaugh &amp; Schombert 2016)
+  </footer>
+
+  <script src="rotation.js"></script>
+</body>
+</html>
