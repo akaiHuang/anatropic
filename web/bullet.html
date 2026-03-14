@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bullet Cluster: ΛCDM vs Khronon τ Prediction</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Bullet cluster specific styles */
+    #bullet-container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      background: #050505;
+      border: 1px solid #1a1a1a;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    #bullet-container canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      margin: 1rem auto 0.6rem;
+      max-width: 500px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 0.55rem 1.2rem;
+      font-size: 0.85rem;
+      background: #111111;
+      color: #777777;
+      border: 1px solid #222222;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .mode-btn:first-child { border-radius: 6px 0 0 6px; }
+    .mode-btn:last-child  { border-radius: 0 6px 6px 0; border-left: none; }
+    .mode-btn:not(:first-child):not(:last-child) { border-left: none; }
+    .mode-btn.active {
+      background: #1a1a1a;
+      color: #e8860c;
+      border-color: #e8860c;
+    }
+    .mode-btn:hover:not(.active) {
+      background: #161616;
+      color: #aaaaaa;
+    }
+
+    /* Info banner below toggle */
+    #info-banner {
+      max-width: 900px;
+      margin: 0 auto 0.8rem;
+      text-align: center;
+      min-height: 3.2rem;
+    }
+    .info-text {
+      display: none;
+      font-size: 0.82rem;
+      color: #999999;
+      padding: 0.3rem 1rem;
+      line-height: 1.6;
+    }
+    .info-text.active { display: block; }
+    .info-text strong { color: #cccccc; }
+    .info-text em { color: #e8860c; font-style: normal; }
+
+    /* Legend */
+    .bullet-legend {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.4rem;
+      margin: 0.6rem 0 0.4rem;
+      font-size: 0.78rem;
+      color: #888888;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid #333;
+    }
+
+    /* Controls */
+    #bullet-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      padding: 0.5rem 1.5rem;
+      flex-wrap: wrap;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    #bullet-controls label {
+      font-size: 0.85rem;
+      color: #999999;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    #bullet-controls input[type="range"] {
+      width: 130px;
+      accent-color: #e8860c;
+      cursor: pointer;
+    }
+    #bullet-controls input[type="checkbox"] {
+      accent-color: #e8860c;
+      cursor: pointer;
+    }
+    #bullet-controls span {
+      display: inline-block;
+      width: 2.4em;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: #cccccc;
+    }
+
+    /* Annotation overlay */
+    #annotation-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .annotation-label {
+      position: absolute;
+      font-size: 0.7rem;
+      color: #aaa;
+      font-family: 'Menlo', 'Consolas', monospace;
+      text-shadow: 0 0 4px #000, 0 0 8px #000;
+      white-space: nowrap;
+    }
+
+    .nav-link {
+      text-align: center;
+      margin: 16px 0 4px;
+    }
+    .nav-link a {
+      color: #e8860c;
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .nav-link a:hover {
+      text-decoration: underline;
+      color: #ffaa33;
+    }
+
+    @media (max-width: 700px) {
+      #bullet-container { aspect-ratio: 4 / 3; }
+      .mode-toggle { flex-wrap: wrap; max-width: 300px; }
+      .mode-btn { flex: unset; width: 100%; border-radius: 0 !important; border-left: 1px solid #222 !important; }
+      .mode-btn:first-child { border-radius: 6px 6px 0 0 !important; }
+      .mode-btn:last-child { border-radius: 0 0 6px 6px !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bullet Cluster: &Lambda;CDM vs Khronon &tau; Prediction</h1>
+    <p class="subtitle">
+      The Bullet Cluster (1E 0657-56) is a key test of dark matter models.
+      Two galaxy clusters collided, separating collisional gas from collisionless galaxies.
+      Weak lensing shows gravitational mass peaks <em>coincident with galaxies</em>, not gas.
+      Both &Lambda;CDM and Khronon explain the offset &mdash; but predict different <em>mass profile shapes</em>.
+    </p>
+  </header>
+
+  <div class="nav-link">
+    <a href="index.html">&larr; Back to three-model comparison</a>
+    &nbsp;&middot;&nbsp;
+    <a href="sim.html">Simulation viewer</a>
+    &nbsp;&middot;&nbsp;
+    <a href="rotation.html">Rotation curves</a>
+  </div>
+
+  <!-- Mode toggle -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="lcdm">&Lambda;CDM</button>
+    <button class="mode-btn" data-mode="khronon">Khronon</button>
+    <button class="mode-btn" data-mode="observed">Observed</button>
+  </div>
+
+  <!-- Info banner -->
+  <div id="info-banner">
+    <div id="info-lcdm" class="info-text active">
+      <strong>&Lambda;CDM:</strong> Invisible dark matter halos (collisionless) pass through with galaxies.
+      Lensing peaks at halo positions. Profile follows <em>NFW: r<sup>&minus;1</sup> inner, r<sup>&minus;3</sup> outer</em>.
+    </div>
+    <div id="info-khronon" class="info-text">
+      <strong>Khronon:</strong> The &tau; field (time asymmetry) is carried by galaxies through the collision.
+      Gas loses &tau; structure via dissipation. Lensing peaks at &tau; field maxima &mdash;
+      same positions as observed, but with <em>exponential metric profile: exp(&minus;r/r<sub>s</sub>)</em> instead of NFW.
+    </div>
+    <div id="info-observed" class="info-text">
+      <strong>Observed:</strong> Weak lensing reconstruction (Clowe et al. 2006) shows mass peaks
+      coincident with galaxies, offset from X-ray gas. Both models explain the offset.
+      <em>Future Euclid data can distinguish the profile shape.</em>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="bullet-legend">
+    <div class="legend-item">
+      <div class="legend-swatch" style="background: #ff6633;"></div>
+      Hot X-ray gas
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background: #ffffff;"></div>
+      Galaxies / stars
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background: rgba(60,160,255,0.7);"></div>
+      Lensing mass contours
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background: #ffee55;"></div>
+      Background light rays
+    </div>
+  </div>
+
+  <!-- 3D Container -->
+  <div id="bullet-container">
+    <div id="annotation-overlay"></div>
+  </div>
+
+  <!-- Controls -->
+  <div id="bullet-controls">
+    <label>
+      Gas opacity:
+      <input type="range" id="gas-opacity" min="5" max="100" value="50" />
+      <span id="gas-opa-val">0.50</span>
+    </label>
+    <label>
+      Contour opacity:
+      <input type="range" id="contour-opacity" min="5" max="100" value="40" />
+      <span id="contour-opa-val">0.40</span>
+    </label>
+    <label>
+      <input type="checkbox" id="show-rays" checked /> Light rays
+    </label>
+    <label>
+      <input type="checkbox" id="auto-rotate" /> Auto-rotate
+    </label>
+  </div>
+
+  <!-- Physics note section -->
+  <section id="physics-note">
+    <h2>The Bullet Cluster test</h2>
+    <div class="note-columns">
+      <div class="note-col">
+        <h3>What happened</h3>
+        <ul>
+          <li>Two galaxy clusters collided at ~4500 km/s roughly 150 Myr ago</li>
+          <li><strong>Gas</strong> (the dominant baryonic mass) was slowed by ram pressure and remains near the collision center</li>
+          <li><strong>Galaxies</strong> (collisionless) passed through and are found on either side</li>
+          <li>Weak gravitational lensing maps the total gravitational mass distribution</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>Why it matters</h3>
+        <ul>
+          <li>Lensing mass peaks are <strong>offset from the gas</strong> and aligned with galaxies</li>
+          <li>This rules out pure modified gravity (MOND without dark matter) at high significance</li>
+          <li>Both &Lambda;CDM (collisionless halos) and Khronon (&tau; field carried by galaxies) naturally explain the offset</li>
+          <li>The test is not <em>whether</em> mass peaks align with galaxies, but the <em>radial profile shape</em></li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>How to distinguish</h3>
+        <ul>
+          <li><strong>NFW (CDM):</strong> &rho; ~ r<sup>&minus;1</sup>(1+r/r<sub>s</sub>)<sup>&minus;2</sup> &mdash; cuspy center, slow outer falloff</li>
+          <li><strong>Exponential (Khronon):</strong> &Sigma; = r<sub>s</sub>/r giving &eta; = exp(&minus;r<sub>s</sub>/r) &mdash; smoother core, exponential outer falloff</li>
+          <li>Euclid and Roman Space Telescope will map cluster lensing profiles to &lt;1% precision</li>
+          <li>Stacking ~50 cluster mergers can reveal systematic profile differences</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Anatropic &mdash; Sheng-Kai Huang (2026)<br />
+    <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
+    &middot;
+    <a href="index.html">Three-model comparison</a>
+    &middot;
+    <a href="sim.html">Simulation Viewer</a>
+    &middot;
+    <a href="rotation.html">Rotation Curves</a>
+    &middot;
+    <a href="https://github.com/akaiHuang/petz-recovery-unification" target="_blank" rel="noopener">Paper 1</a>
+  </footer>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="bullet.js"></script>
+</body>
+</html>

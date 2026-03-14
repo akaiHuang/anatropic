@@ -45,15 +45,15 @@
     el.innerHTML = `
       <div class="score-box khronon-bg">
         <div class="score-num">${s.khronon_preferred}</div>
-        <div class="score-label">Khronon preferred<br>(1 param/galaxy)</div>
+        <div class="score-label">Khronon more accurate<br>(1 free param/galaxy)</div>
       </div>
       <div class="score-box tie-bg">
         <div class="score-num">${s.inconclusive}</div>
-        <div class="score-label">Inconclusive<br>(|ΔBIC| ≤ 2)</div>
+        <div class="score-label">Comparable<br>(|ΔBIC| ≤ 2)</div>
       </div>
       <div class="score-box nfw-bg">
         <div class="score-num">${s.nfw_preferred}</div>
-        <div class="score-label">NFW preferred<br>(3 params/galaxy)</div>
+        <div class="score-label">NFW more accurate<br>(3 free params/galaxy)</div>
       </div>
     `;
   }
@@ -249,8 +249,8 @@
                      g.winner === 'NFW' ? '#ef5350' : '#888';
     ctx.fillStyle = winColor;
     ctx.textAlign = 'right';
-    const winText = g.winner === 'Khronon' ? 'Khronon preferred' :
-                    g.winner === 'NFW' ? 'NFW preferred' : 'Inconclusive';
+    const winText = g.winner === 'Khronon' ? 'Khronon more accurate' :
+                    g.winner === 'NFW' ? 'NFW more accurate' : 'Comparable';
     ctx.fillText(`${winText} (ΔBIC = ${g.delta_BIC > 0 ? '+' : ''}${g.delta_BIC})`, ml + pw, mt - 14);
 
     // Clip to plot area

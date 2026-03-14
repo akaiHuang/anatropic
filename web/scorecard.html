@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Observational Scorecard — Khronon vs ΛCDM</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Scorecard-specific styles ─────────────────────────── */
+
+    .hero-score {
+      font-size: 4.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      margin: 0.8rem 0 0.2rem;
+      font-family: "Menlo", "Consolas", monospace;
+    }
+    .hero-draws {
+      font-size: 1.1rem;
+      color: #888;
+      margin-bottom: 0.6rem;
+    }
+
+    .intro-text {
+      font-size: 0.88rem;
+      color: #999;
+      max-width: 780px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ── Score overview cards ─────────────────────────────── */
+    .score-overview {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      max-width: 800px;
+      margin: 2rem auto 0;
+      padding: 0 1rem;
+      flex-wrap: wrap;
+    }
+    .score-card {
+      flex: 1;
+      min-width: 200px;
+      max-width: 250px;
+      padding: 20px 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .score-card .sc-number {
+      font-size: 2.8rem;
+      font-weight: 800;
+      font-family: "Menlo", "Consolas", monospace;
+      line-height: 1.1;
+    }
+    .score-card .sc-label {
+      font-size: 0.82rem;
+      margin-top: 4px;
+    }
+    .score-card.mg {
+      background: rgba(76, 175, 80, 0.08);
+      border: 1px solid rgba(76, 175, 80, 0.25);
+    }
+    .score-card.mg .sc-number { color: #4caf50; }
+    .score-card.mg .sc-label { color: #81c784; }
+    .score-card.lcdm {
+      background: rgba(239, 83, 80, 0.08);
+      border: 1px solid rgba(239, 83, 80, 0.25);
+    }
+    .score-card.lcdm .sc-number { color: #ef5350; }
+    .score-card.lcdm .sc-label { color: #ef9a9a; }
+    .score-card.draw {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid #333;
+    }
+    .score-card.draw .sc-number { color: #888; }
+    .score-card.draw .sc-label { color: #777; }
+
+    /* ── Section headings ────────────────────────────────── */
+    .section-heading {
+      max-width: 1100px;
+      margin: 2.5rem auto 1rem;
+      padding: 0 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-heading .sh-bar {
+      width: 4px;
+      height: 20px;
+      border-radius: 2px;
+    }
+    .section-heading .sh-bar.green { background: #4caf50; }
+    .section-heading .sh-bar.red { background: #ef5350; }
+    .section-heading .sh-bar.gray { background: #666; }
+    .section-heading .sh-count {
+      font-size: 0.82rem;
+      color: #888;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+
+    /* ── Test cards ──────────────────────────────────────── */
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .test-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 20px 22px;
+      position: relative;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .test-card:hover {
+      border-color: #444;
+      transform: translateY(-2px);
+    }
+    .test-card .tc-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      border-radius: 8px 0 0 8px;
+    }
+    .test-card .tc-indicator.green { background: #4caf50; }
+    .test-card .tc-indicator.red { background: #ef5350; }
+    .test-card .tc-indicator.gray { background: #555; }
+
+    .test-card .tc-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .test-card .tc-num {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.75rem;
+      color: #555;
+      flex-shrink: 0;
+    }
+    .test-card .tc-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e0e0e0;
+    }
+
+    .test-card .tc-row {
+      font-size: 0.82rem;
+      line-height: 1.55;
+      margin-bottom: 8px;
+      padding-left: 0;
+    }
+    .test-card .tc-row-label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 1px;
+    }
+    .test-card .tc-row-label.lcdm-label { color: #ef9a9a; }
+    .test-card .tc-row-label.khronon-label { color: #81c784; }
+    .test-card .tc-row-label.obs-label { color: #90caf9; }
+    .test-card .tc-row-text { color: #aaa; }
+
+    .test-card .tc-verdict {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #1e1e1e;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .test-card .tc-verdict.green { color: #4caf50; }
+    .test-card .tc-verdict.red { color: #ef5350; }
+    .test-card .tc-verdict.gray { color: #888; }
+
+    .test-card .tc-ref {
+      font-size: 0.72rem;
+      color: #555;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ── SPARC section ───────────────────────────────────── */
+    .sparc-section {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .sparc-section h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+    .sparc-banner {
+      text-align: center;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+    .sparc-banner .sb-big {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #e8860c;
+    }
+    .sparc-banner .sb-sub {
+      font-size: 0.82rem;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .sparc-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .sparc-stat {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 18px 22px;
+    }
+    .sparc-stat .ss-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e8860c;
+      margin-bottom: 6px;
+    }
+    .sparc-stat .ss-value {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 1.05rem;
+      color: #e0e0e0;
+      margin-bottom: 4px;
+    }
+    .sparc-stat .ss-note {
+      font-size: 0.78rem;
+      color: #777;
+      line-height: 1.5;
+    }
+
+    /* ── Predictions section ──────────────────────────────── */
+    .predictions-section {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .predictions-section h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+    .prediction-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .prediction-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 20px 22px;
+      border-left: 3px solid #e8860c;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .prediction-card:hover {
+      border-color: #e8860c;
+      transform: translateY(-2px);
+    }
+    .prediction-card .pc-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #e0e0e0;
+      margin-bottom: 6px;
+    }
+    .prediction-card .pc-desc {
+      font-size: 0.82rem;
+      color: #999;
+      line-height: 1.55;
+    }
+
+    /* ── Nav link row ────────────────────────────────────── */
+    .nav-link {
+      text-align: center;
+      margin: 16px 0;
+    }
+    .nav-link a {
+      color: #e8860c;
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .nav-link a:hover {
+      text-decoration: underline;
+      color: #ffaa33;
+    }
+
+    /* ── Filter tabs ─────────────────────────────────────── */
+    .filter-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      max-width: 500px;
+      margin: 2rem auto 0.5rem;
+    }
+    .filter-tab {
+      flex: 1;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      background: #111;
+      color: #777;
+      border: 1px solid #222;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .filter-tab:first-child { border-radius: 6px 0 0 6px; }
+    .filter-tab:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+    .filter-tab:not(:first-child):not(:last-child) { border-left: none; }
+    .filter-tab.active {
+      background: #1a1a1a;
+      color: #e8860c;
+      border-color: #e8860c;
+    }
+    .filter-tab:hover:not(.active) {
+      background: #161616;
+      color: #aaa;
+    }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 760px) {
+      .hero-score { font-size: 3rem; }
+      .test-grid { grid-template-columns: 1fr; }
+      .score-overview { flex-direction: column; align-items: center; }
+      .score-card { max-width: 100%; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════ HEADER ════════════ -->
+  <header>
+    <h1>Observational Evidence: Khronon &tau; Framework vs &Lambda;CDM</h1>
+    <div class="hero-score">7 &mdash; 3</div>
+    <div class="hero-draws">(4 draws)</div>
+    <p class="intro-text">
+      14 independent observational tests comparing the Khronon &tau; framework
+      (modified gravity with zero dark matter particles) against &Lambda;CDM
+      (cold dark matter + cosmological constant). Data from 2024&ndash;2026.
+    </p>
+  </header>
+
+  <div class="nav-link">
+    <a href="index.html">&larr; Back to three-model comparison</a>
+  </div>
+
+  <!-- ════════════ SCORE OVERVIEW ════════════ -->
+  <div class="score-overview">
+    <div class="score-card mg">
+      <div class="sc-number">7</div>
+      <div class="sc-label">Modified Gravity Wins</div>
+    </div>
+    <div class="score-card lcdm">
+      <div class="sc-number">3</div>
+      <div class="sc-label">&Lambda;CDM Wins</div>
+    </div>
+    <div class="score-card draw">
+      <div class="sc-number">4</div>
+      <div class="sc-label">Draw / Inconclusive</div>
+    </div>
+  </div>
+
+  <!-- ════════════ FILTER TABS ════════════ -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">All 14</button>
+    <button class="filter-tab" data-filter="mg">MG Wins (7)</button>
+    <button class="filter-tab" data-filter="lcdm">LCDM Wins (3)</button>
+    <button class="filter-tab" data-filter="draw">Draw (4)</button>
+  </div>
+
+  <!-- ════════════ MG WINS ════════════ -->
+  <div class="section-heading" data-group="mg">
+    <div class="sh-bar green"></div>
+    Modified Gravity Wins
+    <span class="sh-count">(7 tests)</span>
+  </div>
+
+  <div class="test-grid" data-group="mg">
+
+    <!-- #1 -->
+    <div class="test-card">
+      <div class="tc-indicator green"></div>
+      <div class="tc-header">
+        <span class="tc-num">#01</span>
+        <span class="tc-name">Dark Matter Direct Detection</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">WIMP-nucleon cross-section above 10<sup>&minus;48</sup> cm<sup>2</sup>; detectable with current-generation experiments.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">No dark matter particles exist. All searches return null.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">40+ years of null results across all channels. LZ (2024&ndash;2025) excludes the remaining natural WIMP parameter space with zero signal.</span>
+      </div>
+      <div class="tc-verdict green">Verdict: Modified Gravity</div>
+      <div class="tc-ref">LZ Collaboration (2024, 2025); PandaX-4T (2024); XENON-nT (2024)</div>
+    </div>
+
+    <!-- #2 -->
+    <div class="test-card">
+      <div class="tc-indicator green"></div>
+      <div class="tc-header">
+        <span class="tc-num">#02</span>
+        <span class="tc-name">Radial Acceleration Relation (RAR)</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">No universal relation between baryonic and total acceleration. Scatter depends on halo assembly history.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Universal 1-parameter relation g<sub>obs</sub> = g<sub>bar</sub> / (1 &minus; exp(&minus;&radic;(a<sub>0</sub>/g<sub>bar</sub>))) with a<sub>0</sub> = cH<sub>0</sub>/2&pi;.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Tight universal relation with 0.13 dex intrinsic scatter across 175 SPARC galaxies spanning 4 decades in mass. Residuals uncorrelated with galaxy properties.</span>
+      </div>
+      <div class="tc-verdict green">Verdict: Modified Gravity</div>
+      <div class="tc-ref">McGaugh, Lelli &amp; Schombert (2016); Lelli et al. (2017)</div>
+    </div>
+
+    <!-- #3 -->
+    <div class="test-card">
+      <div class="tc-indicator green"></div>
+      <div class="tc-header">
+        <span class="tc-num">#03</span>
+        <span class="tc-name">Baryonic Tully-Fisher Relation (BTFR)</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Slope 3.0&ndash;3.5 with significant scatter from variable halo concentration and feedback.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Exact slope = 4.0, zero intrinsic scatter (M<sub>bar</sub> = V<sub>f</sub><sup>4</sup> / (G a<sub>0</sub>)). Predicted by Milgrom (1983), a priori.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Slope = 3.98 &plusmn; 0.07, intrinsic scatter consistent with zero (&lt;0.1 dex), holding over 5 decades in baryonic mass.</span>
+      </div>
+      <div class="tc-verdict green">Verdict: Modified Gravity</div>
+      <div class="tc-ref">McGaugh (2012); Lelli, McGaugh &amp; Schombert (2016)</div>
+    </div>
+
+    <!-- #4 -->
+    <div class="test-card">
+      <div class="tc-indicator green"></div>
+      <div class="tc-header">
+        <span class="tc-num">#04</span>
+        <span class="tc-name">Cusp-Core Problem</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">NFW cusps (&rho; ~ r<sup>&minus;1</sup>) in all halos. Baryonic feedback may flatten to cores in bright dwarfs only.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">No dark halo &rarr; no cusp. Core-like profiles emerge naturally from the baryonic mass distribution.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Cores observed ubiquitously, including in ultra-faint dwarfs where baryonic feedback is negligible. Feedback-based solutions fail for M<sub>*</sub> &lt; 10<sup>6</sup> M<sub>sun</sub>.</span>
+      </div>
+      <div class="tc-verdict green">Verdict: Modified Gravity</div>
+      <div class="tc-ref">de Blok (2010); Read et al. (2019); Hayashi et al. (2020)</div>
+    </div>
+
+    <!-- #5 -->
+    <div class="test-card">
+      <div class="tc-indicator green"></div>
+      <div class="tc-header">
+        <span class="tc-num">#05</span>
+        <span class="tc-name">Satellite Planes Problem</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Isotropic satellite distribution. Thin co-rotating planes have &lt;0.5% probability in cosmological simulations.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Satellites are tidal debris from past interactions, naturally forming planar co-rotating structures.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Thin co-rotating satellite planes found in the Milky Way (VPOS), M31 (GPoA), and Centaurus A. Three independent systems all show the same pattern.</span>
+      </div>
+      <div class="tc-verdict green">Verdict: Modified Gravity</div>
+      <div class="tc-ref">Pawlowski (2018); M&uuml;ller et al. (2018, 2021)</div>
+    </div>
+
+    <!-- #6 -->
+    <div class="test-card">
+      <div class="tc-indicator green"></div>
+      <div class="tc-header">
+        <span class="tc-num">#06</span>
+        <span class="tc-name">External Field Effect (EFE)</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">No mechanism for external gravitational field to affect internal dynamics. Dark matter halos shield internal dynamics.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Unique MOND prediction: external field breaks internal boost invariance. Galaxies in dense environments should show weaker anomalous acceleration.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Detected at 8&ndash;11&sigma; significance using 153 SPARC galaxies binned by external field strength. Effect matches the predicted sign and magnitude.</span>
+      </div>
+      <div class="tc-verdict green">Verdict: Modified Gravity</div>
+      <div class="tc-ref">Chae et al. (2020, 2021); Pittordis &amp; Sutherland (2023)</div>
+    </div>
+
+    <!-- #7 -->
+    <div class="test-card">
+      <div class="tc-indicator green"></div>
+      <div class="tc-header">
+        <span class="tc-num">#07</span>
+        <span class="tc-name">El Gordo Cluster Collision</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Massive high-redshift mergers of this magnitude are extremely rare. Expected relative velocity &lt; 2000 km/s at z = 0.87.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Enhanced gravitational dynamics at large scales allow faster infall velocities and earlier structure formation.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">El Gordo (ACT-CL J0102-4915): M &asymp; 3 &times; 10<sup>15</sup> M<sub>sun</sub> at z = 0.87 with infall velocity ~2500 km/s. 6.2&sigma; tension with &Lambda;CDM expectations.</span>
+      </div>
+      <div class="tc-verdict green">Verdict: Modified Gravity</div>
+      <div class="tc-ref">Asencio et al. (2023); Molnar &amp; Broadhurst (2015)</div>
+    </div>
+
+  </div>
+
+  <!-- ════════════ ΛCDM WINS ════════════ -->
+  <div class="section-heading" data-group="lcdm">
+    <div class="sh-bar red"></div>
+    &Lambda;CDM Wins
+    <span class="sh-count">(3 tests)</span>
+  </div>
+
+  <div class="test-grid" data-group="lcdm">
+
+    <!-- #8 -->
+    <div class="test-card">
+      <div class="tc-indicator red"></div>
+      <div class="tc-header">
+        <span class="tc-num">#08</span>
+        <span class="tc-name">Missing Satellites Problem</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Hundreds to thousands of subhalos per Milky Way-mass galaxy. Baryonic physics suppresses star formation in most.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Fewer satellites overall; those observed are tidal dwarf galaxies.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">DES, DESI, and deep surveys now finding ultra-faint dwarfs at the rate &Lambda;CDM predicts once completeness corrections are applied. Gap is closing.</span>
+      </div>
+      <div class="tc-verdict red">Verdict: &Lambda;CDM</div>
+      <div class="tc-ref">Drlica-Wagner et al. (2020); Kim et al. (2024)</div>
+    </div>
+
+    <!-- #9 -->
+    <div class="test-card">
+      <div class="tc-indicator red"></div>
+      <div class="tc-header">
+        <span class="tc-num">#09</span>
+        <span class="tc-name">Bullet Cluster Lensing Offset</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Lensing mass peak offset from X-ray gas, co-located with galaxies. Collisionless dark matter passes through while gas is shocked.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Modified gravity predicts lensing follows mass distribution. The gas-lensing offset is difficult to reproduce without a collisionless component.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Lensing peaks clearly offset from gas, co-located with galaxy distribution. Reproduced in multiple merging clusters (Bullet, Musket Ball, Baby Bullet).</span>
+      </div>
+      <div class="tc-verdict red">Verdict: &Lambda;CDM</div>
+      <div class="tc-ref">Clowe et al. (2006); Markevitch et al. (2004)</div>
+    </div>
+
+    <!-- #10 -->
+    <div class="test-card">
+      <div class="tc-indicator red"></div>
+      <div class="tc-header">
+        <span class="tc-num">#10</span>
+        <span class="tc-name">Galaxy Cluster Mass Discrepancy</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">NFW halo profiles fit cluster-scale masses (10<sup>14</sup>&ndash;10<sup>15</sup> M<sub>sun</sub>) with well-constrained c-M relation.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Modified gravity should explain cluster masses from baryons alone. MOND-class theories persistently under-predict by a factor of ~2.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">MOND leaves a residual factor-of-2 mass discrepancy in clusters. &Lambda;CDM fits cluster masses well with standard NFW profiles and known baryonic fractions.</span>
+      </div>
+      <div class="tc-verdict red">Verdict: &Lambda;CDM</div>
+      <div class="tc-ref">Sanders (2003); Pointecouteau &amp; Silk (2005); Angus et al. (2008)</div>
+    </div>
+
+  </div>
+
+  <!-- ════════════ DRAW ════════════ -->
+  <div class="section-heading" data-group="draw">
+    <div class="sh-bar gray"></div>
+    Draw / Inconclusive
+    <span class="sh-count">(4 tests)</span>
+  </div>
+
+  <div class="test-grid" data-group="draw">
+
+    <!-- #11 -->
+    <div class="test-card">
+      <div class="tc-indicator gray"></div>
+      <div class="tc-header">
+        <span class="tc-num">#11</span>
+        <span class="tc-name">Renzo's Rule</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Features in rotation curves correlate with baryonic features via feedback-mediated coupling. Scatter expected from halo diversity.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Strict 1:1 correspondence between baryonic surface density features and rotation curve features. No exceptions.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Correlation exists but data quality is ambiguous. Recent analysis (Ko+ 2025) finds cases both supporting and challenging the strict rule.</span>
+      </div>
+      <div class="tc-verdict gray">Verdict: Draw</div>
+      <div class="tc-ref">Sancisi (2004); Ko et al. (2025)</div>
+    </div>
+
+    <!-- #12 -->
+    <div class="test-card">
+      <div class="tc-indicator gray"></div>
+      <div class="tc-header">
+        <span class="tc-num">#12</span>
+        <span class="tc-name">Too-Big-To-Fail</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Massive subhalos should host bright satellites. Baryonic feedback + reionization may suppress star formation in most.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">No massive dark subhalos exist. Observed satellite kinematics reflect baryonic mass directly.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Both frameworks claim partial resolution. &Lambda;CDM via baryonic physics + stochasticity; MG via lack of massive subhalos. Neither fully satisfactory.</span>
+      </div>
+      <div class="tc-verdict gray">Verdict: Draw</div>
+      <div class="tc-ref">Boylan-Kolchin et al. (2011); Papastergis et al. (2015)</div>
+    </div>
+
+    <!-- #13 -->
+    <div class="test-card">
+      <div class="tc-indicator gray"></div>
+      <div class="tc-header">
+        <span class="tc-num">#13</span>
+        <span class="tc-name">JWST High-Redshift Galaxies</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Massive galaxies at z &gt; 10 should be extremely rare. Hierarchical assembly takes time.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Enhanced early structure formation via modified gravitational instability. Massive galaxies at high z less surprising.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">JWST finds surprisingly massive galaxies at z = 10&ndash;14. Slight MG edge, but &Lambda;CDM is adjusting models (enhanced star formation efficiency, reduced feedback). Jury still out.</span>
+      </div>
+      <div class="tc-verdict gray">Verdict: Draw (slight MG edge)</div>
+      <div class="tc-ref">Labb&eacute; et al. (2023); Boylan-Kolchin (2023); Haslbauer et al. (2024)</div>
+    </div>
+
+    <!-- #14 -->
+    <div class="test-card">
+      <div class="tc-indicator gray"></div>
+      <div class="tc-header">
+        <span class="tc-num">#14</span>
+        <span class="tc-name">Gravitational Lensing (Galaxy + Cluster)</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label lcdm-label">&Lambda;CDM predicts:</span>
+        <span class="tc-row-text">Lensing mass traces NFW profile. Galaxy-galaxy lensing and cluster lensing well-fit by standard halo models.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label khronon-label">Khronon predicts:</span>
+        <span class="tc-row-text">Galaxy-scale lensing follows from modified potential (exponential metric). Cluster-scale lensing may show residual discrepancy.</span>
+      </div>
+      <div class="tc-row">
+        <span class="tc-row-label obs-label">Observation:</span>
+        <span class="tc-row-text">Galaxy-scale: competitive, with Fagin (2024) SLACS data slightly favoring MG-like profiles. Cluster-scale: &Lambda;CDM remains better. Overall: draw.</span>
+      </div>
+      <div class="tc-verdict gray">Verdict: Draw (galaxy ~ MG, cluster ~ &Lambda;CDM)</div>
+      <div class="tc-ref">Fagin et al. (2024); Brouwer et al. (2017, 2021)</div>
+    </div>
+
+  </div>
+
+  <!-- ════════════ SPARC QUANTITATIVE RESULTS ════════════ -->
+  <div class="sparc-section">
+    <h2>SPARC Quantitative Results</h2>
+
+    <div class="sparc-banner">
+      <div class="sb-big">175 galaxies, 3,391 data points</div>
+      <div class="sb-sub">from the SPARC database (Lelli, McGaugh &amp; Schombert 2016)</div>
+    </div>
+
+    <div class="sparc-stats">
+      <div class="sparc-stat">
+        <div class="ss-title">RAR Scatter</div>
+        <div class="ss-value">0.144 dex</div>
+        <div class="ss-note">
+          Measurement floor: 0.119 dex.
+          Only 21% above the physical measurement limit &mdash; most of the observed
+          scatter is explained by observational uncertainties, not intrinsic physics.
+        </div>
+      </div>
+      <div class="sparc-stat">
+        <div class="ss-title">a<sub>0</sub> Prediction</div>
+        <div class="ss-value">cH<sub>0</sub>/(2&pi;) = 1.13 &times; 10<sup>&minus;10</sup> m/s<sup>2</sup></div>
+        <div class="ss-note">
+          Observed value: (1.20 &plusmn; 0.24) &times; 10<sup>&minus;10</sup> m/s<sup>2</sup>.
+          The a priori prediction from cosmological parameters lies within 1&sigma; of the
+          empirically fitted value.
+        </div>
+      </div>
+      <div class="sparc-stat">
+        <div class="ss-title">Parameter Efficiency</div>
+        <div class="ss-value">176 vs 525 parameters</div>
+        <div class="ss-note">
+          Khronon: 1 free parameter per galaxy (mass-to-light ratio).
+          NFW: 3 per galaxy (M/L + M<sub>200</sub> + concentration).
+          Same data, comparable fit quality, 3&times; fewer parameters.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ KEY PREDICTIONS ════════════ -->
+  <div class="predictions-section">
+    <h2>Key Testable Predictions (2026&ndash;2030)</h2>
+
+    <div class="prediction-grid">
+      <div class="prediction-card">
+        <div class="pc-title">Euclid Dark Sub-Halo Search</div>
+        <div class="pc-desc">
+          Euclid's gravitational lensing survey will map dark matter
+          sub-structure at sub-galactic scales. If the expected CDM sub-halo
+          population (hundreds per galaxy) is not found, it strongly
+          favors the Khronon framework where no dark sub-halos exist.
+        </div>
+      </div>
+      <div class="prediction-card">
+        <div class="pc-title">Bullet Cluster Lensing Profile</div>
+        <div class="pc-desc">
+          The Khronon exponential metric predicts a lensing convergence
+          profile that differs from NFW at r &gt; r<sub>s</sub>. High-resolution
+          lensing reconstruction from HST and JWST can distinguish the
+          two profiles in the Bullet Cluster and similar merging systems.
+        </div>
+      </div>
+      <div class="prediction-card">
+        <div class="pc-title">Wide Binary Gravity Test</div>
+        <div class="pc-desc">
+          Wide binary star systems with separations &gt; 7 kAU probe
+          accelerations below a<sub>0</sub>. GAIA DR4 will provide
+          ~10,000 calibration-quality pairs. A MOND-like anomaly at
+          low acceleration would be a direct confirmation of modified gravity.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ PHYSICS NOTE ════════════ -->
+  <section id="physics-note">
+    <h2>How to read this scorecard</h2>
+    <div class="note-columns">
+      <div class="note-col">
+        <h3>Methodology</h3>
+        <ul>
+          <li>Each test is an independent observational dataset or phenomenon</li>
+          <li><strong>Winner</strong> is the framework whose a priori prediction best matches observations without post hoc adjustments</li>
+          <li><strong>Draw</strong> when both frameworks can accommodate the data, or when data quality is insufficient to discriminate</li>
+          <li>Tests weighted equally &mdash; no test counts more than another</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>Caveats</h3>
+        <ul>
+          <li>&Lambda;CDM is a well-tested framework with broad cosmological success (CMB, BAO, BBN)</li>
+          <li>This scorecard focuses on <strong>galaxy to cluster scales</strong> where tensions are most acute</li>
+          <li>Some MG wins may be resolved as &Lambda;CDM simulations improve (baryonic physics, resolution)</li>
+          <li>The Khronon cluster-scale residual (test #10) is a genuine open problem</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>The Khronon framework</h3>
+        <ul>
+          <li>Built on Petz recovery map: <strong>&tau; = 1 &minus; F</strong>, where F is recovery fidelity</li>
+          <li>Gravity emerges from quantum relative entropy: <strong>&Sigma; = D(&rho;<sub>spacetime</sub> || &rho;<sub>matter</sub>)</strong></li>
+          <li>Predicts a<sub>0</sub> = cH<sub>0</sub>/(2&pi;) from first principles</li>
+          <li>Zero dark matter particles; all effects from spacetime entropy</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ FOOTER ════════════ -->
+  <footer>
+    Khronon &tau; Framework &mdash; S.-K. Huang (2026)<br />
+    <a href="index.html">Three-model comparison</a>
+    &middot;
+    <a href="sim.html">3D Simulation</a>
+    &middot;
+    <a href="rotation.html">Rotation Curves</a>
+    &middot;
+    <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
+    &middot;
+    <a href="https://github.com/akaiHuang/petz-recovery-unification" target="_blank" rel="noopener">Paper 1</a>
+  </footer>
+
+  <!-- ════════════ MINIMAL JS: FILTER TABS ════════════ -->
+  <script>
+  (function () {
+    var tabs = document.querySelectorAll('.filter-tab');
+    var groups = {
+      mg:   document.querySelectorAll('[data-group="mg"]'),
+      lcdm: document.querySelectorAll('[data-group="lcdm"]'),
+      draw: document.querySelectorAll('[data-group="draw"]')
+    };
+
+    function setVisibility(nodeList, visible) {
+      nodeList.forEach(function (el) {
+        el.style.display = visible ? '' : 'none';
+      });
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        var filter = tab.getAttribute('data-filter');
+        if (filter === 'all') {
+          setVisibility(groups.mg, true);
+          setVisibility(groups.lcdm, true);
+          setVisibility(groups.draw, true);
+        } else if (filter === 'mg') {
+          setVisibility(groups.mg, true);
+          setVisibility(groups.lcdm, false);
+          setVisibility(groups.draw, false);
+        } else if (filter === 'lcdm') {
+          setVisibility(groups.mg, false);
+          setVisibility(groups.lcdm, true);
+          setVisibility(groups.draw, false);
+        } else if (filter === 'draw') {
+          setVisibility(groups.mg, false);
+          setVisibility(groups.lcdm, false);
+          setVisibility(groups.draw, true);
+        }
+      });
+    });
+  })();
+  </script>
+
+</body>
+</html>
