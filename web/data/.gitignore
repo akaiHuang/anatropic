@@ -1,2 +1,1 @@
-# Binary simulation data (regenerate with: python examples/run_and_export_3d.py)
-*.bin
+# Regenerate with: python examples/run_and_export_3d.py
