@@ -15,6 +15,7 @@ import sys
 # Add parent to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+import numpy as np
 from anatropic.eos import IsothermalEOS
 from anatropic.simulation3d import Simulation3D
 from anatropic.export_webgl import export_simulation_webgl
@@ -23,14 +24,14 @@ from anatropic.export_webgl import export_simulation_webgl
 N = 64           # Grid resolution (N³)
 L = 1.0          # Box size
 RHO0 = 1.0       # Background density
-CS = 0.05        # Sound speed (λ_J ~ 0.3 for these params)
+CS = 0.001       # Sound speed → 0 (Khronon prediction: all modes Jeans-unstable)
 G = 1.0          # Gravitational constant
-AMP = 1e-2       # Initial perturbation amplitude (1% — matches khronon_jeans_3d.py)
+AMP = 0.10       # 10% amplitude for red-spectrum perturbation
 SEED = 42        # Random seed
 CFL = 0.05       # Low CFL for accurate gravity integration
-N_TFF = 5.0      # Run for this many free-fall times
-SNAP_INTERVAL_TFF = 0.5  # Save snapshot every 0.5 t_ff
-USE_MODE_PERT = True  # Add coherent mode-1 for strong Jeans growth
+N_TFF = 3.5      # Run into nonlinear regime for filamentary structure
+SNAP_INTERVAL_TFF = 0.35  # Save snapshot every 0.35 t_ff (~10 snapshots)
+PK_SLOPE = -2.2  # P(k) ∝ k^slope — Khronon prediction (broad continuum)
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "web", "data")
 
@@ -47,9 +48,36 @@ eos = IsothermalEOS(cs=CS)
 sim = Simulation3D()
 sim.setup(Nx=N, Ny=N, Nz=N, Lx=L, Ly=L, Lz=L,
           rho0=RHO0, eos=eos, use_gravity=True, G=G)
-if USE_MODE_PERT:
-    sim.add_perturbation_mode(amplitude=AMP, mode_x=1, mode_y=1, mode_z=1)
-sim.add_random_perturbation(amplitude=AMP * 0.1, seed=SEED)
+# Seed with P(k) ∝ k^{-2.2} power spectrum (Khronon prediction).
+# Red spectrum = more large-scale power → sheets → filaments → nodes
+# (Zel'dovich collapse physics, same as cosmic web formation).
+rng = np.random.default_rng(SEED)
+kx = np.fft.fftfreq(N, d=L / N) * 2 * np.pi
+ky = np.fft.fftfreq(N, d=L / N) * 2 * np.pi
+kz = np.fft.fftfreq(N, d=L / N) * 2 * np.pi
+KX, KY, KZ = np.meshgrid(kx, ky, kz, indexing='ij')
+K = np.sqrt(KX**2 + KY**2 + KZ**2)
+K[0, 0, 0] = 1.0  # avoid division by zero
+
+# Amplitude ∝ k^{slope/2} (so P(k) = |δ̂|² ∝ k^slope)
+amplitude_k = K ** (PK_SLOPE / 2.0)
+amplitude_k[0, 0, 0] = 0.0  # no DC offset
+
+# Random phases
+phases = rng.uniform(0, 2 * np.pi, size=(N, N, N))
+delta_k = amplitude_k * np.exp(1j * phases)
+
+# Transform to real space, normalize to desired amplitude
+delta_real = np.real(np.fft.ifftn(delta_k))
+delta_real *= AMP / np.std(delta_real)
+
+# Apply to density (transpose to match (Nz, Ny, Nx) layout)
+sim.state.rho *= (1.0 + delta_real.transpose(2, 1, 0))
+sim.state.rho = np.maximum(sim.state.rho, 1e-30)
+P = sim.eos.pressure(sim.state.rho, np.zeros_like(sim.state.rho))
+sim.state.eint = sim.eos.internal_energy(sim.state.rho, P)
+print(f"  Initial ρ range: [{sim.state.rho.min():.4f}, {sim.state.rho.max():.4f}]")
+print(f"  P(k) slope: {PK_SLOPE} (Khronon prediction)")
 
 t_ff = sim.compute_jeans_time()
 lambda_J = sim.compute_jeans_length()
