@@ -3,135 +3,344 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Khronon Jeans Fragmentation: Three Dark Matter Morphologies</title>
+  <title>Anatropic — Khronon τ Framework</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 1.5rem;
+      text-align: center;
+    }
+    .hero h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+    .hero .tagline {
+      font-size: 1.05rem;
+      color: #e8860c;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+    }
+    .hero .desc {
+      font-size: 0.92rem;
+      color: #999;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .equation-banner {
+      text-align: center;
+      margin: 2rem auto 0;
+      padding: 1.2rem;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      max-width: 700px;
+      font-family: "Cambria Math", "Latin Modern Math", Georgia, serif;
+      font-size: 1.15rem;
+      color: #e0e0e0;
+    }
+    .equation-banner .eq-label {
+      font-size: 0.78rem;
+      color: #666;
+      font-family: "Inter", sans-serif;
+      margin-top: 0.5rem;
+    }
+
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      max-width: 1000px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+    }
+    .page-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      transition: border-color 0.2s, transform 0.15s;
+      text-decoration: none;
+      display: block;
+    }
+    .page-card:hover {
+      border-color: #e8860c;
+      transform: translateY(-2px);
+    }
+    .page-card .card-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .page-card .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .page-card .card-desc {
+      font-size: 0.82rem;
+      color: #888;
+      line-height: 1.55;
+    }
+    .page-card .card-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 0.6rem;
+      font-weight: 600;
+    }
+    .tag-data { background: #1a2f1a; color: #4caf50; }
+    .tag-viz { background: #1a1a2f; color: #6c8cff; }
+    .tag-theory { background: #2f1a1a; color: #ff6c6c; }
+    .tag-compare { background: #2f2a1a; color: #e8860c; }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 2rem auto;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #e8860c;
+    }
+    .stat-label {
+      font-size: 0.78rem;
+      color: #666;
+    }
+
+    .papers-section {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .papers-section h2 {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .paper-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #1a1a1a;
+      font-size: 0.85rem;
+    }
+    .paper-num {
+      color: #e8860c;
+      font-weight: 700;
+      min-width: 60px;
+    }
+    .paper-title { color: #ccc; flex: 1; }
+    .paper-status {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .ps-done { background: #1a2f1a; color: #4caf50; }
+    .ps-draft { background: #2f2a1a; color: #e8860c; }
+    .ps-wip { background: #1a1a2f; color: #6c8cff; }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Khronon Jeans Fragmentation: Three Dark Matter Morphologies</h1>
-    <p class="subtitle">
-      When the Khronon field's effective sound speed
-      <span class="math">c<sub>s</sub> &rarr; 0</span> at sub-galactic scales,
-      all Fourier modes become simultaneously Jeans-unstable. Our simulations
-      show this produces <em>filamentary structure</em> &mdash; distinct from
-      both wave dark matter (periodic interference) and CDM (discrete subhalos).
+
+  <div class="hero">
+    <h1>Anatropic</h1>
+    <div class="tagline">Khronon &tau; Framework</div>
+    <p class="desc">
+      One equation &mdash; &Sigma; = D(&rho;<sub>spacetime</sub> &Vert; &rho;<sub>matter</sub>) &mdash;
+      connects quantum information, thermodynamics, and gravity.
+      Different boundary conditions yield galaxy rotation curves, black hole physics,
+      and cosmological structure &mdash; all from quantum relative entropy,
+      with zero free parameters beyond a<sub>0</sub> = cH<sub>0</sub>/(2&pi;).
     </p>
-  </header>
 
-  <!-- Render mode tabs -->
-  <div id="mode-tabs">
-    <button class="mode-tab active" data-mode="volume">Volume Rendering</button>
-    <button class="mode-tab" data-mode="voxel">Voxel Rendering</button>
-  </div>
-
-  <!-- Caveat banner -->
-  <div id="caveat-banner">
-    <div id="caveat-volume" class="caveat-text active">
-      <strong>Volume rendering</strong> &mdash; ray marching through a continuous 3D density field.
-      Semi-transparent fog reveals internal filamentary structure and voids.
-      Best for seeing the <em>topology</em> of each model.
-    </div>
-    <div id="caveat-voxel" class="caveat-text">
-      <strong>Voxel rendering</strong> &mdash; discrete cubes colored by density.
-      Each cube = one grid cell of the 64&sup3; simulation mesh.
-      Best for seeing the <em>grid structure</em> and individual density values.
+    <div class="equation-banner">
+      g<sub>obs</sub> = g<sub>bar</sub> / (1 &minus; exp(&minus;&radic;(g<sub>bar</sub>/a<sub>0</sub>)))
+      <div class="eq-label">Khronon RAR &mdash; a<sub>0</sub> = 1.13 &times; 10<sup>&minus;10</sup> m/s&sup2;</div>
     </div>
   </div>
 
-  <div id="controls">
-    <label>
-      Density threshold:
-      <input type="range" id="threshold-slider" min="0" max="100" value="30" />
-      <span id="threshold-value">0.30</span>
-    </label>
-    <label>
-      Opacity:
-      <input type="range" id="opacity-slider" min="10" max="100" value="85" />
-      <span id="opacity-value">0.85</span>
-    </label>
-    <button id="btn-regenerate">Regenerate</button>
-  </div>
-
-  <div id="panels">
-    <div class="panel">
-      <div class="panel-label">&psi;DM &mdash; Wave Dark Matter</div>
-      <div class="canvas-container" id="container-psiDM"></div>
-      <p class="panel-desc">
-        Periodic interference fringes from superposition of plane waves.<br />
-        <span class="math">&rho; = |&Sigma; A<sub>i</sub> exp(i <b>k</b><sub>i</sub>&middot;<b>r</b>)|&sup2;</span>
-      </p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-num">12</div>
+      <div class="stat-label">Weak-field tests</div>
     </div>
-    <div class="panel">
-      <div class="panel-label">Khronon (&tau; framework)</div>
-      <div class="canvas-container" id="container-khronon"></div>
-      <p class="panel-desc">
-        Filamentary structure &mdash; nodes, filaments, voids.<br />
-        Generated from multi-octave 3D noise mimicking cosmic-web topology.
-      </p>
+    <div class="stat-item">
+      <div class="stat-num">10</div>
+      <div class="stat-label">Tests passed</div>
     </div>
-    <div class="panel">
-      <div class="panel-label">CDM &mdash; Cold Dark Matter</div>
-      <div class="canvas-container" id="container-CDM"></div>
-      <p class="panel-desc">
-        Discrete point-like subhalos &mdash; random Gaussian blobs<br />
-        scattered in space. <span class="math">&rho; &sim; &Sigma; M exp(&minus;r&sup2;/2&sigma;&sup2;)</span>
-      </p>
+    <div class="stat-item">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Free parameters</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">175</div>
+      <div class="stat-label">SPARC galaxies</div>
     </div>
   </div>
 
-  <!-- Physics disclaimer -->
-  <section id="physics-note">
-    <h2>What you are (and are not) seeing</h2>
-    <div class="note-columns">
-      <div class="note-col">
-        <h3>What this visualization shows</h3>
-        <ul>
-          <li><strong>Topology only</strong> &mdash; the spatial pattern (filamentary vs periodic vs discrete) of each dark matter model</li>
-          <li>Density fields are generated procedurally at 64&sup3; resolution to illustrate the qualitative morphology</li>
-          <li>The Khronon pattern is based on our 2D simulation result: P(k) ~ k<sup>&minus;2.2</sup> broad continuum</li>
-        </ul>
+  <div class="page-grid">
+    <a href="generality.html" class="page-card">
+      <div class="card-icon">&#x1F3AF;</div>
+      <div class="card-title">12 Weak-Field Tests</div>
+      <div class="card-desc">
+        Comprehensive generality report: BTFR, RAR, lensing, bars, TDGs,
+        escape velocity, wide binaries, and more. Score: 10/2/0.
       </div>
-      <div class="note-col">
-        <h3>What this does NOT show</h3>
-        <ul>
-          <li><strong>Correct amplitude</strong> &mdash; real density perturbations are &delta;&rho;/&rho; ~ 1&ndash;10%, not the 100&times; contrast shown here</li>
-          <li><strong>Visibility</strong> &mdash; dark matter does not emit, absorb, or scatter light in any wavelength. These structures are completely invisible</li>
-          <li><strong>Correct scale</strong> &mdash; the predicted sub-structure lives within galaxy halos (~100 kpc), at sub-kpc scales. This is NOT the large-scale cosmic web</li>
-        </ul>
+      <span class="card-tag tag-data">Quantitative</span>
+    </a>
+
+    <a href="scorecard.html" class="page-card">
+      <div class="card-icon">&#x1F4CA;</div>
+      <div class="card-title">Observational Scorecard</div>
+      <div class="card-desc">
+        Head-to-head comparison of Khronon vs &Lambda;CDM across
+        key observational benchmarks with verdict icons.
       </div>
-      <div class="note-col">
-        <h3>How would we actually detect this?</h3>
-        <ul>
-          <li><strong>Gravitational lensing residuals</strong> &mdash; background light bent by the dark matter reveals ~1% brightness anomalies whose spatial statistics encode P(k)</li>
-          <li><strong>Flux ratio anomalies</strong> in multiply-imaged quasars (e.g. HS 0810+2554)</li>
-          <li><strong>Stellar stream gaps</strong> &mdash; dark perturbers create gaps in thin stellar streams (e.g. GD-1)</li>
-          <li>Distinguishing the three models requires measuring the <em>power spectrum slope</em> of lensing residuals across ~10 systems</li>
-        </ul>
+      <span class="card-tag tag-compare">Comparison</span>
+    </a>
+
+    <a href="rotation.html" class="page-card">
+      <div class="card-icon">&#x1F300;</div>
+      <div class="card-title">Rotation Curves</div>
+      <div class="card-desc">
+        Interactive SPARC rotation curve fits. Compare Khronon prediction
+        (zero free parameters) against observed data for individual galaxies.
       </div>
+      <span class="card-tag tag-data">Quantitative</span>
+    </a>
+
+    <a href="cluster3d.html" class="page-card">
+      <div class="card-icon">&#x2B50;</div>
+      <div class="card-title">3D Galaxy Cluster</div>
+      <div class="card-desc">
+        Interactive Three.js model comparing &Lambda;CDM (NFW halo + galaxies + ICM)
+        vs Khronon (&Sigma; field) cluster structure. Three zoom scales.
+      </div>
+      <span class="card-tag tag-viz">3D Visualization</span>
+    </a>
+
+    <a href="universe.html" class="page-card">
+      <div class="card-icon">&#x1F30C;</div>
+      <div class="card-title">Two Universes, Same Data</div>
+      <div class="card-desc">
+        Scale-by-scale comparison: how &Lambda;CDM and Khronon interpret the
+        same observations differently, from cosmic web to solar system.
+      </div>
+      <span class="card-tag tag-compare">Comparison</span>
+    </a>
+
+    <a href="predictions.html" class="page-card">
+      <div class="card-icon">&#x1F52D;</div>
+      <div class="card-title">Predictions &amp; Future Tests</div>
+      <div class="card-desc">
+        25 predictions organized by status: confirmed, testable now,
+        mathematical, and future frontiers. What can and cannot be tested.
+      </div>
+      <span class="card-tag tag-theory">Theory</span>
+    </a>
+
+    <a href="bullet.html" class="page-card">
+      <div class="card-icon">&#x1F4A5;</div>
+      <div class="card-title">Bullet Cluster</div>
+      <div class="card-desc">
+        &tau; field relaxation explains the 150 kpc lensing&ndash;gas offset.
+        State-dependent dissipation: &Gamma;<sub>stars</sub>&approx;0,
+        &Gamma;<sub>gas</sub>&gg;1.
+      </div>
+      <span class="card-tag tag-theory">Theory</span>
+    </a>
+
+    <a href="sim.html" class="page-card">
+      <div class="card-icon">&#x1F9EA;</div>
+      <div class="card-title">&tau; Field Simulation</div>
+      <div class="card-desc">
+        Real-time 3D density and &tau; field visualization.
+        Watch the Khronon field evolve with adjustable parameters.
+      </div>
+      <span class="card-tag tag-viz">3D Visualization</span>
+    </a>
+
+    <a href="https://github.com/akaiHuang/anatropic" class="page-card" target="_blank" rel="noopener">
+      <div class="card-icon">&#x1F4BB;</div>
+      <div class="card-title">Source Code &rarr;</div>
+      <div class="card-desc">
+        Full source on GitHub: computation scripts, SPARC data processing,
+        web visualizations, and paper drafts.
+      </div>
+      <span class="card-tag tag-data">Repository</span>
+    </a>
+  </div>
+
+  <div class="papers-section">
+    <h2>Paper Series</h2>
+    <div class="paper-row">
+      <span class="paper-num">Paper 1</span>
+      <span class="paper-title">&tau; = 1&minus;F: Temporal Asymmetry from Petz Recovery</span>
+      <span class="paper-status ps-done">Published</span>
     </div>
-  </section>
+    <div class="paper-row">
+      <span class="paper-num">Paper 2</span>
+      <span class="paper-title">Exponential Metric from Channel &Sigma;</span>
+      <span class="paper-status ps-draft">Draft</span>
+    </div>
+    <div class="paper-row">
+      <span class="paper-num">Paper 3</span>
+      <span class="paper-title">&eta;=1 + Weak-Field Galaxy Dynamics</span>
+      <span class="paper-status ps-draft">Draft</span>
+    </div>
+    <div class="paper-row">
+      <span class="paper-num">Paper 4</span>
+      <span class="paper-title">&mu;<sub>0</sub> = H<sub>0</sub>/c Grand Unification</span>
+      <span class="paper-status ps-draft">Draft</span>
+    </div>
+    <div class="paper-row">
+      <span class="paper-num">Paper 5</span>
+      <span class="paper-title">Complementary Uncertainty Theorem</span>
+      <span class="paper-status ps-draft">Draft</span>
+    </div>
+    <div class="paper-row">
+      <span class="paper-num">Paper 6</span>
+      <span class="paper-title">Thermal QRE &amp; Cluster Mass Problem</span>
+      <span class="paper-status ps-wip">New</span>
+    </div>
+    <div class="paper-row">
+      <span class="paper-num">Paper 7</span>
+      <span class="paper-title">&tau; Relaxation &amp; Bullet Cluster</span>
+      <span class="paper-status ps-wip">New</span>
+    </div>
+  </div>
 
   <footer>
     Anatropic &mdash; Sheng-Kai Huang (2026)<br />
-    <a href="sim.html"><strong>Simulation Viewer (density + &tau; field)</strong></a>
+    <a href="generality.html">12 Tests</a>
     &middot;
-    <a href="rotation.html"><strong>Rotation Curves: Khronon vs &Lambda;CDM</strong></a>
+    <a href="scorecard.html">Scorecard</a>
     &middot;
-    <a href="bullet.html"><strong>Bullet Cluster: &Lambda;CDM vs Khronon</strong></a>
+    <a href="rotation.html">Rotation</a>
+    &middot;
+    <a href="cluster3d.html">3D Cluster</a>
+    &middot;
+    <a href="universe.html">Universe</a>
+    &middot;
+    <a href="predictions.html">Predictions</a>
+    &middot;
+    <a href="bullet.html">Bullet</a>
+    &middot;
+    <a href="sim.html">Simulation</a>
     &middot;
     <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
-    &middot;
-    <a href="https://github.com/akaiHuang/petz-recovery-unification" target="_blank" rel="noopener">Paper 1: Petz Recovery Unification</a>
   </footer>
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
-    }
-  }
-  </script>
-  <script type="module" src="app.js"></script>
 </body>
 </html>

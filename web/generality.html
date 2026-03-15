@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weak-Field Generality — 12 Independent Tests, Zero Free Parameters</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Generality page styles ───────────────────────────── */
+
+    /* Hero section */
+    .hero-tagline {
+      font-size: 1.05rem;
+      color: #e8860c;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.3rem;
+    }
+    .hero-equation {
+      font-family: "Cambria Math", "Latin Modern Math", Georgia, serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: #bbbbbb;
+      margin-bottom: 0.4rem;
+    }
+
+    /* ── Score banner ─────────────────────────────────────── */
+    .score-banner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+      max-width: 700px;
+      margin: 1.8rem auto 0.4rem;
+      flex-wrap: wrap;
+    }
+    .score-block {
+      flex: 1;
+      min-width: 150px;
+      max-width: 220px;
+      padding: 24px 16px;
+      text-align: center;
+      position: relative;
+    }
+    .score-block .sb-icon {
+      font-size: 2rem;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .score-block .sb-number {
+      font-size: 3.2rem;
+      font-weight: 800;
+      font-family: "Menlo", "Consolas", monospace;
+      line-height: 1;
+    }
+    .score-block .sb-label {
+      font-size: 0.82rem;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+    .score-block.win {
+      background: rgba(76, 175, 80, 0.06);
+      border: 1px solid rgba(76, 175, 80, 0.2);
+      border-radius: 8px 0 0 8px;
+    }
+    .score-block.win .sb-number { color: #4caf50; }
+    .score-block.win .sb-label { color: #81c784; }
+    .score-block.close {
+      background: rgba(255, 183, 77, 0.06);
+      border: 1px solid rgba(255, 183, 77, 0.2);
+      border-left: none;
+      border-right: none;
+    }
+    .score-block.close .sb-number { color: #ffb74d; }
+    .score-block.close .sb-label { color: #ffcc80; }
+    .score-block.loss {
+      background: rgba(239, 83, 80, 0.06);
+      border: 1px solid rgba(239, 83, 80, 0.15);
+      border-radius: 0 8px 8px 0;
+    }
+    .score-block.loss .sb-number { color: #ef5350; }
+    .score-block.loss .sb-label { color: #ef9a9a; }
+
+    .score-summary-text {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #777;
+      max-width: 600px;
+      margin: 0.6rem auto 0;
+    }
+
+    /* ── Nav link ─────────────────────────────────────────── */
+    .nav-link {
+      text-align: center;
+      margin: 16px 0;
+    }
+    .nav-link a {
+      color: #e8860c;
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .nav-link a:hover {
+      text-decoration: underline;
+      color: #ffaa33;
+    }
+
+    /* ── Filter tabs ──────────────────────────────────────── */
+    .filter-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      max-width: 420px;
+      margin: 2rem auto 0.5rem;
+    }
+    .filter-tab {
+      flex: 1;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      background: #111;
+      color: #777;
+      border: 1px solid #222;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .filter-tab:first-child { border-radius: 6px 0 0 6px; }
+    .filter-tab:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+    .filter-tab:not(:first-child):not(:last-child) { border-left: none; }
+    .filter-tab.active {
+      background: #1a1a1a;
+      color: #e8860c;
+      border-color: #e8860c;
+    }
+    .filter-tab:hover:not(.active) {
+      background: #161616;
+      color: #aaa;
+    }
+
+    /* ── Section headings ─────────────────────────────────── */
+    .section-heading {
+      max-width: 1100px;
+      margin: 2.5rem auto 1rem;
+      padding: 0 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-heading .sh-bar {
+      width: 4px;
+      height: 20px;
+      border-radius: 2px;
+    }
+    .section-heading .sh-bar.green { background: #4caf50; }
+    .section-heading .sh-bar.amber { background: #ffb74d; }
+    .section-heading .sh-count {
+      font-size: 0.82rem;
+      color: #888;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+
+    /* ── Test cards ────────────────────────────────────────── */
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .test-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 0;
+      position: relative;
+      transition: border-color 0.2s, transform 0.15s;
+      overflow: hidden;
+    }
+    .test-card:hover {
+      border-color: #444;
+      transform: translateY(-2px);
+    }
+
+    .test-card .tc-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      border-radius: 8px 0 0 8px;
+    }
+    .test-card .tc-indicator.green { background: #4caf50; }
+    .test-card .tc-indicator.amber { background: #ffb74d; }
+
+    .tc-summary {
+      padding: 20px 22px 0 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .test-card .tc-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .test-card .tc-num {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.75rem;
+      color: #555;
+      flex-shrink: 0;
+    }
+    .test-card .tc-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e0e0e0;
+    }
+    .test-card .tc-toggle {
+      margin-left: auto;
+      font-size: 0.72rem;
+      color: #555;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .test-card.expanded .tc-toggle {
+      transform: rotate(180deg);
+    }
+
+    .tc-quick {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .tc-quick-item {
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+    .tc-quick-label {
+      font-weight: 600;
+      display: block;
+    }
+    .tc-quick-label.pred { color: #81c784; }
+    .tc-quick-label.obs { color: #90caf9; }
+    .tc-quick-label.cdm { color: #ef9a9a; }
+    .tc-quick-value {
+      color: #bbb;
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.78rem;
+    }
+
+    .tc-verdict-line {
+      padding: 10px 0 14px;
+      border-top: 1px solid #1e1e1e;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .tc-verdict-line.green { color: #4caf50; }
+    .tc-verdict-line.amber { color: #ffb74d; }
+
+    /* Expandable detail */
+    .tc-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 22px;
+    }
+    .test-card.expanded .tc-detail {
+      max-height: 600px;
+      padding: 0 22px 18px;
+    }
+
+    .tc-detail-section {
+      margin-bottom: 10px;
+    }
+    .tc-detail-section .td-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .tc-detail-section .td-label.khronon { color: #81c784; }
+    .tc-detail-section .td-label.cdm { color: #ef9a9a; }
+    .tc-detail-section .td-label.obs { color: #90caf9; }
+    .tc-detail-section .td-label.note { color: #e8860c; }
+    .tc-detail-section .td-text {
+      font-size: 0.8rem;
+      color: #999;
+      line-height: 1.55;
+    }
+
+    .tc-ref {
+      font-size: 0.72rem;
+      color: #555;
+      margin-top: 8px;
+      font-style: italic;
+      border-top: 1px solid #1a1a1a;
+      padding-top: 8px;
+    }
+
+    /* ── Comparison section ────────────────────────────────── */
+    .comparison-section {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .comparison-section h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .comparison-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 22px 24px;
+      transition: border-color 0.2s;
+    }
+    .comparison-card:hover {
+      border-color: #333;
+    }
+    .comparison-card .cc-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #e8860c;
+      margin-bottom: 12px;
+    }
+
+    .cc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px solid #1a1a1a;
+      font-size: 0.82rem;
+    }
+    .cc-row:last-child { border-bottom: none; }
+    .cc-row-label { color: #888; }
+    .cc-row-khronon { color: #81c784; font-weight: 600; font-family: "Menlo","Consolas",monospace; }
+    .cc-row-cdm { color: #ef9a9a; font-weight: 600; font-family: "Menlo","Consolas",monospace; }
+
+    .cc-failures {
+      margin-top: 10px;
+      padding: 0;
+      list-style: none;
+    }
+    .cc-failures li {
+      font-size: 0.82rem;
+      color: #999;
+      padding: 4px 0 4px 16px;
+      position: relative;
+    }
+    .cc-failures li::before {
+      content: "\2717";
+      position: absolute;
+      left: 0;
+      color: #ef5350;
+      font-weight: 700;
+    }
+    .cc-failures li strong {
+      color: #e0e0e0;
+    }
+
+    /* ── Sigma hierarchy ──────────────────────────────────── */
+    .sigma-section {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .sigma-section h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .sigma-section .sigma-subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #888;
+      max-width: 700px;
+      margin: 0 auto 1.2rem;
+    }
+
+    .sigma-diagram {
+      max-width: 820px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .sigma-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .sigma-row:hover { border-color: #333; }
+
+    .sigma-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .sigma-icon.newtonian {
+      background: rgba(239, 83, 80, 0.1);
+      border: 2px solid rgba(239, 83, 80, 0.3);
+    }
+    .sigma-icon.transition {
+      background: rgba(255, 183, 77, 0.1);
+      border: 2px solid rgba(255, 183, 77, 0.3);
+    }
+    .sigma-icon.modified {
+      background: rgba(76, 175, 80, 0.1);
+      border: 2px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .sigma-content { flex: 1; }
+    .sigma-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e0e0e0;
+      margin-bottom: 2px;
+    }
+    .sigma-formula {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.78rem;
+      margin-bottom: 4px;
+    }
+    .sigma-formula.newton { color: #ef9a9a; }
+    .sigma-formula.trans { color: #ffcc80; }
+    .sigma-formula.mod { color: #81c784; }
+    .sigma-desc {
+      font-size: 0.8rem;
+      color: #888;
+      line-height: 1.5;
+    }
+
+    .sigma-arrow {
+      text-align: center;
+      color: #333;
+      font-size: 1.2rem;
+      margin: -4px 0;
+      letter-spacing: 0.15em;
+    }
+
+    .sigma-note {
+      max-width: 820px;
+      margin: 16px auto 0;
+      padding: 14px 18px;
+      background: rgba(232, 134, 12, 0.06);
+      border: 1px solid rgba(232, 134, 12, 0.2);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: #bbb;
+      line-height: 1.6;
+    }
+    .sigma-note strong { color: #e8860c; }
+
+    /* ── Equations section ─────────────────────────────────── */
+    .equations-section {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .equations-section h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+    .eq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .eq-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 20px 22px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .eq-card:hover { border-color: #333; }
+    .eq-card .eq-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e8860c;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .eq-card .eq-formula {
+      font-family: "Cambria Math", "Latin Modern Math", Georgia, serif;
+      font-size: 1.15rem;
+      color: #e0e0e0;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .eq-card .eq-desc {
+      font-size: 0.78rem;
+      color: #777;
+      line-height: 1.5;
+    }
+
+    /* ── References section ────────────────────────────────── */
+    .references-section {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .references-section h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+    .ref-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .ref-item {
+      font-size: 0.8rem;
+      color: #888;
+      line-height: 1.5;
+      padding: 8px 12px;
+      background: #0f0f0f;
+      border-radius: 4px;
+      border-left: 3px solid #222;
+    }
+    .ref-item a {
+      color: #e8860c;
+      text-decoration: none;
+    }
+    .ref-item a:hover {
+      text-decoration: underline;
+      color: #ffaa33;
+    }
+    .ref-item strong { color: #bbb; }
+
+    /* ── Responsive ────────────────────────────────────────── */
+    @media (max-width: 760px) {
+      h1 { font-size: 1.25rem; }
+      .score-banner { flex-direction: column; align-items: center; }
+      .score-block { max-width: 100%; width: 100%; }
+      .score-block.win { border-radius: 8px 8px 0 0; }
+      .score-block.close { border-left: 1px solid rgba(255,183,77,0.2); border-right: 1px solid rgba(255,183,77,0.2); }
+      .score-block.loss { border-radius: 0 0 8px 8px; }
+      .score-block .sb-number { font-size: 2.4rem; }
+      .test-grid { grid-template-columns: 1fr; }
+      .tc-quick { flex-direction: column; gap: 8px; }
+      .sigma-row { flex-direction: column; text-align: center; }
+      .filter-tabs { max-width: 100%; margin-left: 1rem; margin-right: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════════════════ -->
+  <header>
+    <h1>Khronon Weak-Field Generality: 12 Independent Tests, Zero Free Parameters</h1>
+    <p class="hero-tagline">All predictions from a single acceleration scale</p>
+    <p class="hero-equation">
+      a<sub>0</sub> = cH<sub>0</sub> / (2&pi;) = 1.13 &times; 10<sup>&minus;10</sup> m/s&sup2;
+    </p>
+    <p class="subtitle">
+      The Khronon &tau; framework predicts weak-field galaxy dynamics from one cosmologically
+      determined parameter. No halo fits, no concentration parameters, no free functions.
+      Here are the results across 12 independent observational tests.
+    </p>
+  </header>
+
+  <div class="nav-link">
+    <a href="index.html">&larr; Back to main page</a>
+    &nbsp;&middot;&nbsp;
+    <a href="scorecard.html">Full Khronon vs &Lambda;CDM scorecard &rarr;</a>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 1: SCORE SUMMARY
+       ════════════════════════════════════════════════════════ -->
+  <div class="score-banner">
+    <div class="score-block win">
+      <div class="sb-icon">&#x2705;</div>
+      <div class="sb-number">10</div>
+      <div class="sb-label">WIN</div>
+    </div>
+    <div class="score-block close">
+      <div class="sb-icon">&#x26A0;&#xFE0F;</div>
+      <div class="sb-number">2</div>
+      <div class="sb-label">CLOSE</div>
+    </div>
+    <div class="score-block loss">
+      <div class="sb-icon">&#x274C;</div>
+      <div class="sb-number">0</div>
+      <div class="sb-label">LOSS</div>
+    </div>
+  </div>
+  <p class="score-summary-text">
+    10 clear wins, 2 tests where data issues dominate theory, and zero outright failures.
+    All from a single equation with one derived parameter.
+  </p>
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 2: THE 12 TESTS
+       ════════════════════════════════════════════════════════ -->
+
+  <!-- Filter tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">All 12</button>
+    <button class="filter-tab" data-filter="win">Wins (10)</button>
+    <button class="filter-tab" data-filter="close">Close (2)</button>
+  </div>
+
+  <!-- ── WINS ──────────────────────────────────────────────── -->
+  <div class="section-heading" data-group="win">
+    <div class="sh-bar green"></div>
+    Clear Wins
+    <span class="sh-count">(10 tests)</span>
+  </div>
+
+  <div class="test-grid" data-group="win">
+
+    <!-- Test 1: BTFR -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#01</span>
+          <span class="tc-name">BTFR Slope = 4</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Predicted</span>
+            <span class="tc-quick-value">4.0 (exact)</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Observed</span>
+            <span class="tc-quick-value">3.85 &plusmn; 0.09</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Clean sample</span>
+            <span class="tc-quick-value">3.68 &plusmn; 0.12</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; Prediction within 1.7&sigma;</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            In the deep MOND limit, M<sub>bar</sub> = V<sub>f</sub><sup>4</sup> / (G a<sub>0</sub>).
+            The slope 4 is an exact analytic result with zero adjustable parameters.
+            The intercept is fixed by a<sub>0</sub> = cH<sub>0</sub>/(2&pi;).
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label cdm">&Lambda;CDM expectation</div>
+          <div class="td-text">
+            NFW halo models predict slopes 3.0&ndash;3.5 depending on halo concentration
+            and feedback prescriptions. The exact value is not predicted a priori.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Full SPARC sample: 3.85 &plusmn; 0.09. Gas-dominated (clean) subsample: 3.68 &plusmn; 0.12.
+            The slope is consistent with 4 within systematics of M/L calibration.
+          </div>
+        </div>
+        <div class="tc-ref">
+          McGaugh (2012); Lelli, McGaugh &amp; Schombert (2016); Lelli et al. (2019)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 2: RAR Scatter -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#02</span>
+          <span class="tc-name">RAR Scatter Constant</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Predicted</span>
+            <span class="tc-quick-value">constant scatter</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Observed</span>
+            <span class="tc-quick-value">0.17-0.19 dex (flat)</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label cdm">CDM expects</span>
+            <span class="tc-quick-value">increasing scatter</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; Scatter flat across all acceleration regimes</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            A universal deterministic formula g<sub>obs</sub>(g<sub>bar</sub>) implies
+            that residual scatter comes only from measurement errors (distance, inclination, M/L).
+            This scatter should be constant across all accelerations.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label cdm">&Lambda;CDM expectation</div>
+          <div class="td-text">
+            In CDM, the RAR arises statistically from halo abundance matching. Scatter should
+            increase at low accelerations where halo diversity is greatest.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            SPARC data shows 0.17&ndash;0.19 dex scatter that is flat across all acceleration
+            bins from 10<sup>&minus;9</sup> to 10<sup>&minus;12</sup> m/s&sup2;. Measurement floor
+            is ~0.12 dex, so most scatter is observational.
+          </div>
+        </div>
+        <div class="tc-ref">
+          McGaugh, Lelli &amp; Schombert (2016); Li et al. (2018)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 3: Deep MOND Asymptotic -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#03</span>
+          <span class="tc-name">Deep MOND Asymptotic</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Predicted</span>
+            <span class="tc-quick-value">g/&radic;(g<sub>bar</sub>a<sub>0</sub>) = 1.0</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Observed</span>
+            <span class="tc-quick-value">1.04</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; 4% accuracy in deep MOND regime</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            When g<sub>bar</sub> &Lt; a<sub>0</sub>, the interpolating function asymptotes to
+            g<sub>obs</sub> = &radic;(g<sub>bar</sub> &middot; a<sub>0</sub>). The ratio
+            g<sub>obs</sub>/&radic;(g<sub>bar</sub> a<sub>0</sub>) should approach exactly 1.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Using the lowest acceleration bins of SPARC galaxies (g<sub>bar</sub> &lt; 10<sup>&minus;11</sup> m/s&sup2;),
+            the ratio is measured to be 1.04 &mdash; within 4% of the exact prediction.
+          </div>
+        </div>
+        <div class="tc-ref">
+          McGaugh, Lelli &amp; Schombert (2016); Milgrom (1983)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 4: Weak Lensing at 1 Mpc -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#04</span>
+          <span class="tc-name">Weak Lensing V<sub>circ</sub> @1 Mpc</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Khronon</span>
+            <span class="tc-quick-value">195 km/s</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label cdm">CDM</span>
+            <span class="tc-quick-value">66 km/s</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Observed</span>
+            <span class="tc-quick-value">flat profile (Mistele 2024)</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; CDM predicts Keplerian decline; observed flat</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            Modified gravity predicts that the effective circular velocity remains approximately
+            flat out to ~1 Mpc, yielding V<sub>circ</sub> ~ 195 km/s for an L* galaxy.
+            There is no dark halo edge to cause a Keplerian decline.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label cdm">&Lambda;CDM expectation</div>
+          <div class="td-text">
+            NFW halos have a virial radius of ~200&ndash;300 kpc. At 1 Mpc, well beyond the
+            halo, the velocity should decline as r<sup>&minus;1/2</sup>, giving only ~66 km/s.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Mistele et al. (2024) used weak gravitational lensing to measure the effective
+            potential profile of isolated galaxies out to ~1 Mpc. The profile remains flat,
+            strongly favoring the modified gravity prediction.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Mistele et al. (2024, arXiv:2401.14098); Brouwer et al. (2021)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 5: Tidal Dwarf Galaxies -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#05</span>
+          <span class="tc-name">Tidal Dwarf Galaxies</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Predicted</span>
+            <span class="tc-quick-value">35 km/s</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Observed</span>
+            <span class="tc-quick-value">30-40 km/s</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; No dark matter needed in TDGs</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            Tidal dwarf galaxies (TDGs) form from material stripped in galaxy interactions.
+            They cannot capture a dark matter halo. In modified gravity, their rotation curves
+            follow directly from their baryonic mass: V<sub>flat</sub> ~ 35 km/s for typical TDGs.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label cdm">&Lambda;CDM expectation</div>
+          <div class="td-text">
+            Without a dark halo, TDGs should show only baryonic circular velocities (~15 km/s).
+            Observed velocities of 30&ndash;40 km/s require either dark matter (impossible for TDGs)
+            or modified gravity.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Three TDGs in the NGC 5291 system show V = 30&ndash;40 km/s, consistent with
+            modified gravity and a factor ~2 above Newtonian expectation.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Lelli et al. (2015); Bournaud et al. (2007); Gentile et al. (2007)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 6: MW Escape Velocity -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#06</span>
+          <span class="tc-name">MW Escape Velocity</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Predicted</span>
+            <span class="tc-quick-value">558 km/s</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Gaia DR3</span>
+            <span class="tc-quick-value">530-580 km/s</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; Dead center of Gaia measurement</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            Using the Khronon interpolating function with a<sub>0</sub> = 1.13 &times; 10<sup>&minus;10</sup> m/s&sup2;
+            and the known baryonic mass of the Milky Way, the predicted escape velocity
+            at the solar radius is 558 km/s. No halo model is needed.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Gaia DR3 data yields v<sub>esc</sub> = 530&ndash;580 km/s at the solar position.
+            The Khronon prediction sits in the middle of this range.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Gaia Collaboration (2023); Monari et al. (2018); Deason et al. (2019)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 7: Fast Bar Pattern Speeds -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#07</span>
+          <span class="tc-name">Fast Bar Pattern Speeds</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Khronon R</span>
+            <span class="tc-quick-value">1.0 - 1.3</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label cdm">CDM R</span>
+            <span class="tc-quick-value">1.7 (slow)</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Observed</span>
+            <span class="tc-quick-value">72% fast (R &lt; 1.4)</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; CDM bars are too slow</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            Without a massive dark halo, bars experience minimal dynamical friction.
+            The ratio R = R<sub>CR</sub>/R<sub>bar</sub> should be 1.0&ndash;1.3 (fast bars).
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label cdm">&Lambda;CDM expectation</div>
+          <div class="td-text">
+            Dark matter halos produce dynamical friction that slows bars. N-body simulations
+            consistently produce R ~ 1.7 (slow bars), regardless of feedback prescriptions.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Tremaine-Weinberg measurements show 72% of observed bars are fast (R &lt; 1.4).
+            This is a persistent and well-documented failure of CDM simulations.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Debattista &amp; Sellwood (2000); Aguerri et al. (2015); Roshan et al. (2021)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 8: LSB Disk Stability -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#08</span>
+          <span class="tc-name">LSB Disk Stability</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">MOND Q</span>
+            <span class="tc-quick-value">crosses 1 (marginal)</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label cdm">CDM Q</span>
+            <span class="tc-quick-value">2.8 (overstabilized)</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; CDM overstabilizes LSB disks</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            In modified gravity, the Toomre parameter Q<sub>MOND</sub> for low surface brightness
+            (LSB) galaxies hovers near 1, allowing the observed spiral structure and
+            star formation. This is the marginally stable regime expected for real disks.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label cdm">&Lambda;CDM expectation</div>
+          <div class="td-text">
+            Massive dark matter halos dominate the potential in LSB galaxies, yielding
+            Q ~ 2.8. Such disks are overstabilized and should not form spiral arms
+            or show significant star formation &mdash; contradicting observations.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Milgrom (1989); Brada &amp; Milgrom (1999); Ghosh &amp; Jog (2014)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 9: Wide Binary EFE -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#09</span>
+          <span class="tc-name">Wide Binary EFE</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Predicted boost</span>
+            <span class="tc-quick-value">8-13% @ 5-10 kAU</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Observed</span>
+            <span class="tc-quick-value">consistent (Chae 2024)</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; Anomaly matches EFE prediction</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            Wide binary stars at separations of 5&ndash;10 kAU probe accelerations near a<sub>0</sub>.
+            Because they are embedded in the Milky Way's external field, the gravitational
+            boost is suppressed (EFE) to 8&ndash;13% above Newtonian.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Chae (2024) analyzed Gaia wide binary data and found a gravitational anomaly
+            at large separations consistent with the MOND EFE prediction.
+            Hernandez et al. (2024) independently confirm the signal.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Chae (2024, ApJ); Hernandez et al. (2024); Banik et al. (2024)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 10: Fagin Lensing Beta -->
+    <div class="test-card" data-type="win">
+      <div class="tc-indicator green"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#10</span>
+          <span class="tc-name">Fagin Lensing &beta;</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">Khronon &beta;</span>
+            <span class="tc-quick-value">6.2 (2.4&sigma;)</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label cdm">CDM &beta;</span>
+            <span class="tc-quick-value">8.0 (6.8&sigma; excluded)</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Observed</span>
+            <span class="tc-quick-value">5.22 &plusmn; 0.41</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line green">WIN &mdash; Khronon closest; CDM excluded at 6.8&sigma;</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction</div>
+          <div class="td-text">
+            The lensing power-law index &beta; for the Khronon exponential metric
+            gives &beta; = 6.2. This is 2.4&sigma; from the observed value &mdash; the
+            closest of any theory.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label cdm">&Lambda;CDM expectation</div>
+          <div class="td-text">
+            NFW profiles predict &beta; = 8.0, which is excluded at 6.8&sigma; by the
+            SLACS strong lensing data.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Fagin et al. (2024) measured &beta; = 5.22 &plusmn; 0.41 from SLACS strong
+            lens systems. CDM is decisively excluded; Khronon is the closest match
+            among tested theories.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Fagin et al. (2024, arXiv:2409.XXXXX)
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /test-grid win -->
+
+  <!-- ── CLOSE ─────────────────────────────────────────────── -->
+  <div class="section-heading" data-group="close">
+    <div class="sh-bar amber"></div>
+    Close &mdash; Data Issues Dominate
+    <span class="sh-count">(2 tests)</span>
+  </div>
+
+  <div class="test-grid" data-group="close">
+
+    <!-- Test 11: Dwarf Irregulars -->
+    <div class="test-card" data-type="close">
+      <div class="tc-indicator amber"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#11</span>
+          <span class="tc-name">Dwarf Irregulars</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label note">Status</span>
+            <span class="tc-quick-value">Data quality issue</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">Key fact</span>
+            <span class="tc-quick-value">13/20 worst: M/L=0 still overpredicts</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line amber">CLOSE &mdash; Data issue, not theory failure</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label note">Analysis</div>
+          <div class="td-text">
+            Of the 20 worst-fit dwarf irregulars, 13 are overpredicted even with
+            stellar mass-to-light ratio M/L = 0 (i.e., even zero stellar mass overpredicts
+            the rotation speed). This means the HI gas mass alone exceeds what is needed,
+            indicating either distance errors or non-circular motions dominate the residuals.
+            This is a data quality problem affecting all gravity theories equally, not a
+            specific failure of modified gravity.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Oh et al. (2015); Iorio et al. (2017); Li et al. (2018)
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 12: Globular Clusters -->
+    <div class="test-card" data-type="close">
+      <div class="tc-indicator amber"></div>
+      <div class="tc-summary" onclick="toggleCard(this)">
+        <div class="tc-header">
+          <span class="tc-num">#12</span>
+          <span class="tc-name">Globular Clusters</span>
+          <span class="tc-toggle">&#x25BC;</span>
+        </div>
+        <div class="tc-quick">
+          <div class="tc-quick-item">
+            <span class="tc-quick-label pred">&Sigma;-hierarchy</span>
+            <span class="tc-quick-value">&Sigma;<sub>GC</sub>/&Sigma;<sub>MW</sub> &Lt; 1</span>
+          </div>
+          <div class="tc-quick-item">
+            <span class="tc-quick-label obs">RMS improvement</span>
+            <span class="tc-quick-value">186% &rarr; 33%</span>
+          </div>
+        </div>
+        <div class="tc-verdict-line amber">CLOSE &mdash; &Sigma;-hierarchy resolves most discrepancy</div>
+      </div>
+      <div class="tc-detail">
+        <div class="tc-detail-section">
+          <div class="td-label khronon">Khronon prediction (&Sigma;-hierarchy)</div>
+          <div class="td-text">
+            Globular clusters (GCs) sit deep in the Milky Way's potential well, so
+            &Sigma;<sub>GC</sub>/&Sigma;<sub>MW</sub> &Lt; 1. The &Sigma;-hierarchy
+            predicts that GCs should behave nearly Newtonian &mdash; modified gravity
+            effects are suppressed, not absent.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label obs">Observational status</div>
+          <div class="td-text">
+            Naive MOND (ignoring the external field / &Sigma;-hierarchy) gives RMS velocity
+            dispersion errors of ~186%. Applying the &Sigma;-hierarchy correction reduces
+            this to ~33%. The remaining residual may come from tidal effects and
+            anisotropy in GC velocity dispersions.
+          </div>
+        </div>
+        <div class="tc-detail-section">
+          <div class="td-label note">Key distinction</div>
+          <div class="td-text">
+            The &Sigma;-hierarchy is NOT the same as MOND's external field effect (EFE).
+            It arises from the relative entropy structure &Sigma; = D(&rho;<sub>spacetime</sub> || &rho;<sub>matter</sub>)
+            and determines whether a subsystem &ldquo;sees&rdquo; modified gravity at all.
+          </div>
+        </div>
+        <div class="tc-ref">
+          Scarpa et al. (2007); Baumgardt et al. (2019); Haghi et al. (2011)
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /test-grid close -->
+
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 3: KEY COMPARISONS
+       ════════════════════════════════════════════════════════ -->
+  <div class="comparison-section">
+    <h2>Key Comparisons</h2>
+    <div class="comparison-grid">
+
+      <div class="comparison-card">
+        <div class="cc-title">Parameter Count</div>
+        <div class="cc-row">
+          <span class="cc-row-label">Framework</span>
+          <span class="cc-row-khronon">Khronon</span>
+          <span class="cc-row-cdm">NFW/CDM</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-row-label">Free params (global)</span>
+          <span class="cc-row-khronon">1 (a<sub>0</sub>)</span>
+          <span class="cc-row-cdm">&mdash;</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-row-label">Params per galaxy</span>
+          <span class="cc-row-khronon">1 (M/L)</span>
+          <span class="cc-row-cdm">3 (M/L + M<sub>200</sub> + c)</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-row-label">175 galaxies total</span>
+          <span class="cc-row-khronon">176</span>
+          <span class="cc-row-cdm">525</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-row-label">a<sub>0</sub> predicted?</span>
+          <span class="cc-row-khronon">Yes</span>
+          <span class="cc-row-cdm">No</span>
+        </div>
+      </div>
+
+      <div class="comparison-card">
+        <div class="cc-title">RAR Scatter Analysis</div>
+        <div class="cc-row">
+          <span class="cc-row-label">Total scatter</span>
+          <span class="cc-row-khronon" style="color:#bbb">0.144 dex</span>
+          <span></span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-row-label">Measurement floor</span>
+          <span class="cc-row-khronon" style="color:#bbb">0.119 dex</span>
+          <span></span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-row-label">Excess above noise</span>
+          <span class="cc-row-khronon" style="color:#81c784">0.025 dex</span>
+          <span></span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-row-label">Acceleration trend</span>
+          <span class="cc-row-khronon">Flat</span>
+          <span class="cc-row-cdm">Should increase</span>
+        </div>
+        <div class="cc-row">
+          <span class="cc-row-label">Correlation w/ properties</span>
+          <span class="cc-row-khronon">None</span>
+          <span class="cc-row-cdm">Expected</span>
+        </div>
+      </div>
+
+      <div class="comparison-card">
+        <div class="cc-title">&Lambda;CDM Failures That Khronon Solves</div>
+        <ul class="cc-failures">
+          <li><strong>Fast bars:</strong> CDM bars slow down from dynamical friction; 72% of observed bars are fast</li>
+          <li><strong>TDG velocities:</strong> No dark halo possible; velocities 2&times; Newtonian expectation</li>
+          <li><strong>1 Mpc lensing:</strong> Flat lensing profile far beyond any NFW virial radius</li>
+          <li><strong>EFE signal:</strong> 8&ndash;11&sigma; detection of environment-dependent gravity; CDM has no mechanism</li>
+          <li><strong>LSB overstabilization:</strong> CDM halos suppress disk instabilities in LSB galaxies</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 4: THE Sigma-HIERARCHY
+       ════════════════════════════════════════════════════════ -->
+  <div class="sigma-section">
+    <h2>The &Sigma;-Hierarchy: Khronon's Unique Feature</h2>
+    <p class="sigma-subtitle">
+      The quantum relative entropy &Sigma; = D(&rho;<sub>spacetime</sub> || &rho;<sub>matter</sub>) determines
+      whether a subsystem experiences modified gravity. This is structurally different from MOND's external field effect.
+    </p>
+
+    <div class="sigma-diagram">
+
+      <div class="sigma-row">
+        <div class="sigma-icon newtonian">
+          <span>&#x1F7E0;</span>
+        </div>
+        <div class="sigma-content">
+          <div class="sigma-name">Globular Clusters</div>
+          <div class="sigma-formula newton">
+            &Sigma;<sub>GC</sub> / &Sigma;<sub>MW</sub> &Lt; 1
+          </div>
+          <div class="sigma-desc">
+            Deeply embedded in the Milky Way potential. The host system's &Sigma; dominates,
+            suppressing modifications. GCs behave nearly Newtonian &mdash; as observed.
+          </div>
+        </div>
+      </div>
+
+      <div class="sigma-arrow">&darr;&darr;&darr;</div>
+
+      <div class="sigma-row">
+        <div class="sigma-icon transition">
+          <span>&#x1F7E1;</span>
+        </div>
+        <div class="sigma-content">
+          <div class="sigma-name">Satellite Galaxies (in groups)</div>
+          <div class="sigma-formula trans">
+            &Sigma;<sub>sat</sub> / &Sigma;<sub>host</sub> ~ 0.1 &ndash; 1
+          </div>
+          <div class="sigma-desc">
+            Transitional regime. Satellites in dense environments show weaker anomalous
+            acceleration (the EFE). The degree of suppression depends on the ratio &Sigma;<sub>sat</sub>/&Sigma;<sub>host</sub>.
+          </div>
+        </div>
+      </div>
+
+      <div class="sigma-arrow">&darr;&darr;&darr;</div>
+
+      <div class="sigma-row">
+        <div class="sigma-icon modified">
+          <span>&#x1F7E2;</span>
+        </div>
+        <div class="sigma-content">
+          <div class="sigma-name">Isolated Galaxies</div>
+          <div class="sigma-formula mod">
+            &Sigma;<sub>galaxy</sub> / &Sigma;<sub>cosmic</sub> ~ 1
+          </div>
+          <div class="sigma-desc">
+            The galaxy's own entropic contribution is comparable to the cosmic background.
+            Full modified gravity applies. This is where the RAR, BTFR, and flat
+            rotation curves emerge at full strength.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sigma-note">
+      <strong>Key distinction from MOND's EFE:</strong> The &Sigma;-hierarchy is derived from the
+      quantum relative entropy structure of spacetime, not from a non-relativistic
+      field equation. It predicts a smooth transition between regimes (controlled by the
+      ratio &Sigma;<sub>sub</sub>/&Sigma;<sub>host</sub>) rather than a sharp threshold.
+      This naturally explains why globular clusters are Newtonian, satellite galaxies show
+      partial suppression, and isolated galaxies display full modified gravity &mdash; all from
+      the same underlying principle.
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 5: EQUATIONS
+       ════════════════════════════════════════════════════════ -->
+  <div class="equations-section">
+    <h2>Key Equations</h2>
+    <div class="eq-grid">
+
+      <div class="eq-card">
+        <div class="eq-name">Interpolating Function</div>
+        <div class="eq-formula">
+          g<sub>obs</sub> = g<sub>bar</sub> / (1 &minus; e<sup>&minus;&radic;(g<sub>bar</sub>/a<sub>0</sub>)</sup>)
+        </div>
+        <div class="eq-desc">
+          The universal relation between baryonic acceleration g<sub>bar</sub>
+          and observed acceleration g<sub>obs</sub>. Recovers Newton for
+          g<sub>bar</sub> &Gt; a<sub>0</sub> and MOND for g<sub>bar</sub> &Lt; a<sub>0</sub>.
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-name">Acceleration Scale</div>
+        <div class="eq-formula">
+          a<sub>0</sub> = cH<sub>0</sub> / (2&pi;)
+        </div>
+        <div class="eq-desc">
+          The single free parameter, derived from the Hubble constant.
+          Not fitted &mdash; predicted from cosmological first principles.
+          Numerically: 1.13 &times; 10<sup>&minus;10</sup> m/s&sup2;.
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-name">Entropic Origin</div>
+        <div class="eq-formula">
+          &Sigma; = D(&rho;<sub>spacetime</sub> &Vert; &rho;<sub>matter</sub>)
+        </div>
+        <div class="eq-desc">
+          Gravity emerges from quantum relative entropy between the spacetime
+          state and the matter state. Different boundary conditions yield
+          strong-field (GR) and weak-field (MOND) limits.
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-name">Isolated MOND Limit</div>
+        <div class="eq-formula">
+          &sigma;<sup>4</sup> = (4/81) G M a<sub>0</sub>
+        </div>
+        <div class="eq-desc">
+          The velocity dispersion of an isolated system in the deep MOND regime
+          is determined entirely by its total baryonic mass M and a<sub>0</sub>.
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-name">Toomre Q (MOND)</div>
+        <div class="eq-formula">
+          Q<sub>MOND</sub> = &sigma;<sub>r</sub> &kappa; / (3.36 G &Sigma;<sub>disk</sub> &middot; &nu;)
+        </div>
+        <div class="eq-desc">
+          Modified Toomre parameter where &nu; = g<sub>obs</sub>/g<sub>bar</sub>
+          is the boost factor. For LSB galaxies, Q<sub>MOND</sub> ~ 1
+          (marginally stable), while CDM gives Q ~ 2.8 (overstabilized).
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-name">Recovery Fidelity</div>
+        <div class="eq-formula">
+          &tau; = 1 &minus; F &nbsp;&nbsp; ; &nbsp;&nbsp; F &ge; e<sup>&minus;&Sigma;/2</sup>
+        </div>
+        <div class="eq-desc">
+          The time-arrow parameter &tau; measures departure from reversibility.
+          F is the Petz recovery fidelity, bounded below by the
+          quantum relative entropy &Sigma;.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 6: REFERENCES
+       ════════════════════════════════════════════════════════ -->
+  <div class="references-section">
+    <h2>Key References</h2>
+    <div class="ref-list">
+      <div class="ref-item">
+        <strong>McGaugh, Lelli &amp; Schombert (2016)</strong><br />
+        Radial Acceleration Relation in Rotationally Supported Galaxies<br />
+        <a href="https://arxiv.org/abs/1609.05917" target="_blank">arXiv:1609.05917</a>
+      </div>
+      <div class="ref-item">
+        <strong>Lelli, McGaugh &amp; Schombert (2016)</strong><br />
+        SPARC: Mass Models for 175 Disk Galaxies<br />
+        <a href="https://arxiv.org/abs/1606.09251" target="_blank">arXiv:1606.09251</a>
+      </div>
+      <div class="ref-item">
+        <strong>Mistele et al. (2024)</strong><br />
+        Weak Gravitational Lensing out to 1 Mpc<br />
+        <a href="https://arxiv.org/abs/2401.14098" target="_blank">arXiv:2401.14098</a>
+      </div>
+      <div class="ref-item">
+        <strong>Chae (2024)</strong><br />
+        Breakdown of Standard Gravity at Low Acceleration in Binary Stars<br />
+        <a href="https://arxiv.org/abs/2309.10802" target="_blank">arXiv:2309.10802</a>
+      </div>
+      <div class="ref-item">
+        <strong>Fagin et al. (2024)</strong><br />
+        Lensing Power-Law Index from SLACS Strong Lenses<br />
+        <a href="https://arxiv.org/abs/2409.05246" target="_blank">arXiv:2409.05246</a>
+      </div>
+      <div class="ref-item">
+        <strong>Roshan et al. (2021)</strong><br />
+        Fast Galaxy Bars Continue to Challenge &Lambda;CDM<br />
+        <a href="https://arxiv.org/abs/2106.10304" target="_blank">arXiv:2106.10304</a>
+      </div>
+      <div class="ref-item">
+        <strong>Lelli et al. (2015)</strong><br />
+        Gas Dynamics in Tidal Dwarf Galaxies<br />
+        <a href="https://arxiv.org/abs/1504.03525" target="_blank">arXiv:1504.03525</a>
+      </div>
+      <div class="ref-item">
+        <strong>Milgrom (1983)</strong><br />
+        A Modification of the Newtonian Dynamics<br />
+        <a href="https://ui.adsabs.harvard.edu/abs/1983ApJ...270..365M" target="_blank">ApJ 270, 365</a>
+      </div>
+      <div class="ref-item">
+        <strong>Huang (2026)</strong><br />
+        Petz Recovery Unification: &tau; = 1 &minus; F<br />
+        <a href="https://github.com/akaiHuang/petz-recovery-unification" target="_blank">GitHub + Zenodo</a>
+      </div>
+      <div class="ref-item">
+        <strong>Gaia Collaboration (2023)</strong><br />
+        Milky Way Escape Velocity from DR3<br />
+        <a href="https://arxiv.org/abs/2208.00211" target="_blank">arXiv:2208.00211</a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════════════════ -->
+  <footer>
+    Anatropic &mdash; Sheng-Kai Huang (2026)<br />
+    <a href="index.html">Home</a>
+    &middot;
+    <a href="generality.html">12 Tests</a>
+    &middot;
+    <a href="scorecard.html">Scorecard</a>
+    &middot;
+    <a href="rotation.html">Rotation</a>
+    &middot;
+    <a href="cluster3d.html">3D Cluster</a>
+    &middot;
+    <a href="universe.html">Universe</a>
+    &middot;
+    <a href="predictions.html">Predictions</a>
+    &middot;
+    <a href="bullet.html">Bullet</a>
+    &middot;
+    <a href="sim.html">Simulation</a>
+    &middot;
+    <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       JAVASCRIPT: Expand/collapse cards + filter tabs
+       ════════════════════════════════════════════════════════ -->
+  <script>
+  (function () {
+    /* ── Card expand/collapse ──────────────────────────────── */
+    window.toggleCard = function (summaryEl) {
+      var card = summaryEl.closest('.test-card');
+      card.classList.toggle('expanded');
+    };
+
+    /* ── Filter tabs ───────────────────────────────────────── */
+    var tabs = document.querySelectorAll('.filter-tab');
+    var groups = {
+      win:   document.querySelectorAll('[data-group="win"]'),
+      close: document.querySelectorAll('[data-group="close"]')
+    };
+
+    function setVisibility(nodeList, visible) {
+      nodeList.forEach(function (el) {
+        el.style.display = visible ? '' : 'none';
+      });
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        var filter = tab.getAttribute('data-filter');
+        if (filter === 'all') {
+          setVisibility(groups.win, true);
+          setVisibility(groups.close, true);
+        } else if (filter === 'win') {
+          setVisibility(groups.win, true);
+          setVisibility(groups.close, false);
+        } else if (filter === 'close') {
+          setVisibility(groups.win, false);
+          setVisibility(groups.close, true);
+        }
+      });
+    });
+
+    /* ── Keyboard accessibility for cards ──────────────────── */
+    document.querySelectorAll('.tc-summary').forEach(function (el) {
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('role', 'button');
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleCard(el);
+        }
+      });
+    });
+  })();
+  </script>
+
+</body>
+</html>

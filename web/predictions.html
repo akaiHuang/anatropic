@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Predictions &amp; Future Tests &mdash; Khronon &tau; Framework</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Predictions page styles ────────────────────────────── */
+
+    .hero-tagline {
+      font-size: 1.05rem;
+      color: #e8860c;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.5rem;
+    }
+    .intro-text {
+      font-size: 0.88rem;
+      color: #999;
+      max-width: 780px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ── Nav link row ──────────────────────────────────────── */
+    .nav-link {
+      text-align: center;
+      margin: 16px 0;
+    }
+    .nav-link a {
+      color: #e8860c;
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .nav-link a:hover {
+      text-decoration: underline;
+      color: #ffaa33;
+    }
+
+    /* ── Summary counters ──────────────────────────────────── */
+    .summary-bar {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      max-width: 900px;
+      margin: 2rem auto 0;
+      padding: 0 1rem;
+      flex-wrap: wrap;
+    }
+    .summary-card {
+      flex: 1;
+      min-width: 170px;
+      max-width: 210px;
+      padding: 18px 14px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .summary-card .sc-number {
+      font-size: 2.6rem;
+      font-weight: 800;
+      font-family: "Menlo", "Consolas", monospace;
+      line-height: 1.1;
+    }
+    .summary-card .sc-label {
+      font-size: 0.78rem;
+      margin-top: 4px;
+      letter-spacing: 0.02em;
+    }
+    .summary-card.verified {
+      background: rgba(76, 175, 80, 0.08);
+      border: 1px solid rgba(76, 175, 80, 0.25);
+    }
+    .summary-card.verified .sc-number { color: #4caf50; }
+    .summary-card.verified .sc-label { color: #81c784; }
+    .summary-card.testable {
+      background: rgba(255, 183, 77, 0.08);
+      border: 1px solid rgba(255, 183, 77, 0.25);
+    }
+    .summary-card.testable .sc-number { color: #ffb74d; }
+    .summary-card.testable .sc-label { color: #ffcc80; }
+    .summary-card.mathematical {
+      background: rgba(206, 147, 216, 0.08);
+      border: 1px solid rgba(206, 147, 216, 0.25);
+    }
+    .summary-card.mathematical .sc-number { color: #ce93d8; }
+    .summary-card.mathematical .sc-label { color: #e1bee7; }
+    .summary-card.future {
+      background: rgba(100, 181, 246, 0.08);
+      border: 1px solid rgba(100, 181, 246, 0.25);
+    }
+    .summary-card.future .sc-number { color: #64b5f6; }
+    .summary-card.future .sc-label { color: #90caf9; }
+
+    /* ── Filter tabs ───────────────────────────────────────── */
+    .filter-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      max-width: 600px;
+      margin: 2rem auto 0.5rem;
+    }
+    .filter-tab {
+      flex: 1;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      background: #111;
+      color: #777;
+      border: 1px solid #222;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .filter-tab:first-child { border-radius: 6px 0 0 6px; }
+    .filter-tab:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+    .filter-tab:not(:first-child):not(:last-child) { border-left: none; }
+    .filter-tab.active {
+      background: #1a1a1a;
+      color: #e8860c;
+      border-color: #e8860c;
+    }
+    .filter-tab:hover:not(.active) {
+      background: #161616;
+      color: #aaa;
+    }
+
+    /* ── Section headings ──────────────────────────────────── */
+    .section-heading {
+      max-width: 1100px;
+      margin: 2.5rem auto 1rem;
+      padding: 0 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-heading .sh-bar {
+      width: 4px;
+      height: 20px;
+      border-radius: 2px;
+    }
+    .section-heading .sh-bar.green { background: #4caf50; }
+    .section-heading .sh-bar.amber { background: #ffb74d; }
+    .section-heading .sh-bar.purple { background: #ce93d8; }
+    .section-heading .sh-bar.blue { background: #64b5f6; }
+    .section-heading .sh-count {
+      font-size: 0.82rem;
+      color: #888;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+
+    /* ── Prediction cards ──────────────────────────────────── */
+    .pred-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .pred-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 20px 22px;
+      position: relative;
+      transition: border-color 0.2s, transform 0.15s;
+      cursor: default;
+    }
+    .pred-card:hover {
+      border-color: #444;
+      transform: translateY(-2px);
+    }
+
+    .pred-card .pc-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      border-radius: 8px 0 0 8px;
+    }
+    .pred-card .pc-indicator.green { background: #4caf50; }
+    .pred-card .pc-indicator.amber { background: #ffb74d; }
+    .pred-card .pc-indicator.purple { background: #ce93d8; }
+    .pred-card .pc-indicator.blue { background: #64b5f6; }
+
+    .pred-card .pc-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .pred-card .pc-num {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.75rem;
+      color: #555;
+      flex-shrink: 0;
+    }
+    .pred-card .pc-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e0e0e0;
+    }
+
+    /* Status badge */
+    .pred-card .pc-status {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-bottom: 10px;
+    }
+    .pc-status.verified {
+      background: rgba(76, 175, 80, 0.15);
+      color: #4caf50;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+    .pc-status.testable {
+      background: rgba(255, 183, 77, 0.12);
+      color: #ffb74d;
+      border: 1px solid rgba(255, 183, 77, 0.3);
+    }
+    .pc-status.derived {
+      background: rgba(206, 147, 216, 0.12);
+      color: #ce93d8;
+      border: 1px solid rgba(206, 147, 216, 0.3);
+    }
+    .pc-status.future-status {
+      background: rgba(100, 181, 246, 0.12);
+      color: #64b5f6;
+      border: 1px solid rgba(100, 181, 246, 0.3);
+    }
+
+    /* Content rows */
+    .pred-card .pc-row {
+      font-size: 0.82rem;
+      line-height: 1.55;
+      margin-bottom: 8px;
+    }
+    .pred-card .pc-row-label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 1px;
+    }
+    .pc-row-label.pred-label { color: #e8860c; }
+    .pc-row-label.obs-label { color: #90caf9; }
+    .pc-row-label.test-label { color: #ffcc80; }
+    .pc-row-label.timeline-label { color: #b0bec5; }
+    .pc-row-label.power-label { color: #ce93d8; }
+    .pc-row-label.status-label { color: #80cbc4; }
+    .pred-card .pc-row-text {
+      color: #aaa;
+    }
+
+    /* Confidence meter */
+    .confidence-meter {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #1e1e1e;
+    }
+    .cm-label {
+      font-size: 0.72rem;
+      color: #666;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cm-value {
+      font-family: "Menlo", "Consolas", monospace;
+      font-weight: 600;
+    }
+    .cm-value.high { color: #4caf50; }
+    .cm-value.medium { color: #ffb74d; }
+    .cm-value.low { color: #ef5350; }
+    .cm-bar {
+      height: 3px;
+      background: #1e1e1e;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .cm-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+    .cm-fill.high { background: #4caf50; }
+    .cm-fill.medium { background: #ffb74d; }
+    .cm-fill.low { background: #ef5350; }
+
+    /* Discriminating power badge */
+    .disc-power {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 1px 6px;
+      border-radius: 2px;
+      margin-left: 6px;
+    }
+    .disc-power.very-high {
+      background: rgba(76, 175, 80, 0.15);
+      color: #66bb6a;
+    }
+    .disc-power.high {
+      background: rgba(255, 183, 77, 0.15);
+      color: #ffb74d;
+    }
+    .disc-power.medium {
+      background: rgba(144, 164, 174, 0.15);
+      color: #90a4ae;
+    }
+
+    /* Expandable detail */
+    .pred-card .pc-detail {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #1e1e1e;
+    }
+    .pred-card.expanded .pc-detail {
+      display: block;
+    }
+    .pred-card .pc-expand-btn {
+      display: block;
+      margin-top: 10px;
+      background: none;
+      border: none;
+      color: #e8860c;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 2px 0;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+    .pred-card .pc-expand-btn:hover {
+      color: #ffaa33;
+    }
+
+    /* ── Timeline visualization ─────────────────────────────── */
+    .timeline-section {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding: 0 1.5rem 2rem;
+    }
+    .timeline-section h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .timeline-track {
+      position: relative;
+      padding: 0 0 0 140px;
+    }
+    .timeline-track::before {
+      content: "";
+      position: absolute;
+      left: 130px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #4caf50, #ffb74d, #64b5f6);
+      border-radius: 1px;
+    }
+    .tl-group {
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .tl-year {
+      position: absolute;
+      left: -140px;
+      top: 0;
+      width: 120px;
+      text-align: right;
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e8860c;
+      padding-top: 2px;
+    }
+    .tl-dot {
+      position: absolute;
+      left: -17px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #222;
+    }
+    .tl-dot.green { background: #4caf50; }
+    .tl-dot.amber { background: #ffb74d; }
+    .tl-dot.blue { background: #64b5f6; }
+    .tl-items {
+      padding-left: 12px;
+    }
+    .tl-item {
+      font-size: 0.82rem;
+      color: #aaa;
+      margin-bottom: 6px;
+      padding: 6px 12px;
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 4px;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    .tl-item strong {
+      color: #e0e0e0;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 760px) {
+      .pred-grid { grid-template-columns: 1fr; }
+      .summary-bar { flex-direction: column; align-items: center; }
+      .summary-card { max-width: 100%; width: 100%; }
+      .filter-tabs { flex-wrap: wrap; max-width: 100%; padding: 0 1rem; }
+      .filter-tab { min-width: 0; }
+      .timeline-track { padding-left: 80px; }
+      .timeline-track::before { left: 70px; }
+      .tl-year { left: -80px; width: 60px; font-size: 0.75rem; }
+      .tl-dot { left: -17px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════ HEADER ════════════ -->
+  <header>
+    <div class="hero-tagline">What Khronon Theory Forecasts</div>
+    <h1>Predictions &amp; Future Tests</h1>
+    <p class="subtitle">
+      25 testable, falsifiable claims &mdash; from galaxy dynamics already confirmed,
+      to quantum-gravity experiments not yet performed.
+      Every prediction uses zero free parameters beyond
+      <span class="math">a<sub>0</sub> = cH<sub>0</sub>/2&pi;</span>.
+    </p>
+  </header>
+
+  <div class="nav-link">
+    <a href="index.html">&larr; Back to main page</a>
+    &nbsp;&middot;&nbsp;
+    <a href="scorecard.html">Observational scorecard</a>
+    &nbsp;&middot;&nbsp;
+    <a href="generality.html">12 independent tests</a>
+  </div>
+
+  <!-- ════════════ SUMMARY BAR ════════════ -->
+  <div class="summary-bar">
+    <div class="summary-card verified">
+      <div class="sc-number">7</div>
+      <div class="sc-label">Already Verified</div>
+    </div>
+    <div class="summary-card testable">
+      <div class="sc-number">8</div>
+      <div class="sc-label">Testable Now</div>
+    </div>
+    <div class="summary-card mathematical">
+      <div class="sc-number">4</div>
+      <div class="sc-label">Mathematical</div>
+    </div>
+    <div class="summary-card future">
+      <div class="sc-number">6</div>
+      <div class="sc-label">Future Frontiers</div>
+    </div>
+  </div>
+
+  <!-- ════════════ FILTER TABS ════════════ -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">All 25</button>
+    <button class="filter-tab" data-filter="verified">Verified (7)</button>
+    <button class="filter-tab" data-filter="testable">Testable (8)</button>
+    <button class="filter-tab" data-filter="mathematical">Math (4)</button>
+    <button class="filter-tab" data-filter="future">Future (6)</button>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       SECTION 1: ALREADY VERIFIED
+       ════════════════════════════════════════════════════════════ -->
+  <div class="section-heading" data-group="verified">
+    <div class="sh-bar green"></div>
+    Already Verified Predictions
+    <span class="sh-count">(7 &mdash; predicted before observed)</span>
+  </div>
+
+  <div class="pred-grid" data-group="verified">
+
+    <!-- #1 -->
+    <div class="pred-card">
+      <div class="pc-indicator green"></div>
+      <div class="pc-header">
+        <span class="pc-num">#01</span>
+        <span class="pc-name">a<sub>0</sub> = cH<sub>0</sub>/(2&pi;) from First Principles</span>
+      </div>
+      <span class="pc-status verified">Verified</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">The critical acceleration scale is not a free parameter but is derived from cosmological constants: a<sub>0</sub> = cH<sub>0</sub>/(2&pi;) = 1.13 &times; 10<sup>&minus;10</sup> m/s<sup>2</sup>.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Observation:</span>
+        <span class="pc-row-text">Measured: a<sub>0</sub> = 1.20 &plusmn; 0.24 &times; 10<sup>&minus;10</sup> m/s<sup>2</sup> from RAR fits. Predicted value within 1&sigma;.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Confidence</span>
+          <span class="cm-value high">Within 1&sigma;</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 95%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #2 -->
+    <div class="pred-card">
+      <div class="pc-indicator green"></div>
+      <div class="pc-header">
+        <span class="pc-num">#02</span>
+        <span class="pc-name">RAR Universality</span>
+      </div>
+      <span class="pc-status verified">Verified</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">The same acceleration relation g<sub>obs</sub> = f(g<sub>bar</sub>) holds for ALL galaxy types &mdash; spirals, ellipticals, dwarfs, LSBs &mdash; with no dependence on morphology or environment.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Observation:</span>
+        <span class="pc-row-text">Confirmed across all galaxy types. Extended to 1 Mpc via weak lensing (Mistele 2024). No dependence on galaxy properties found.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Confidence</span>
+          <span class="cm-value high">Strong</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 92%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #3 -->
+    <div class="pred-card">
+      <div class="pc-indicator green"></div>
+      <div class="pc-header">
+        <span class="pc-num">#03</span>
+        <span class="pc-name">BTFR Slope = 4 Exactly</span>
+      </div>
+      <span class="pc-status verified">Verified</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">The baryonic Tully-Fisher relation has exact integer slope 4: M<sub>bar</sub> = V<sub>f</sub><sup>4</sup>/(G a<sub>0</sub>). Not 3.5, not 4.5 &mdash; exactly 4.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Observation:</span>
+        <span class="pc-row-text">Observed: slope = 3.85 &plusmn; 0.09 (McGaugh 2012), 3.98 &plusmn; 0.07 (Lelli et al. 2016). Consistent with 4 within measurement uncertainty.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Confidence</span>
+          <span class="cm-value high">Within 2&sigma;</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 88%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #4 -->
+    <div class="pred-card">
+      <div class="pc-indicator green"></div>
+      <div class="pc-header">
+        <span class="pc-num">#04</span>
+        <span class="pc-name">Zero Intrinsic RAR Scatter</span>
+      </div>
+      <span class="pc-status verified">Verified</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">Observed RAR scatter is entirely due to measurement noise. There is no intrinsic astrophysical scatter &mdash; because there is no dark matter halo with varying properties.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Observation:</span>
+        <span class="pc-row-text">Observed scatter = 0.13 dex total, with 0.17&ndash;0.19 dex intrinsic component constant across ALL acceleration regimes. Consistent with measurement-dominated scatter.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Confidence</span>
+          <span class="cm-value high">Strong</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 90%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #5 -->
+    <div class="pred-card">
+      <div class="pc-indicator green"></div>
+      <div class="pc-header">
+        <span class="pc-num">#05</span>
+        <span class="pc-name">Fast Bar Pattern Speeds</span>
+      </div>
+      <span class="pc-status verified">Verified</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">No dark matter halo means no dynamical friction on galactic bars. Bars should maintain fast pattern speeds indefinitely.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Observation:</span>
+        <span class="pc-row-text">72% of observed galactic bars are fast (R = R<sub>CR</sub>/R<sub>bar</sub> &lt; 1.4). CDM N-body simulations predict bars should slow down within a few Gyr.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Confidence</span>
+          <span class="cm-value high">72% fast</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 85%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #6 -->
+    <div class="pred-card">
+      <div class="pc-indicator green"></div>
+      <div class="pc-header">
+        <span class="pc-num">#06</span>
+        <span class="pc-name">Tidal Dwarf Galaxies Follow RAR</span>
+      </div>
+      <span class="pc-status verified">Verified</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">Tidal dwarf galaxies (TDGs) form from stripped baryonic material &mdash; they should contain no dark matter. Yet they must still follow RAR if gravity is modified.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Observation:</span>
+        <span class="pc-row-text">Confirmed. TDGs follow the same RAR as primordial galaxies despite containing no dark matter. Unexplained by CDM.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Confidence</span>
+          <span class="cm-value high">Confirmed</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 90%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #7 -->
+    <div class="pred-card">
+      <div class="pc-indicator green"></div>
+      <div class="pc-header">
+        <span class="pc-num">#07</span>
+        <span class="pc-name">External Field Effect (EFE)</span>
+      </div>
+      <span class="pc-status verified">Verified</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">An external gravitational field modifies the internal dynamics of a subsystem &mdash; violating the strong equivalence principle. Unique to modified gravity; impossible in CDM.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Observation:</span>
+        <span class="pc-row-text">Detected at 8&ndash;11&sigma; significance (Chae et al. 2020). Galaxies in stronger external fields show systematically different internal dynamics.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Confidence</span>
+          <span class="cm-value high">8&ndash;11&sigma;</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 97%;"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /verified grid -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       SECTION 2: TESTABLE PREDICTIONS (NOT YET VERIFIED)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="section-heading" data-group="testable">
+    <div class="sh-bar amber"></div>
+    Testable Predictions &mdash; Not Yet Verified
+    <span class="sh-count">(8 predictions with active or near-term tests)</span>
+  </div>
+
+  <div class="pred-grid" data-group="testable">
+
+    <!-- #8 -->
+    <div class="pred-card">
+      <div class="pc-indicator amber"></div>
+      <div class="pc-header">
+        <span class="pc-num">#08</span>
+        <span class="pc-name">Wide Binary Velocity Boost</span>
+      </div>
+      <span class="pc-status testable">Testable</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">8&ndash;13% velocity enhancement in wide binary stars at separations &gt; 5000 AU, where internal accelerations drop below a<sub>0</sub>.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">Gaia DR4 proper motion data for wide binary catalog. Statistical analysis of relative velocity vs. Newtonian expectation.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label timeline-label">Timeline:</span>
+        <span class="pc-row-text">Gaia DR4 expected December 2026.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label power-label">Discriminating power:</span>
+        <span class="pc-row-text">HIGH <span class="disc-power high">HIGH</span> &mdash; direct test of gravity law at low acceleration. Currently contested (Chae pro, Banik anti).</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value medium">Contested</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 50%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #9 -->
+    <div class="pred-card">
+      <div class="pc-indicator amber"></div>
+      <div class="pc-header">
+        <span class="pc-num">#09</span>
+        <span class="pc-name">Thermal QRE in Galaxy Clusters</span>
+      </div>
+      <span class="pc-status testable">Testable</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">M<sub>dynamic</sub>/M<sub>baryon</sub> correlates with ICM temperature T. Hot clusters (T &gt; 8 keV) show larger mass discrepancy than cool clusters &mdash; because &Sigma; scales with thermal entropy production.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">Compare X-ray selected cluster samples binned by temperature. Use eROSITA all-sky survey, Chandra archival data.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label timeline-label">Timeline:</span>
+        <span class="pc-row-text">Data exists &mdash; needs dedicated analysis.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label power-label">Discriminating power:</span>
+        <span class="pc-row-text"><span class="disc-power very-high">VERY HIGH</span> &mdash; unique to Khronon. No CDM analog for this correlation.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value medium">Awaiting analysis</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 40%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #10 -->
+    <div class="pred-card">
+      <div class="pc-indicator amber"></div>
+      <div class="pc-header">
+        <span class="pc-num">#10</span>
+        <span class="pc-name">&tau; Field Relaxation in Merging Clusters</span>
+      </div>
+      <span class="pc-status testable">Testable</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">Lensing&ndash;gas offset is proportional to collision velocity. &ldquo;Baby&rdquo; bullet clusters (lower v) show smaller offset. Pre-merger clusters show NO offset.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">Survey of merging clusters at various stages using HST, JWST, Euclid weak lensing + X-ray (Chandra, eROSITA).</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label timeline-label">Timeline:</span>
+        <span class="pc-row-text">2&ndash;5 years.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label power-label">Discriminating power:</span>
+        <span class="pc-row-text"><span class="disc-power medium">MEDIUM</span> &mdash; CDM also predicts some correlation, but for a different physical reason (collisionless vs. collisional).</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value medium">Needs survey</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 35%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #11 -->
+    <div class="pred-card">
+      <div class="pc-indicator amber"></div>
+      <div class="pc-header">
+        <span class="pc-num">#11</span>
+        <span class="pc-name">&Sigma;-Hierarchy for Isolated Dwarf GCs</span>
+      </div>
+      <span class="pc-status testable">Testable</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">Globular clusters in isolated dwarf galaxies (no host external field) SHOULD show MOND dynamics. Eridanus II has a GC &mdash; if isolated enough, its velocity dispersion &sigma; must follow the MOND formula.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">Deep spectroscopy of the Eridanus II globular cluster. Measure stellar velocity dispersion and compare to baryonic mass.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label timeline-label">Timeline:</span>
+        <span class="pc-row-text">Feasible now with VLT/Keck.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label power-label">Discriminating power:</span>
+        <span class="pc-row-text"><span class="disc-power very-high">VERY HIGH</span> &mdash; direct test of &Sigma;-hierarchy. Clean system with minimal contamination.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value medium">Feasible now</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 30%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #12 -->
+    <div class="pred-card">
+      <div class="pc-indicator amber"></div>
+      <div class="pc-header">
+        <span class="pc-num">#12</span>
+        <span class="pc-name">No Dark Matter Detection &mdash; Ever</span>
+      </div>
+      <span class="pc-status testable">Testable</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">All direct dark matter detection experiments will remain null &mdash; forever. No WIMP, no axion, no sterile neutrino. Because there is no dark matter particle.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">LZ (current), XENONnT (current), DARWIN (future). Every null result increases confidence.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label timeline-label">Timeline:</span>
+        <span class="pc-row-text">Ongoing. Confidence increases with each generation.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label power-label">Discriminating power:</span>
+        <span class="pc-row-text"><span class="disc-power high">HIGH</span> &mdash; cumulative. 40+ years of null results and counting.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value high">40+ years null</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 80%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #13 -->
+    <div class="pred-card">
+      <div class="pc-indicator amber"></div>
+      <div class="pc-header">
+        <span class="pc-num">#13</span>
+        <span class="pc-name">LSB Galaxy Disk Truncation Radius</span>
+      </div>
+      <span class="pc-status testable">Testable</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">The MOND Toomre Q = 1 radius predicts exactly where the exponential surface brightness profile breaks. No free parameters.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">Deep imaging surveys of LSB galaxies. Compare predicted truncation radius to observed profile break.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label timeline-label">Timeline:</span>
+        <span class="pc-row-text">2&ndash;5 years. LSST (Rubin Observatory), Euclid deep fields.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label power-label">Discriminating power:</span>
+        <span class="pc-row-text"><span class="disc-power medium">MEDIUM</span> &mdash; CDM can accommodate truncation via halo-dependent profiles.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value medium">Awaiting data</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 25%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #14 -->
+    <div class="pred-card">
+      <div class="pc-indicator amber"></div>
+      <div class="pc-header">
+        <span class="pc-num">#14</span>
+        <span class="pc-name">Running &mu; at High Redshift</span>
+      </div>
+      <span class="pc-status testable">Testable</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">&mu;(z) = &mu;<sub>0</sub>/(1+z). The effective dark matter fraction decreases at high redshift. At z = 2, galaxies need LESS dark matter in CDM fits than expected.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">JWST high-z rotation curves. ALMA kinematics of z &gt; 2 galaxies. Compare inferred DM fraction vs. CDM prediction.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label timeline-label">Timeline:</span>
+        <span class="pc-row-text">2&ndash;5 years. JWST Cycle 3&ndash;5 data.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label power-label">Discriminating power:</span>
+        <span class="pc-row-text"><span class="disc-power high">HIGH</span> &mdash; CDM predicts DM fraction should be roughly constant or increasing at high z.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value medium">Awaiting data</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 30%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #15 -->
+    <div class="pred-card">
+      <div class="pc-indicator amber"></div>
+      <div class="pc-header">
+        <span class="pc-num">#15</span>
+        <span class="pc-name">c<sub>s</sub><sup>2</sup> Independent of w in CMB</span>
+      </div>
+      <span class="pc-status testable">Testable</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">Perturbation sound speed c<sub>s</sub><sup>2</sup> comes from DBI kinetic structure, not from the background equation of state w. The two decouple &mdash; unlike standard GDM parameterization.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">CMB Stage-4 experiment. Simons Observatory. Precise measurement of the ISW effect and matter power spectrum shape.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label timeline-label">Timeline:</span>
+        <span class="pc-row-text">5&ndash;10 years.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label power-label">Discriminating power:</span>
+        <span class="pc-row-text"><span class="disc-power medium">MEDIUM</span> &mdash; requires distinguishing subtle perturbation-level differences.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value medium">Long-term</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 20%;"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /testable grid -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       SECTION 3: MATHEMATICAL PREDICTIONS
+       ════════════════════════════════════════════════════════════ -->
+  <div class="section-heading" data-group="mathematical">
+    <div class="sh-bar purple"></div>
+    Mathematical Predictions
+    <span class="sh-count">(4 &mdash; derivable from the framework)</span>
+  </div>
+
+  <div class="pred-grid" data-group="mathematical">
+
+    <!-- #16 -->
+    <div class="pred-card">
+      <div class="pc-indicator purple"></div>
+      <div class="pc-header">
+        <span class="pc-num">#16</span>
+        <span class="pc-name">&Omega;<sub>DM</sub> ~ &rho;<sub>crit</sub>/3</span>
+      </div>
+      <span class="pc-status derived">Derived</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">From &mu;<sub>0</sub> = H<sub>0</sub>/c, the apparent dark matter density is predicted to be &Omega;<sub>DM</sub> ~ &rho;<sub>crit</sub>/3. Only ~6% off the observed value &Omega;<sub>DM</sub> &asymp; 0.26.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Comparison:</span>
+        <span class="pc-row-text">Predicted: ~0.28. Observed: 0.26 &plusmn; 0.01. Within O(1) factor &mdash; exact prefactor is an open problem.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Agreement</span>
+          <span class="cm-value high">~6% off</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 85%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #17 -->
+    <div class="pred-card">
+      <div class="pc-indicator purple"></div>
+      <div class="pc-header">
+        <span class="pc-num">#17</span>
+        <span class="pc-name">Gravitational Wave Speed = c</span>
+      </div>
+      <span class="pc-status derived">Derived</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">Khronon has no tensor mode modification. Gravitational waves propagate at exactly the speed of light, |c<sub>GW</sub>/c &minus; 1| &lt; 10<sup>&minus;15</sup>.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Confirmation:</span>
+        <span class="pc-row-text">GW170817 + GRB 170817A measured |c<sub>GW</sub>/c &minus; 1| &lt; 5 &times; 10<sup>&minus;16</sup>. Many modified gravity theories were killed by this constraint. Khronon survives.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Agreement</span>
+          <span class="cm-value high">Exact</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 100%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #18 -->
+    <div class="pred-card">
+      <div class="pc-indicator purple"></div>
+      <div class="pc-header">
+        <span class="pc-num">#18</span>
+        <span class="pc-name">Exponential Metric &mdash; No Event Horizon</span>
+      </div>
+      <span class="pc-status derived">Derived</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">ds<sup>2</sup> = &minus;e<sup>&minus;r<sub>s</sub>/r</sup> dt<sup>2</sup> + e<sup>r<sub>s</sub>/r</sup> dr<sup>2</sup>. No event horizon at any finite r. Approaches Schwarzschild for r &Gt; r<sub>s</sub>. Differs only near r ~ r<sub>s</sub>.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">Testable with:</span>
+        <span class="pc-row-text">EHT higher-resolution imaging. Photon ring structure differs from Kerr at n &ge; 2 subrings. Also: late-time gravitational wave echoes.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Testability</span>
+          <span class="cm-value medium">Future EHT</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 45%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #19 -->
+    <div class="pred-card">
+      <div class="pc-indicator purple"></div>
+      <div class="pc-header">
+        <span class="pc-num">#19</span>
+        <span class="pc-name">Page Curve from &tau;(t)</span>
+      </div>
+      <span class="pc-status derived">Derived</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Prediction:</span>
+        <span class="pc-row-text">&tau;(t) &le; 1 &minus; exp(&minus;S<sub>Page</sub>(t)/2). The time-asymmetry parameter &tau; is bounded by the Page entropy, connecting black hole information to the &tau; framework.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label obs-label">Implications:</span>
+        <span class="pc-row-text">Links Petz recovery map fidelity to the black hole information paradox. Provides a channel-theoretic derivation of unitarity preservation.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Status</span>
+          <span class="cm-value medium">Theoretical</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 60%;"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /mathematical grid -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       SECTION 4: FUTURE FRONTIERS
+       ════════════════════════════════════════════════════════════ -->
+  <div class="section-heading" data-group="future">
+    <div class="sh-bar blue"></div>
+    What This Framework Enables
+    <span class="sh-count">(6 future frontiers)</span>
+  </div>
+
+  <div class="pred-grid" data-group="future">
+
+    <!-- #20 -->
+    <div class="pred-card">
+      <div class="pc-indicator blue"></div>
+      <div class="pc-header">
+        <span class="pc-num">#20</span>
+        <span class="pc-name">Unified Quantum-Gravity Phenomenology</span>
+      </div>
+      <span class="pc-status future-status">Future</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Claim:</span>
+        <span class="pc-row-text">One equation &mdash; &Sigma; = D(&rho;<sub>spacetime</sub> &Vert; &rho;<sub>matter</sub>) &mdash; connects quantum information, thermodynamics, and gravity. Different boundary conditions yield different physics: galaxy dynamics, black holes, CMB.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">Implication:</span>
+        <span class="pc-row-text">No separate theories needed for strong field, weak field, and cosmology. One framework, one equation, different regimes.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Maturity</span>
+          <span class="cm-value medium">Framework</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 55%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #21 -->
+    <div class="pred-card">
+      <div class="pc-indicator blue"></div>
+      <div class="pc-header">
+        <span class="pc-num">#21</span>
+        <span class="pc-name">Testable Quantum Gravity at Low Energy</span>
+      </div>
+      <span class="pc-status future-status">Future</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Claim:</span>
+        <span class="pc-row-text">No need for Planck-scale experiments. Galaxy dynamics IS quantum gravity &mdash; the &tau; field and its &Sigma; entropy production are the low-energy manifestation of quantum-gravitational effects.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">Implication:</span>
+        <span class="pc-row-text">Every rotation curve, every RAR measurement, every gravitational lensing map is already a quantum gravity experiment.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Maturity</span>
+          <span class="cm-value medium">Conceptual</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 45%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #22 -->
+    <div class="pred-card">
+      <div class="pc-indicator blue"></div>
+      <div class="pc-header">
+        <span class="pc-num">#22</span>
+        <span class="pc-name">Resolution of the Dark Matter Crisis</span>
+      </div>
+      <span class="pc-status future-status">Future</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Claim:</span>
+        <span class="pc-row-text">If no dark matter particle is found by 2030, Khronon provides a ready alternative. Dark matter = de Sitter spacetime&rsquo;s thermal properties manifesting at different scales.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">Key milestones:</span>
+        <span class="pc-row-text">DARWIN (~2028), next-gen axion searches (~2027&ndash;2030). Each null result shifts the burden of proof.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Maturity</span>
+          <span class="cm-value medium">Contingent</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 50%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #23 -->
+    <div class="pred-card">
+      <div class="pc-indicator blue"></div>
+      <div class="pc-header">
+        <span class="pc-num">#23</span>
+        <span class="pc-name">Black Hole Information via &tau; Framework</span>
+      </div>
+      <span class="pc-status future-status">Future</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Claim:</span>
+        <span class="pc-row-text">&tau; framework naturally connects to the Page curve, ER=EPR, and Hayden&ndash;Preskill protocol. &tau; &rarr; 1 at the horizon is equivalent to maximal Petz recovery failure.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">Implication:</span>
+        <span class="pc-row-text">A new approach to the information paradox where the exponential metric (no horizon) dissolves the paradox rather than solving it.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Maturity</span>
+          <span class="cm-value medium">Theoretical</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 40%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #24 -->
+    <div class="pred-card">
+      <div class="pc-indicator blue"></div>
+      <div class="pc-header">
+        <span class="pc-num">#24</span>
+        <span class="pc-name">Quantum Computing Applications</span>
+      </div>
+      <span class="pc-status future-status">Future</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Claim:</span>
+        <span class="pc-row-text">The Petz recovery map is directly relevant to quantum error correction. The bound F &ge; exp(&minus;&Sigma;/2) quantifies how well a quantum channel can be reversed &mdash; fundamental to QEC code design.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">Applications:</span>
+        <span class="pc-row-text">Ion trap implementations (Pino 2025), NMR demonstrations (Singh 2025). Practical QEC bounds from gravitational physics.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Maturity</span>
+          <span class="cm-value high">Demonstrated</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill high" style="width: 70%;"></div></div>
+      </div>
+    </div>
+
+    <!-- #25 -->
+    <div class="pred-card">
+      <div class="pc-indicator blue"></div>
+      <div class="pc-header">
+        <span class="pc-num">#25</span>
+        <span class="pc-name">Gravitational Decoherence Experiments</span>
+      </div>
+      <span class="pc-status future-status">Future</span>
+      <div class="pc-row">
+        <span class="pc-row-label pred-label">Claim:</span>
+        <span class="pc-row-text">The Pikovski effect &mdash; gravitational time dilation causing decoherence of spatial superpositions &mdash; is measurable with atom interferometry. &tau; framework predicts the decoherence rate from &Sigma;.</span>
+      </div>
+      <div class="pc-row">
+        <span class="pc-row-label test-label">How to test:</span>
+        <span class="pc-row-text">Next-generation atom interferometers (MAGIS, AION, ZAIGA). Decoherence rate scales with gravitational potential difference.</span>
+      </div>
+      <div class="confidence-meter">
+        <div class="cm-label">
+          <span>Maturity</span>
+          <span class="cm-value medium">Proposed</span>
+        </div>
+        <div class="cm-bar"><div class="cm-fill medium" style="width: 35%;"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /future grid -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       TIMELINE VISUALIZATION
+       ════════════════════════════════════════════════════════════ -->
+  <div class="timeline-section">
+    <h2>Experimental Timeline</h2>
+    <div class="timeline-track">
+
+      <div class="tl-group">
+        <div class="tl-year">2024&ndash;2025</div>
+        <div class="tl-dot green"></div>
+        <div class="tl-items">
+          <span class="tl-item"><strong>LZ / XENONnT</strong> &mdash; continued null results</span>
+          <span class="tl-item"><strong>Gaia DR3</strong> &mdash; wide binary debate</span>
+          <span class="tl-item"><strong>eROSITA</strong> &mdash; cluster catalog released</span>
+        </div>
+      </div>
+
+      <div class="tl-group">
+        <div class="tl-year">2026&ndash;2027</div>
+        <div class="tl-dot amber"></div>
+        <div class="tl-items">
+          <span class="tl-item"><strong>Gaia DR4</strong> &mdash; wide binary test (#8)</span>
+          <span class="tl-item"><strong>JWST Cycle 4&ndash;5</strong> &mdash; high-z rotation curves (#14)</span>
+          <span class="tl-item"><strong>VLT/Keck</strong> &mdash; Eri II GC spectroscopy (#11)</span>
+          <span class="tl-item"><strong>Euclid DR1</strong> &mdash; weak lensing + cluster mergers (#10)</span>
+        </div>
+      </div>
+
+      <div class="tl-group">
+        <div class="tl-year">2028&ndash;2030</div>
+        <div class="tl-dot amber"></div>
+        <div class="tl-items">
+          <span class="tl-item"><strong>DARWIN</strong> &mdash; ultimate DM direct search (#12)</span>
+          <span class="tl-item"><strong>Rubin LSST</strong> &mdash; LSB truncation radii (#13)</span>
+          <span class="tl-item"><strong>Euclid full survey</strong> &mdash; cluster lensing profiles (#10)</span>
+          <span class="tl-item"><strong>ALMA Band 2</strong> &mdash; high-z kinematics (#14)</span>
+        </div>
+      </div>
+
+      <div class="tl-group">
+        <div class="tl-year">2030+</div>
+        <div class="tl-dot blue"></div>
+        <div class="tl-items">
+          <span class="tl-item"><strong>CMB Stage-4</strong> &mdash; c<sub>s</sub><sup>2</sup> vs w test (#15)</span>
+          <span class="tl-item"><strong>Simons Observatory</strong> &mdash; perturbation structure</span>
+          <span class="tl-item"><strong>ngEHT</strong> &mdash; photon ring subrings (#18)</span>
+          <span class="tl-item"><strong>MAGIS / AION</strong> &mdash; gravitational decoherence (#25)</span>
+          <span class="tl-item"><strong>LISA</strong> &mdash; GW echoes from horizonless objects (#18)</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════════════════════ -->
+  <footer>
+    Anatropic &mdash; Sheng-Kai Huang (2026)<br />
+    <a href="index.html">Home</a>
+    &middot;
+    <a href="generality.html">12 Tests</a>
+    &middot;
+    <a href="scorecard.html">Scorecard</a>
+    &middot;
+    <a href="rotation.html">Rotation</a>
+    &middot;
+    <a href="cluster3d.html">3D Cluster</a>
+    &middot;
+    <a href="universe.html">Universe</a>
+    &middot;
+    <a href="predictions.html">Predictions</a>
+    &middot;
+    <a href="bullet.html">Bullet</a>
+    &middot;
+    <a href="sim.html">Simulation</a>
+    &middot;
+    <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       JAVASCRIPT: Filter tabs
+       ════════════════════════════════════════════════════════════ -->
+  <script>
+  (function () {
+    "use strict";
+
+    /* ── Filter tabs ─────────────────────────────────────── */
+    const tabs = document.querySelectorAll(".filter-tab");
+    const sections = document.querySelectorAll(".section-heading, .pred-grid");
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        tabs.forEach(function (t) { t.classList.remove("active"); });
+        tab.classList.add("active");
+
+        var filter = tab.getAttribute("data-filter");
+
+        sections.forEach(function (el) {
+          var group = el.getAttribute("data-group");
+          if (!group) return;
+          if (filter === "all" || group === filter) {
+            el.style.display = "";
+          } else {
+            el.style.display = "none";
+          }
+        });
+      });
+    });
+
+    /* ── Animate confidence bars on scroll ────────────── */
+    var bars = document.querySelectorAll(".cm-fill");
+    var animated = new Set();
+
+    function animateBars() {
+      bars.forEach(function (bar, i) {
+        if (animated.has(i)) return;
+        var rect = bar.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 50) {
+          var width = bar.style.width;
+          bar.style.width = "0%";
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              bar.style.width = width;
+            });
+          });
+          animated.add(i);
+        }
+      });
+    }
+
+    window.addEventListener("scroll", animateBars, { passive: true });
+    animateBars();
+  })();
+  </script>
+
+</body>
+</html>

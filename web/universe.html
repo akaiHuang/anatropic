@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two Universes, Same Observations</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Universe page styles ──────────────────────────────── */
+
+    .page-intro {
+      max-width: 800px;
+      margin: 0 auto 1rem;
+      text-align: center;
+    }
+    .page-intro .tagline {
+      font-size: 1.15rem;
+      color: #ffffff;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .page-intro .tagline-sub {
+      font-size: 0.88rem;
+      color: #888;
+      line-height: 1.6;
+    }
+
+    /* ── Scale ruler (vertical line) ──────────────────────── */
+    .scale-ruler {
+      position: fixed;
+      left: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      z-index: 100;
+    }
+    .scale-ruler .sr-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #333;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .scale-ruler .sr-dot.active {
+      border-color: #e8860c;
+      background: #e8860c;
+      box-shadow: 0 0 8px rgba(232, 134, 12, 0.4);
+    }
+    .scale-ruler .sr-dot:hover {
+      border-color: #e8860c;
+    }
+    .scale-ruler .sr-dot .sr-tooltip {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      white-space: nowrap;
+      font-size: 0.72rem;
+      color: #888;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .scale-ruler .sr-dot:hover .sr-tooltip,
+    .scale-ruler .sr-dot.active .sr-tooltip {
+      opacity: 1;
+    }
+    .scale-ruler .sr-line {
+      width: 2px;
+      height: 12px;
+      background: #222;
+    }
+
+    /* ── Scale section ─────────────────────────────────────── */
+    .scale-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 2rem;
+      position: relative;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .scale-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .scale-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .scale-number {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.75rem;
+      color: #555;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .scale-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.3rem;
+    }
+    .scale-range {
+      font-size: 0.85rem;
+      color: #e8860c;
+      font-family: "Menlo", "Consolas", monospace;
+    }
+
+    /* ── SVG illustration ──────────────────────────────────── */
+    .scale-illustration {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .scale-illustration svg {
+      width: 100%;
+      max-width: 700px;
+      height: auto;
+    }
+
+    /* ── Three-column layout ───────────────────────────────── */
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      align-items: stretch;
+    }
+
+    .theory-col {
+      padding: 24px;
+      border-radius: 8px;
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .theory-col:hover {
+      transform: translateY(-2px);
+    }
+
+    .theory-col.lcdm {
+      background: rgba(239, 83, 80, 0.04);
+      border: 1px solid rgba(239, 83, 80, 0.15);
+    }
+    .theory-col.lcdm:hover {
+      box-shadow: 0 4px 20px rgba(239, 83, 80, 0.08);
+    }
+    .theory-col.khronon {
+      background: rgba(76, 175, 80, 0.04);
+      border: 1px solid rgba(76, 175, 80, 0.15);
+    }
+    .theory-col.khronon:hover {
+      box-shadow: 0 4px 20px rgba(76, 175, 80, 0.08);
+    }
+
+    .theory-col .col-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .theory-col.lcdm .col-label { color: #ef5350; }
+    .theory-col.khronon .col-label { color: #4caf50; }
+
+    .theory-col .col-text {
+      font-size: 0.85rem;
+      color: #bbb;
+      line-height: 1.65;
+    }
+    .theory-col .col-text strong {
+      color: #e0e0e0;
+    }
+
+    /* ── Center divider (Observed) ─────────────────────────── */
+    .observed-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      min-width: 200px;
+      max-width: 240px;
+      position: relative;
+    }
+    .observed-col::before,
+    .observed-col::after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      bottom: 20px;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, #333, transparent);
+    }
+    .observed-col::before { left: 0; }
+    .observed-col::after { right: 0; }
+
+    .observed-col .obs-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .observed-col .obs-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+    .observed-col .obs-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #90caf9;
+      margin-bottom: 8px;
+    }
+    .observed-col .obs-text {
+      font-size: 0.8rem;
+      color: #999;
+      text-align: center;
+      line-height: 1.55;
+    }
+
+    /* ── Key difference callout ─────────────────────────────── */
+    .key-difference {
+      max-width: 800px;
+      margin: 1.5rem auto 0;
+      background: rgba(232, 134, 12, 0.05);
+      border: 1px solid rgba(232, 134, 12, 0.2);
+      border-radius: 8px;
+      padding: 16px 22px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .key-difference .kd-icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      margin-top: 1px;
+      color: #e8860c;
+    }
+    .key-difference .kd-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #e8860c;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+    .key-difference .kd-text {
+      font-size: 0.82rem;
+      color: #bbb;
+      line-height: 1.55;
+    }
+
+    /* ── Status badge ──────────────────────────────────────── */
+    .status-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-top: 8px;
+    }
+    .status-badge.disputed {
+      background: rgba(255, 193, 7, 0.12);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      color: #ffc107;
+    }
+    .status-badge.testable {
+      background: rgba(33, 150, 243, 0.12);
+      border: 1px solid rgba(33, 150, 243, 0.3);
+      color: #42a5f5;
+    }
+    .status-badge.confirmed {
+      background: rgba(76, 175, 80, 0.12);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: #66bb6a;
+    }
+
+    /* ── Divider between scales ─────────────────────────────── */
+    .scale-divider {
+      max-width: 600px;
+      margin: 0 auto;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #222, transparent);
+    }
+
+    /* ── Summary table ─────────────────────────────────────── */
+    .summary-section {
+      max-width: 1000px;
+      margin: 3rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .summary-section h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .summary-table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid #222;
+    }
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+    .summary-table th {
+      background: #141414;
+      color: #aaa;
+      font-weight: 600;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid #222;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .summary-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid #1a1a1a;
+      color: #bbb;
+      vertical-align: top;
+    }
+    .summary-table tr:last-child td {
+      border-bottom: none;
+    }
+    .summary-table tr:hover td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .summary-table .td-changed {
+      color: #e8860c;
+      font-weight: 600;
+    }
+    .summary-table .td-same {
+      color: #555;
+    }
+    .summary-table .td-similar {
+      color: #90caf9;
+    }
+
+    /* ── Nav links row ─────────────────────────────────────── */
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+    .nav-links a {
+      color: #e8860c;
+      text-decoration: none;
+      font-size: 0.82rem;
+      padding: 4px 10px;
+      border: 1px solid #222;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover {
+      border-color: #e8860c;
+      color: #ffaa33;
+      background: rgba(232, 134, 12, 0.06);
+    }
+    .nav-links a.current {
+      border-color: #e8860c;
+      background: rgba(232, 134, 12, 0.1);
+      color: #e8860c;
+      pointer-events: none;
+    }
+
+    /* ── Responsive ────────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .comparison-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .observed-col {
+        max-width: 100%;
+        min-width: 0;
+        flex-direction: row;
+        gap: 12px;
+        padding: 16px 20px;
+      }
+      .observed-col::before,
+      .observed-col::after {
+        display: none;
+      }
+      .observed-col .obs-text {
+        text-align: left;
+      }
+      .scale-ruler { display: none; }
+      .scale-title { font-size: 1.15rem; }
+    }
+    @media (max-width: 600px) {
+      .summary-table { font-size: 0.78rem; }
+      .summary-table th, .summary-table td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════ HEADER ════════════ -->
+  <header>
+    <h1>Two Universes, Same Observations</h1>
+    <div class="page-intro">
+      <p class="tagline">From the cosmic web to the solar system &mdash; what changes and what doesn't</p>
+      <p class="tagline-sub">
+        Both &Lambda;CDM and the Khronon &tau; framework reproduce the same observations
+        at every scale. The difference is in the interpretation: 85% invisible matter,
+        or a quantum-entropic field?
+      </p>
+    </div>
+  </header>
+
+  <div class="nav-links">
+    <a href="index.html">Three-Model</a>
+    <a href="generality.html">Generality</a>
+    <a href="scorecard.html">Scorecard</a>
+    <a href="sim.html">3D Simulation</a>
+    <a href="bullet.html">Bullet Cluster</a>
+    <a href="rotation.html">Rotation Curves</a>
+    <a href="universe.html" class="current">Universe</a>
+  </div>
+
+  <!-- ════════════ SCALE RULER (fixed sidebar) ════════════ -->
+  <nav class="scale-ruler" aria-label="Scale navigation">
+    <div class="sr-dot" data-target="scale-1"><span class="sr-tooltip">&gt;100 Mpc</span></div>
+    <div class="sr-line"></div>
+    <div class="sr-dot" data-target="scale-2"><span class="sr-tooltip">1-10 Mpc</span></div>
+    <div class="sr-line"></div>
+    <div class="sr-dot" data-target="scale-3"><span class="sr-tooltip">10-100 kpc</span></div>
+    <div class="sr-line"></div>
+    <div class="sr-dot" data-target="scale-4"><span class="sr-tooltip">1k-20k AU</span></div>
+    <div class="sr-line"></div>
+    <div class="sr-dot" data-target="scale-5"><span class="sr-tooltip">1-50 pc</span></div>
+    <div class="sr-line"></div>
+    <div class="sr-dot" data-target="scale-6"><span class="sr-tooltip">AU</span></div>
+  </nav>
+
+  <!-- ════════════ SCALE 1: COSMIC WEB ════════════ -->
+  <section class="scale-section" id="scale-1">
+    <div class="scale-header">
+      <div class="scale-number">Scale 1</div>
+      <div class="scale-title">Cosmic Web</div>
+      <div class="scale-range">&gt; 100 Mpc</div>
+    </div>
+
+    <div class="scale-illustration">
+      <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Cosmic web filaments -->
+        <defs>
+          <radialGradient id="node1" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#e8860c" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#e8860c" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="glow1">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- Filaments -->
+        <line x1="80" y1="60" x2="220" y2="100" stroke="#333" stroke-width="1.5" opacity="0.6"/>
+        <line x1="220" y1="100" x2="350" y2="50" stroke="#333" stroke-width="1.5" opacity="0.6"/>
+        <line x1="350" y1="50" x2="500" y2="90" stroke="#333" stroke-width="1.5" opacity="0.6"/>
+        <line x1="500" y1="90" x2="620" y2="60" stroke="#333" stroke-width="1.5" opacity="0.6"/>
+        <line x1="220" y1="100" x2="300" y2="160" stroke="#333" stroke-width="1" opacity="0.4"/>
+        <line x1="350" y1="50" x2="400" y2="150" stroke="#333" stroke-width="1" opacity="0.4"/>
+        <line x1="500" y1="90" x2="450" y2="170" stroke="#333" stroke-width="1" opacity="0.4"/>
+        <line x1="300" y1="160" x2="400" y2="150" stroke="#333" stroke-width="1" opacity="0.4"/>
+        <line x1="400" y1="150" x2="450" y2="170" stroke="#333" stroke-width="1" opacity="0.4"/>
+        <line x1="80" y1="60" x2="150" y2="150" stroke="#333" stroke-width="1" opacity="0.3"/>
+        <line x1="150" y1="150" x2="300" y2="160" stroke="#333" stroke-width="1" opacity="0.3"/>
+        <line x1="620" y1="60" x2="600" y2="150" stroke="#333" stroke-width="1" opacity="0.3"/>
+        <!-- Nodes (galaxy clusters) -->
+        <circle cx="80" cy="60" r="18" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="80" cy="60" r="3" fill="#e8860c" opacity="0.9"/>
+        <circle cx="220" cy="100" r="24" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="220" cy="100" r="4" fill="#e8860c" opacity="0.9"/>
+        <circle cx="350" cy="50" r="20" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="350" cy="50" r="3.5" fill="#e8860c" opacity="0.9"/>
+        <circle cx="500" cy="90" r="22" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="500" cy="90" r="3.5" fill="#e8860c" opacity="0.9"/>
+        <circle cx="620" cy="60" r="16" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="620" cy="60" r="2.5" fill="#e8860c" opacity="0.9"/>
+        <circle cx="300" cy="160" r="14" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="300" cy="160" r="2.5" fill="#e8860c" opacity="0.8"/>
+        <circle cx="400" cy="150" r="16" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="400" cy="150" r="2.5" fill="#e8860c" opacity="0.8"/>
+        <circle cx="450" cy="170" r="12" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="450" cy="170" r="2" fill="#e8860c" opacity="0.7"/>
+        <circle cx="150" cy="150" r="12" fill="url(#node1)" filter="url(#glow1)"/>
+        <circle cx="150" cy="150" r="2" fill="#e8860c" opacity="0.7"/>
+        <!-- Label -->
+        <text x="350" y="195" text-anchor="middle" fill="#555" font-size="11" font-family="Inter, sans-serif">Filaments, nodes, voids &mdash; same structure in both theories</text>
+      </svg>
+    </div>
+
+    <div class="comparison-row">
+      <div class="theory-col lcdm">
+        <div class="col-label">&Lambda;CDM</div>
+        <div class="col-text">
+          <strong>Dark matter web scaffolding.</strong> Cold dark matter collapses first
+          under gravity, forming a cosmic web of filaments and halos. Baryonic matter
+          then falls into these pre-existing potential wells. Galaxies form at the nodes
+          where filaments intersect.
+          <br><br>
+          The CMB power spectrum is fit with 6 parameters: &Omega;<sub>b</sub>,
+          &Omega;<sub>DM</sub>, H<sub>0</sub>, &tau;, n<sub>s</sub>, A<sub>s</sub>.
+          Dark matter contributes ~27% of the total energy density.
+        </div>
+      </div>
+      <div class="observed-col">
+        <div class="obs-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#90caf9" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="22"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg>
+        </div>
+        <div class="obs-label">Observed</div>
+        <div class="obs-text">
+          Filamentary large-scale structure. Voids spanning 50&ndash;300 Mpc.
+          CMB power spectrum with acoustic peaks.
+          BAO scale at ~150 Mpc.
+        </div>
+      </div>
+      <div class="theory-col khronon">
+        <div class="col-label">Khronon</div>
+        <div class="col-text">
+          <strong>Same filamentary structure, no dark matter scaffolding.</strong>
+          The &Sigma; field (quantum relative entropy) replaces dark matter as the
+          gravitational source. Running &mu;<sub>0</sub> = H<sub>0</sub>/c produces
+          CDM-like behavior at CMB scales:
+          <span class="math">w&#771;<sub>0</sub>(z=1100) ~ 4&times;10<sup>&minus;10</sup></span>
+          &mdash; effectively dust-like.
+          <br><br>
+          The same CMB fit emerges from a single principle:
+          <span class="math">&Sigma; = D(&rho;<sub>st</sub> || &rho;<sub>m</sub>)</span>,
+          with &Omega;<sub>DM</sub> ~ &rho;<sub>crit</sub>/3 predicted (~6% off).
+        </div>
+      </div>
+    </div>
+
+    <div class="key-difference">
+      <svg class="kd-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+      <div>
+        <div class="kd-label">Key Difference</div>
+        <div class="kd-text">
+          Khronon predicts a slightly different structure growth rate at late times.
+          Euclid and LSST (2027+) will measure the growth factor f&sigma;<sub>8</sub>(z)
+          to ~1% precision &mdash; enough to distinguish the two frameworks.
+          <span class="status-badge testable">Testable 2027+</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="scale-divider"></div>
+
+  <!-- ════════════ SCALE 2: GALAXY CLUSTERS ════════════ -->
+  <section class="scale-section" id="scale-2">
+    <div class="scale-header">
+      <div class="scale-number">Scale 2</div>
+      <div class="scale-title">Galaxy Clusters</div>
+      <div class="scale-range">1 &ndash; 10 Mpc</div>
+    </div>
+
+    <div class="scale-illustration">
+      <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="halo2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ef5350" stop-opacity="0.15"/>
+            <stop offset="40%" stop-color="#ef5350" stop-opacity="0.06"/>
+            <stop offset="100%" stop-color="#ef5350" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gas2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#42a5f5" stop-opacity="0.2"/>
+            <stop offset="60%" stop-color="#42a5f5" stop-opacity="0.06"/>
+            <stop offset="100%" stop-color="#42a5f5" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="sigma2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#4caf50" stop-opacity="0.15"/>
+            <stop offset="40%" stop-color="#4caf50" stop-opacity="0.06"/>
+            <stop offset="100%" stop-color="#4caf50" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- LCDM side -->
+        <circle cx="175" cy="100" r="85" fill="url(#halo2)"/>
+        <circle cx="175" cy="100" r="60" fill="url(#gas2)"/>
+        <circle cx="155" cy="90" r="2.5" fill="#e8860c" opacity="0.8"/>
+        <circle cx="190" cy="105" r="2" fill="#e8860c" opacity="0.7"/>
+        <circle cx="170" cy="115" r="1.5" fill="#e8860c" opacity="0.6"/>
+        <circle cx="200" cy="85" r="1.5" fill="#e8860c" opacity="0.6"/>
+        <circle cx="145" cy="100" r="1" fill="#e8860c" opacity="0.5"/>
+        <text x="175" y="25" text-anchor="middle" fill="#ef5350" font-size="10" font-weight="600" font-family="Inter, sans-serif">&Lambda;CDM: 85% DM halo</text>
+        <text x="175" y="188" text-anchor="middle" fill="#555" font-size="9" font-family="Inter, sans-serif">DM halo (red) + hot gas (blue) + galaxies (dots)</text>
+        <!-- Divider -->
+        <line x1="350" y1="20" x2="350" y2="180" stroke="#222" stroke-width="1" stroke-dasharray="4,4"/>
+        <!-- Khronon side -->
+        <circle cx="525" cy="100" r="85" fill="url(#sigma2)"/>
+        <circle cx="525" cy="100" r="60" fill="url(#gas2)"/>
+        <circle cx="505" cy="90" r="2.5" fill="#e8860c" opacity="0.8"/>
+        <circle cx="540" cy="105" r="2" fill="#e8860c" opacity="0.7"/>
+        <circle cx="520" cy="115" r="1.5" fill="#e8860c" opacity="0.6"/>
+        <circle cx="550" cy="85" r="1.5" fill="#e8860c" opacity="0.6"/>
+        <circle cx="495" cy="100" r="1" fill="#e8860c" opacity="0.5"/>
+        <text x="525" y="25" text-anchor="middle" fill="#4caf50" font-size="10" font-weight="600" font-family="Inter, sans-serif">Khronon: &Sigma; field + thermal QRE</text>
+        <text x="525" y="188" text-anchor="middle" fill="#555" font-size="9" font-family="Inter, sans-serif">&Sigma; field (green) + hot gas (blue) + galaxies (dots)</text>
+      </svg>
+    </div>
+
+    <div class="comparison-row">
+      <div class="theory-col lcdm">
+        <div class="col-label">&Lambda;CDM</div>
+        <div class="col-text">
+          <strong>85% dark matter halo, 13% hot gas, 2% galaxies.</strong>
+          Clusters are the largest gravitationally bound structures. The dark matter
+          halo follows an NFW profile, containing ~6&times; more mass than the visible
+          hot gas (T ~ 10<sup>7</sup>&ndash;10<sup>8</sup> K). Galaxies are minor
+          tracers of the underlying dark matter distribution.
+        </div>
+      </div>
+      <div class="observed-col">
+        <div class="obs-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#90caf9" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+        <div class="obs-label">Observed</div>
+        <div class="obs-text">
+          X-ray luminous hot gas.
+          Strong + weak gravitational lensing.
+          Galaxy velocity dispersions ~1000 km/s.
+        </div>
+      </div>
+      <div class="theory-col khronon">
+        <div class="col-label">Khronon</div>
+        <div class="col-text">
+          <strong>No dark matter. &Sigma; field + thermal QRE explains the extra mass.</strong>
+          The quantum relative entropy of hot intracluster gas produces additional
+          apparent gravitational mass. Original prediction: hotter gas produces
+          MORE apparent gravitational mass than cold matter.
+          <br><br>
+          This resolves the traditional MOND factor-of-2 cluster residual &mdash;
+          the missing piece was thermal QRE, not missing dark matter.
+        </div>
+      </div>
+    </div>
+
+    <div class="key-difference">
+      <svg class="kd-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+      <div>
+        <div class="kd-label">Key Difference</div>
+        <div class="kd-text">
+          Khronon predicts M<sub>dynamic</sub>/M<sub>baryon</sub> correlates with
+          T<sub>ICM</sub> (intracluster medium temperature). In &Lambda;CDM, this ratio
+          is set by the halo mass function and should not depend on gas temperature
+          at fixed total mass.
+          <span class="status-badge testable">Testable with eROSITA + Euclid</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="scale-divider"></div>
+
+  <!-- ════════════ SCALE 3: GALAXY ════════════ -->
+  <section class="scale-section" id="scale-3">
+    <div class="scale-header">
+      <div class="scale-number">Scale 3</div>
+      <div class="scale-title">Galaxy</div>
+      <div class="scale-range">10 &ndash; 100 kpc</div>
+    </div>
+
+    <div class="scale-illustration">
+      <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="nfw" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ef5350" stop-opacity="0.08"/>
+            <stop offset="30%" stop-color="#ef5350" stop-opacity="0.05"/>
+            <stop offset="100%" stop-color="#ef5350" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="disk" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#e8860c" stop-opacity="0"/>
+            <stop offset="30%" stop-color="#e8860c" stop-opacity="0.5"/>
+            <stop offset="50%" stop-color="#ffcc00" stop-opacity="0.7"/>
+            <stop offset="70%" stop-color="#e8860c" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#e8860c" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- LCDM: disk + NFW halo -->
+        <circle cx="175" cy="100" r="85" fill="url(#nfw)" stroke="#ef5350" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.5"/>
+        <ellipse cx="175" cy="100" rx="55" ry="8" fill="url(#disk)" opacity="0.8"/>
+        <circle cx="175" cy="100" r="4" fill="#ffcc00" opacity="0.9"/>
+        <text x="175" y="25" text-anchor="middle" fill="#ef5350" font-size="10" font-weight="600" font-family="Inter, sans-serif">&Lambda;CDM: visible disk + NFW halo</text>
+        <text x="175" y="188" text-anchor="middle" fill="#555" font-size="9" font-family="Inter, sans-serif">10x more mass in invisible halo (dashed)</text>
+        <!-- Divider -->
+        <line x1="350" y1="20" x2="350" y2="180" stroke="#222" stroke-width="1" stroke-dasharray="4,4"/>
+        <!-- Khronon: just the disk -->
+        <ellipse cx="525" cy="100" rx="55" ry="8" fill="url(#disk)" opacity="0.8"/>
+        <circle cx="525" cy="100" r="4" fill="#ffcc00" opacity="0.9"/>
+        <!-- Sigma field subtle glow -->
+        <ellipse cx="525" cy="100" rx="80" ry="30" fill="none" stroke="#4caf50" stroke-width="0.5" stroke-dasharray="2,4" opacity="0.4"/>
+        <text x="525" y="25" text-anchor="middle" fill="#4caf50" font-size="10" font-weight="600" font-family="Inter, sans-serif">Khronon: just the visible disk + &Sigma;</text>
+        <text x="525" y="188" text-anchor="middle" fill="#555" font-size="9" font-family="Inter, sans-serif">Zero free parameters beyond a&#8320; = cH&#8320;/(2&pi;)</text>
+      </svg>
+    </div>
+
+    <div class="comparison-row">
+      <div class="theory-col lcdm">
+        <div class="col-label">&Lambda;CDM</div>
+        <div class="col-text">
+          <strong>Disk/bulge embedded in massive NFW dark matter halo.</strong>
+          The halo contains ~10&times; the visible mass, with 3 free parameters per
+          galaxy: M<sub>200</sub>, concentration c, and mass-to-light ratio M/L.
+          Flat rotation curves arise because the halo dominates at large radii.
+          <br><br>
+          Predictions: BTFR slope 3.0&ndash;3.5. RAR scatter should reflect halo
+          diversity. Bar pattern speeds should be slowed by dynamical friction
+          against the halo.
+        </div>
+      </div>
+      <div class="observed-col">
+        <div class="obs-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#90caf9" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><ellipse cx="12" cy="12" rx="10" ry="4"/></svg>
+        </div>
+        <div class="obs-label">Observed</div>
+        <div class="obs-text">
+          Flat rotation curves to large radii.
+          Tight RAR (0.13 dex scatter).
+          BTFR slope 3.85&ndash;4.0.
+          72% fast bars.
+        </div>
+      </div>
+      <div class="theory-col khronon">
+        <div class="col-label">Khronon</div>
+        <div class="col-text">
+          <strong>Just the visible disk/bulge.</strong>
+          The &Sigma; field produces flat rotation curves with ZERO free parameters
+          beyond a<sub>0</sub> = cH<sub>0</sub>/(2&pi;). The RAR
+          emerges naturally from
+          <span class="math">g<sub>obs</sub> = g<sub>bar</sub> / (1 &minus; e<sup>&minus;&radic;(a<sub>0</sub>/g<sub>bar</sub>)</sup>)</span>.
+          <br><br>
+          Predictions: BTFR slope exactly 4.0. RAR scatter constant across all
+          accelerations. Bars rotate fast (no halo friction). Tidal dwarf galaxies
+          follow RAR without needing dark matter.
+        </div>
+      </div>
+    </div>
+
+    <div class="key-difference">
+      <svg class="kd-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+      <div>
+        <div class="kd-label">Key Differences (4 independent tests)</div>
+        <div class="kd-text">
+          <strong>BTFR slope:</strong> &Lambda;CDM predicts 3.0&ndash;3.5, Khronon predicts exactly 4.0, observed: 3.85&ndash;4.0.
+          <strong>RAR scatter:</strong> constant across all accelerations (Khronon wins; CDM should show halo diversity).
+          <strong>Bar pattern speeds:</strong> Khronon predicts fast bars (no halo friction), CDM predicts slow bars. Observed: 72% fast.
+          <strong>Tidal Dwarf Galaxies:</strong> no dark matter but follow RAR. Khronon: natural. CDM: needs impossible halo formation.
+          <span class="status-badge confirmed">Multiple confirmations</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="scale-divider"></div>
+
+  <!-- ════════════ SCALE 4: WIDE BINARIES ════════════ -->
+  <section class="scale-section" id="scale-4">
+    <div class="scale-header">
+      <div class="scale-number">Scale 4</div>
+      <div class="scale-title">Wide Binaries</div>
+      <div class="scale-range">1,000 &ndash; 20,000 AU</div>
+    </div>
+
+    <div class="scale-illustration">
+      <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="star" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffcc00" stop-opacity="0.9"/>
+            <stop offset="40%" stop-color="#e8860c" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#e8860c" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- Star A -->
+        <circle cx="250" cy="90" r="20" fill="url(#star)"/>
+        <circle cx="250" cy="90" r="5" fill="#ffcc00"/>
+        <text x="250" y="130" text-anchor="middle" fill="#888" font-size="10" font-family="Inter, sans-serif">Star A</text>
+        <!-- Star B -->
+        <circle cx="450" cy="90" r="16" fill="url(#star)"/>
+        <circle cx="450" cy="90" r="4" fill="#ffa726"/>
+        <text x="450" y="130" text-anchor="middle" fill="#888" font-size="10" font-family="Inter, sans-serif">Star B</text>
+        <!-- Separation arrow -->
+        <line x1="265" y1="90" x2="435" y2="90" stroke="#555" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="350" y="80" text-anchor="middle" fill="#e8860c" font-size="10" font-family="Menlo, monospace">5,000 &ndash; 20,000 AU</text>
+        <!-- Question mark region -->
+        <text x="350" y="160" text-anchor="middle" fill="#ffc107" font-size="11" font-family="Inter, sans-serif">Gravitational regime: Newtonian or modified?</text>
+      </svg>
+    </div>
+
+    <div class="comparison-row">
+      <div class="theory-col lcdm">
+        <div class="col-label">&Lambda;CDM</div>
+        <div class="col-text">
+          <strong>Pure Newtonian at all separations.</strong>
+          No dark matter exists at these tiny scales. Gravity between two stars
+          separated by thousands of AU is perfectly described by Newton's
+          inverse-square law. No anomaly expected, regardless of separation.
+        </div>
+      </div>
+      <div class="observed-col">
+        <div class="obs-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#90caf9" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div class="obs-label">Observed</div>
+        <div class="obs-text">
+          Disputed. Chae (2024): 8&ndash;13% velocity boost at &gt;5000 AU.
+          Banik (2024): no significant deviation.
+          Awaiting Gaia DR4.
+        </div>
+      </div>
+      <div class="theory-col khronon">
+        <div class="col-label">Khronon</div>
+        <div class="col-text">
+          <strong>8&ndash;13% velocity boost at &gt;5000 AU.</strong>
+          Modified gravity kicks in when the gravitational acceleration drops
+          below a<sub>0</sub>. For wide binaries in the Milky Way, the external
+          field effect (EFE) from the galaxy modulates the transition, producing
+          a modest but measurable velocity enhancement.
+        </div>
+      </div>
+    </div>
+
+    <div class="key-difference">
+      <svg class="kd-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+      <div>
+        <div class="kd-label">Status</div>
+        <div class="kd-text">
+          This is the most hotly debated test in the field. Chae (2024) reports
+          a statistically significant Milgromian signal in Gaia DR3 wide binaries;
+          Banik (2024) disputes the analysis. Gaia DR4 (expected December 2026)
+          will provide ~10,000 calibration-quality pairs with improved astrometry.
+          <span class="status-badge disputed">Disputed &mdash; Gaia DR4 will settle</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="scale-divider"></div>
+
+  <!-- ════════════ SCALE 5: GLOBULAR CLUSTERS ════════════ -->
+  <section class="scale-section" id="scale-5">
+    <div class="scale-header">
+      <div class="scale-number">Scale 5</div>
+      <div class="scale-title">Globular Clusters</div>
+      <div class="scale-range">1 &ndash; 50 pc</div>
+    </div>
+
+    <div class="scale-illustration">
+      <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="gc" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffcc00" stop-opacity="0.5"/>
+            <stop offset="30%" stop-color="#e8860c" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#e8860c" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- Globular cluster -->
+        <circle cx="350" cy="90" r="50" fill="url(#gc)"/>
+        <!-- Dense core stars -->
+        <circle cx="345" cy="87" r="1.5" fill="#ffee58" opacity="0.9"/>
+        <circle cx="352" cy="92" r="1.5" fill="#ffee58" opacity="0.9"/>
+        <circle cx="348" cy="83" r="1.2" fill="#ffcc00" opacity="0.8"/>
+        <circle cx="356" cy="88" r="1.2" fill="#ffcc00" opacity="0.8"/>
+        <circle cx="342" cy="95" r="1.2" fill="#ffcc00" opacity="0.8"/>
+        <circle cx="350" cy="90" r="1.5" fill="#fff" opacity="0.7"/>
+        <circle cx="340" cy="88" r="1" fill="#ffcc00" opacity="0.7"/>
+        <circle cx="358" cy="95" r="1" fill="#ffcc00" opacity="0.7"/>
+        <circle cx="346" cy="98" r="1" fill="#ffcc00" opacity="0.7"/>
+        <circle cx="355" cy="82" r="1" fill="#ffcc00" opacity="0.7"/>
+        <!-- Outer stars -->
+        <circle cx="330" cy="80" r="0.8" fill="#e8860c" opacity="0.5"/>
+        <circle cx="370" cy="100" r="0.8" fill="#e8860c" opacity="0.5"/>
+        <circle cx="335" cy="105" r="0.8" fill="#e8860c" opacity="0.5"/>
+        <circle cx="365" cy="75" r="0.8" fill="#e8860c" opacity="0.5"/>
+        <circle cx="325" cy="95" r="0.7" fill="#e8860c" opacity="0.4"/>
+        <circle cx="375" cy="85" r="0.7" fill="#e8860c" opacity="0.4"/>
+        <!-- Labels -->
+        <text x="350" y="160" text-anchor="middle" fill="#888" font-size="10" font-family="Inter, sans-serif">~10&#8310; stars in ~10 pc &mdash; high internal acceleration</text>
+        <!-- Agreement markers -->
+        <text x="140" y="90" text-anchor="middle" fill="#ef5350" font-size="11" font-weight="600" font-family="Inter, sans-serif">Newtonian</text>
+        <text x="140" y="106" text-anchor="middle" fill="#555" font-size="9" font-family="Inter, sans-serif">(no DM needed)</text>
+        <text x="560" y="90" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="600" font-family="Inter, sans-serif">Newtonian</text>
+        <text x="560" y="106" text-anchor="middle" fill="#555" font-size="9" font-family="Inter, sans-serif">(&Sigma;-hierarchy)</text>
+        <!-- Equal sign -->
+        <text x="350" y="35" text-anchor="middle" fill="#e8860c" font-size="18" font-weight="700" font-family="Inter, sans-serif">=</text>
+      </svg>
+    </div>
+
+    <div class="comparison-row">
+      <div class="theory-col lcdm">
+        <div class="col-label">&Lambda;CDM</div>
+        <div class="col-text">
+          <strong>Newtonian, no dark matter needed.</strong>
+          Globular clusters are dense stellar systems with internal accelerations
+          well above a<sub>0</sub>. Their velocity dispersions are fully explained
+          by the visible stellar mass. Dark matter was never invoked here.
+        </div>
+      </div>
+      <div class="observed-col">
+        <div class="obs-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#90caf9" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+        </div>
+        <div class="obs-label">Observed</div>
+        <div class="obs-text">
+          Velocity dispersions match Newtonian predictions for dense GCs.
+          No dark matter signature.
+        </div>
+      </div>
+      <div class="theory-col khronon">
+        <div class="col-label">Khronon</div>
+        <div class="col-text">
+          <strong>Also Newtonian &mdash; and explains WHY.</strong>
+          The &Sigma;-hierarchy principle:
+          &Sigma;<sub>GC</sub>/&Sigma;<sub>MW</sub> &lt;&lt; 1, meaning the globular
+          cluster is a small perturbation within the Milky Way's &Sigma; field.
+          Subsystems with internal accelerations above the host's external field
+          see standard Newtonian gravity.
+          <br><br>
+          This is not a coincidence &mdash; it's the external field effect in action.
+        </div>
+      </div>
+    </div>
+
+    <div class="key-difference">
+      <svg class="kd-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+      <div>
+        <div class="kd-label">Key Difference</div>
+        <div class="kd-text">
+          Both theories agree on the dynamics, but for different reasons.
+          &Lambda;CDM says dark matter simply doesn't accumulate in GCs.
+          Khronon explains WHY GCs are Newtonian: they are perturbations of the
+          Milky Way's &Sigma; field, and any subsystem embedded in a stronger
+          external field recovers Newtonian behavior.
+          Low-density GCs in the outer halo should show subtle deviations.
+          <span class="status-badge testable">Testable with outer-halo GCs</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="scale-divider"></div>
+
+  <!-- ════════════ SCALE 6: SOLAR SYSTEM ════════════ -->
+  <section class="scale-section" id="scale-6">
+    <div class="scale-header">
+      <div class="scale-number">Scale 6</div>
+      <div class="scale-title">Solar System</div>
+      <div class="scale-range">AU scale</div>
+    </div>
+
+    <div class="scale-illustration">
+      <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffee58" stop-opacity="1"/>
+            <stop offset="50%" stop-color="#ffcc00" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#e8860c" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- Sun -->
+        <circle cx="350" cy="90" r="30" fill="url(#sun)"/>
+        <circle cx="350" cy="90" r="10" fill="#ffee58"/>
+        <!-- Orbits -->
+        <ellipse cx="350" cy="90" rx="55" ry="50" fill="none" stroke="#333" stroke-width="0.5"/>
+        <ellipse cx="350" cy="90" rx="80" ry="72" fill="none" stroke="#333" stroke-width="0.5"/>
+        <ellipse cx="350" cy="90" rx="110" ry="95" fill="none" stroke="#333" stroke-width="0.5"/>
+        <ellipse cx="350" cy="90" rx="145" ry="76" fill="none" stroke="#2a2a2a" stroke-width="0.5"/>
+        <!-- Planets -->
+        <circle cx="405" cy="80" r="2.5" fill="#42a5f5"/>
+        <circle cx="270" cy="85" r="3" fill="#66bb6a"/>
+        <circle cx="460" cy="70" r="3.5" fill="#ef5350"/>
+        <circle cx="205" cy="90" r="2" fill="#bbb"/>
+        <!-- Labels -->
+        <text x="350" y="8" text-anchor="middle" fill="#e8860c" font-size="18" font-weight="700" font-family="Inter, sans-serif">=</text>
+        <text x="180" y="165" text-anchor="middle" fill="#ef5350" font-size="10" font-weight="600" font-family="Inter, sans-serif">&Lambda;CDM: pure GR</text>
+        <text x="520" y="165" text-anchor="middle" fill="#4caf50" font-size="10" font-weight="600" font-family="Inter, sans-serif">Khronon: pure GR</text>
+        <text x="350" y="165" text-anchor="middle" fill="#888" font-size="9" font-family="Inter, sans-serif">&Sigma; &approx; r_s/r is tiny</text>
+      </svg>
+    </div>
+
+    <div class="comparison-row">
+      <div class="theory-col lcdm">
+        <div class="col-label">&Lambda;CDM</div>
+        <div class="col-text">
+          <strong>Pure GR (Schwarzschild + post-Newtonian corrections).</strong>
+          The solar system is the gold standard of gravitational physics.
+          Mercury's perihelion precession, Shapiro delay, gravitational lensing
+          by the Sun, frame-dragging (Gravity Probe B) &mdash; all match GR to
+          exquisite precision. No dark matter contribution at AU scales.
+        </div>
+      </div>
+      <div class="observed-col">
+        <div class="obs-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#90caf9" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+        </div>
+        <div class="obs-label">Observed</div>
+        <div class="obs-text">
+          Perihelion precession: 42.98''/century.
+          Shapiro delay: confirmed.
+          GW speed = c (GW170817).
+          All PPN parameters match GR.
+        </div>
+      </div>
+      <div class="theory-col khronon">
+        <div class="col-label">Khronon</div>
+        <div class="col-text">
+          <strong>Same as GR &mdash; by construction.</strong>
+          At solar system scales, &Sigma; &approx; r<sub>s</sub>/r is tiny
+          (r<sub>s</sub> ~ 3 km for the Sun, r ~ 1 AU ~ 1.5&times;10<sup>8</sup> km).
+          The exponential metric reduces exactly to Schwarzschild.
+          All PPN parameters match GR predictions. Gravitational wave speed = c.
+          <br><br>
+          The Khronon framework was designed to recover GR in the strong-field
+          regime. No fine-tuning &mdash; it follows from the mathematics.
+        </div>
+      </div>
+    </div>
+
+    <div class="key-difference">
+      <svg class="kd-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+      <div>
+        <div class="kd-label">No Difference</div>
+        <div class="kd-text">
+          Both frameworks are identical at solar system scales. This is by design:
+          any viable alternative to &Lambda;CDM must reproduce GR's precision
+          predictions in the strong-field, high-acceleration regime.
+          The Khronon exponential metric
+          <span class="math">g<sub>00</sub> = &minus;e<sup>&minus;&Sigma;</sup></span>
+          reduces to Schwarzschild when &Sigma; &lt;&lt; 1.
+          <span class="status-badge confirmed">Confirmed to 10&minus;5 precision</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="scale-divider"></div>
+
+  <!-- ════════════ SUMMARY TABLE ════════════ -->
+  <section class="summary-section">
+    <h2>What Changed and What Didn't</h2>
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Aspect</th>
+            <th>&Lambda;CDM</th>
+            <th>Khronon</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Dark matter particles</strong></td>
+            <td>Yes (WIMP / axion)</td>
+            <td>No &mdash; all effects from spacetime entropy</td>
+            <td class="td-changed">Changed</td>
+          </tr>
+          <tr>
+            <td><strong>Dark energy</strong></td>
+            <td>Cosmological constant &Lambda;</td>
+            <td>Emerges from &Sigma;=0 boundary condition</td>
+            <td class="td-changed">Changed</td>
+          </tr>
+          <tr>
+            <td><strong>Galaxy rotation curves</strong></td>
+            <td>NFW dark matter halo (3 params/galaxy)</td>
+            <td>&Sigma; field &rarr; RAR (0 free params)</td>
+            <td class="td-changed">Changed</td>
+          </tr>
+          <tr>
+            <td><strong>Galaxy cluster mass</strong></td>
+            <td>Dark matter + hot gas</td>
+            <td>&Sigma; field + thermal QRE</td>
+            <td class="td-changed">Changed</td>
+          </tr>
+          <tr>
+            <td><strong>Bullet cluster</strong></td>
+            <td>Dark matter separation from gas</td>
+            <td>&tau; field relaxation time</td>
+            <td class="td-changed">Changed</td>
+          </tr>
+          <tr>
+            <td><strong>Globular cluster dynamics</strong></td>
+            <td>Newtonian (no DM needed)</td>
+            <td>Newtonian (&Sigma;-hierarchy)</td>
+            <td class="td-same">Same</td>
+          </tr>
+          <tr>
+            <td><strong>Solar system</strong></td>
+            <td>General Relativity</td>
+            <td>General Relativity (&Sigma; &rarr; Schwarzschild)</td>
+            <td class="td-same">Same</td>
+          </tr>
+          <tr>
+            <td><strong>CMB power spectrum</strong></td>
+            <td>&Lambda;CDM 6-parameter fit</td>
+            <td>Running &mu;<sub>0</sub> &rarr; CDM-like at z=1100</td>
+            <td class="td-similar">Similar</td>
+          </tr>
+          <tr>
+            <td><strong>Gravitational waves</strong></td>
+            <td>Speed = c</td>
+            <td>Speed = c</td>
+            <td class="td-same">Same</td>
+          </tr>
+          <tr>
+            <td><strong>BAO / large-scale structure</strong></td>
+            <td>CDM + baryons</td>
+            <td>&Sigma; field + baryons</td>
+            <td class="td-similar">Similar</td>
+          </tr>
+          <tr>
+            <td><strong>BBN (light elements)</strong></td>
+            <td>Standard BBN</td>
+            <td>Standard BBN (&Sigma; negligible at T &gt; MeV)</td>
+            <td class="td-same">Same</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ════════════ BOTTOM LINE ════════════ -->
+  <section id="physics-note">
+    <h2>The Bottom Line</h2>
+    <div class="note-columns">
+      <div class="note-col">
+        <h3>What stays the same</h3>
+        <ul>
+          <li><strong>Solar system physics:</strong> identical to GR</li>
+          <li><strong>Gravitational waves:</strong> speed = c, waveforms unchanged</li>
+          <li><strong>Big Bang nucleosynthesis:</strong> standard predictions preserved</li>
+          <li><strong>CMB acoustic peaks:</strong> running &mu; reproduces CDM-like behavior</li>
+          <li><strong>Large-scale filaments:</strong> same cosmic web topology</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>What changes</h3>
+        <ul>
+          <li><strong>Dark matter:</strong> eliminated entirely &mdash; replaced by &Sigma; field</li>
+          <li><strong>Dark energy:</strong> not a separate substance but the &Sigma;=0 boundary</li>
+          <li><strong>Galaxy dynamics:</strong> zero free parameters instead of three per galaxy</li>
+          <li><strong>Cluster physics:</strong> thermal QRE replaces the missing-mass gap</li>
+          <li><strong>Ontology:</strong> 95% of the universe is no longer "dark" and "unknown"</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>How to tell them apart</h3>
+        <ul>
+          <li><strong>Wide binaries:</strong> Gaia DR4 (Dec 2026) tests low-acceleration gravity</li>
+          <li><strong>Growth rate:</strong> Euclid + LSST measure f&sigma;<sub>8</sub>(z) to ~1%</li>
+          <li><strong>Cluster temperature:</strong> M<sub>dyn</sub>/M<sub>bar</sub> vs T<sub>ICM</sub> correlation</li>
+          <li><strong>Power spectrum slope:</strong> Fagin SLACS data: &beta; = 5.22 vs CDM &beta; = 7 vs Khronon &beta; = 6.2</li>
+          <li><strong>Dark sub-halos:</strong> Euclid sub-structure search</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ FOOTER ════════════ -->
+  <footer>
+    Anatropic &mdash; Sheng-Kai Huang (2026)<br />
+    <a href="index.html">Home</a>
+    &middot;
+    <a href="generality.html">12 Tests</a>
+    &middot;
+    <a href="scorecard.html">Scorecard</a>
+    &middot;
+    <a href="rotation.html">Rotation</a>
+    &middot;
+    <a href="cluster3d.html">3D Cluster</a>
+    &middot;
+    <a href="universe.html">Universe</a>
+    &middot;
+    <a href="predictions.html">Predictions</a>
+    &middot;
+    <a href="bullet.html">Bullet</a>
+    &middot;
+    <a href="sim.html">Simulation</a>
+    &middot;
+    <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+
+  <!-- ════════════ JAVASCRIPT ════════════ -->
+  <script>
+  (function () {
+    /* ── Scroll-triggered fade-in ──────────────────────────── */
+    var sections = document.querySelectorAll('.scale-section');
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12 });
+
+    sections.forEach(function (s) { observer.observe(s); });
+
+    /* ── Scale ruler active state ──────────────────────────── */
+    var dots = document.querySelectorAll('.sr-dot');
+    var scaleObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var id = entry.target.id;
+          dots.forEach(function (d) {
+            d.classList.toggle('active', d.getAttribute('data-target') === id);
+          });
+        }
+      });
+    }, { threshold: 0.3 });
+
+    sections.forEach(function (s) { scaleObserver.observe(s); });
+
+    /* ── Dot click to scroll ───────────────────────────────── */
+    dots.forEach(function (dot) {
+      dot.addEventListener('click', function () {
+        var target = document.getElementById(dot.getAttribute('data-target'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  })();
+  </script>
+
+</body>
+</html>
