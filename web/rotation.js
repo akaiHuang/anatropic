@@ -40,20 +40,31 @@
 
   // ── Score summary ──────────────────────────────────────────────────
   function renderScoreSummary() {
-    const s = DATA.metadata.summary;
+    // Count by Khronon chi2 quality (the meaningful metric)
+    const good = DATA.galaxies.filter(g => g.chi2_khronon < 2).length;
+    const moderate = DATA.galaxies.filter(g => g.chi2_khronon >= 2 && g.chi2_khronon < 5).length;
+    const poor = DATA.galaxies.filter(g => g.chi2_khronon >= 5).length;
     const el = document.getElementById('score-summary');
     el.innerHTML = `
       <div class="score-box khronon-bg">
-        <div class="score-num">${s.khronon_preferred}</div>
-        <div class="score-label">Khronon more accurate<br>(1 free param/galaxy)</div>
+        <div class="score-num">175 &rarr; 1</div>
+        <div class="score-label">Khronon: 1 param per galaxy<br>175 total free parameters</div>
       </div>
       <div class="score-box tie-bg">
-        <div class="score-num">${s.inconclusive}</div>
-        <div class="score-label">Comparable<br>(|ΔBIC| ≤ 2)</div>
+        <div class="score-num" style="font-size:1.2rem;">vs</div>
+        <div class="score-label">&nbsp;</div>
       </div>
       <div class="score-box nfw-bg">
-        <div class="score-num">${s.nfw_preferred}</div>
-        <div class="score-label">NFW more accurate<br>(3 free params/galaxy)</div>
+        <div class="score-num">175 &rarr; 3</div>
+        <div class="score-label">NFW: 3 params per galaxy<br>525 total free parameters</div>
+      </div>
+      <div class="score-box" style="background:rgba(255,255,255,0.03); border:1px solid #222; min-width:280px;">
+        <div class="score-label" style="margin-bottom:6px;">Khronon prediction quality (1 param)</div>
+        <div style="display:flex; gap:12px; justify-content:center; font-size:0.85rem;">
+          <span style="color:#66bb6a;"><strong>${good}</strong> good</span>
+          <span style="color:#e8860c;"><strong>${moderate}</strong> moderate</span>
+          <span style="color:#ef5350;"><strong>${poor}</strong> poor</span>
+        </div>
       </div>
     `;
   }
@@ -67,8 +78,9 @@
     const featured = DATA.metadata.featured;
 
     let galaxies = DATA.galaxies;
-    if (filter === 'khronon') galaxies = galaxies.filter(g => g.winner === 'Khronon');
-    else if (filter === 'nfw') galaxies = galaxies.filter(g => g.winner === 'NFW');
+    if (filter === 'good') galaxies = galaxies.filter(g => g.chi2_khronon < 2);
+    else if (filter === 'moderate') galaxies = galaxies.filter(g => g.chi2_khronon >= 2 && g.chi2_khronon < 5);
+    else if (filter === 'poor') galaxies = galaxies.filter(g => g.chi2_khronon >= 5);
     else if (filter === 'featured') galaxies = galaxies.filter(g => featured.includes(g.name));
 
     if (search) {
@@ -80,15 +92,18 @@
       div.className = 'galaxy-item' + (currentGalaxy === g.name ? ' active' : '');
       div.dataset.name = g.name;
 
-      const winClass = g.winner === 'Khronon' ? 'khronon' :
-                        g.winner === 'NFW' ? 'nfw' : 'tie';
+      // Color dot by Khronon prediction quality
+      const qualClass = g.chi2_khronon < 2 ? 'khronon' :
+                         g.chi2_khronon < 5 ? 'tie' : 'nfw';
+      const qualLabel = g.chi2_khronon < 2 ? 'Good' :
+                         g.chi2_khronon < 5 ? 'Moderate' : 'Poor';
 
       div.innerHTML = `
         <div>
           <span class="name">${g.name}</span>
-          <span class="meta">${g.type} · ${g.n_pts}pts</span>
+          <span class="meta">${g.type} · ${g.n_pts}pts · &chi;&sup2;=${g.chi2_khronon.toFixed(1)}</span>
         </div>
-        <div class="winner-dot ${winClass}" title="ΔBIC=${g.delta_BIC}"></div>
+        <div class="winner-dot ${qualClass}" title="${qualLabel}: &chi;&sup2;/dof=${g.chi2_khronon.toFixed(2)}"></div>
       `;
       div.addEventListener('click', () => selectGalaxy(g.name));
       list.appendChild(div);
@@ -147,8 +162,9 @@
     const search = document.getElementById('galaxy-search').value.toLowerCase();
     const featured = DATA.metadata.featured;
     let galaxies = DATA.galaxies;
-    if (filter === 'khronon') galaxies = galaxies.filter(g => g.winner === 'Khronon');
-    else if (filter === 'nfw') galaxies = galaxies.filter(g => g.winner === 'NFW');
+    if (filter === 'good') galaxies = galaxies.filter(g => g.chi2_khronon < 2);
+    else if (filter === 'moderate') galaxies = galaxies.filter(g => g.chi2_khronon >= 2 && g.chi2_khronon < 5);
+    else if (filter === 'poor') galaxies = galaxies.filter(g => g.chi2_khronon >= 5);
     else if (filter === 'featured') galaxies = galaxies.filter(g => featured.includes(g.name));
     if (search) galaxies = galaxies.filter(g => g.name.toLowerCase().includes(search));
     return galaxies;
@@ -244,14 +260,14 @@
     ctx.fillText(g.name, ml, mt - 14);
 
     ctx.font = '12px Inter, Helvetica, sans-serif';
-    ctx.fillStyle = '#888';
-    const winColor = g.winner === 'Khronon' ? '#4fc3f7' :
-                     g.winner === 'NFW' ? '#ef5350' : '#888';
-    ctx.fillStyle = winColor;
+    // Show Khronon prediction quality
+    const qualColor = g.chi2_khronon < 2 ? '#66bb6a' :
+                      g.chi2_khronon < 5 ? '#e8860c' : '#ef5350';
+    const qualText = g.chi2_khronon < 2 ? 'Good prediction' :
+                     g.chi2_khronon < 5 ? 'Moderate prediction' : 'Poor prediction';
+    ctx.fillStyle = qualColor;
     ctx.textAlign = 'right';
-    const winText = g.winner === 'Khronon' ? 'Khronon more accurate' :
-                    g.winner === 'NFW' ? 'NFW more accurate' : 'Comparable';
-    ctx.fillText(`${winText} (ΔBIC = ${g.delta_BIC > 0 ? '+' : ''}${g.delta_BIC})`, ml + pw, mt - 14);
+    ctx.fillText(`${qualText} · Khronon \u03C7\u00B2/dof = ${g.chi2_khronon.toFixed(2)} (1 param) · NFW = ${g.chi2_nfw.toFixed(2)} (3 params)`, ml + pw, mt - 14);
 
     // Clip to plot area
     ctx.save();
@@ -337,30 +353,37 @@
     if (!g) return;
 
     const el = document.getElementById('galaxy-info');
+    const qualColor = g.chi2_khronon < 2 ? '#66bb6a' :
+                      g.chi2_khronon < 5 ? '#e8860c' : '#ef5350';
+    const qualText = g.chi2_khronon < 2 ? 'Good' :
+                     g.chi2_khronon < 5 ? 'Moderate' : 'Poor';
     el.innerHTML = `
       <div class="info-card">
         <div class="label">Type / Distance</div>
         <div class="value">${g.type} · ${g.D_Mpc} Mpc</div>
       </div>
       <div class="info-card">
-        <div class="label">Khronon χ²/dof (1 param)</div>
+        <div class="label">Prediction quality</div>
+        <div class="value" style="color:${qualColor};">${qualText}</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Khronon &chi;&sup2;/dof</div>
         <div class="value khronon">${g.chi2_khronon.toFixed(2)}</div>
+        <div class="label" style="margin-top:2px;">1 free param (M/L only)</div>
       </div>
       <div class="info-card">
-        <div class="label">NFW χ²/dof (3 params)</div>
+        <div class="label">NFW &chi;&sup2;/dof</div>
         <div class="value nfw">${g.chi2_nfw.toFixed(2)}</div>
+        <div class="label" style="margin-top:2px;">3 free params (M/L + M&sub;200&sub; + c)</div>
       </div>
       <div class="info-card">
-        <div class="label">M/L (Khronon → NFW)</div>
-        <div class="value">${g.ml_khronon.toFixed(2)} → ${g.ml_nfw.toFixed(2)}</div>
+        <div class="label">M/L (Khronon &rarr; NFW)</div>
+        <div class="value">${g.ml_khronon.toFixed(2)} &rarr; ${g.ml_nfw.toFixed(2)}</div>
       </div>
       <div class="info-card">
-        <div class="label">NFW: log₁₀M₂₀₀, log₁₀c</div>
+        <div class="label">NFW extra params: log₁₀M₂₀₀, log₁₀c</div>
         <div class="value nfw">${g.nfw_log10_M200}, ${g.nfw_log10_c}</div>
-      </div>
-      <div class="info-card">
-        <div class="label">ΔBIC (>0 = Khronon better)</div>
-        <div class="value ${g.delta_BIC > 2 ? 'win' : g.delta_BIC < -2 ? 'nfw' : ''}">${g.delta_BIC > 0 ? '+' : ''}${g.delta_BIC}</div>
+        <div class="label" style="margin-top:2px;">These 2 params are not predicted</div>
       </div>
     `;
   }

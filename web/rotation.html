@@ -150,23 +150,34 @@
 </head>
 <body>
   <header>
-    <h1>Galaxy Rotation Curves: Khronon vs ΛCDM</h1>
+    <h1>Galaxy Rotation Curves: Prediction vs Fit</h1>
     <p class="subtitle">
       175 galaxies from SPARC (Lelli, McGaugh &amp; Schombert 2016).
-      <strong style="color:#4fc3f7;">Khronon</strong>: 1 free param (M/L),
-      acceleration scale <span class="math">a₀ = cH₀/2π</span> <em>predicted</em>.
-      <strong style="color:#ef5350;">NFW</strong>: 3 free params (M/L + M₂₀₀ + c),
-      requires undetected dark matter particle.
+      <strong style="color:#4fc3f7;">Khronon</strong> <em>predicts</em> each curve from baryonic mass alone
+      (1 free param: M/L, acceleration scale <span class="math">a₀ = cH₀/2π</span> fixed).
+      <strong style="color:#ef5350;">NFW</strong> <em>fits</em> each curve individually
+      (3 free params per galaxy: M/L + M₂₀₀ + c).
+      A 3-parameter fit will always match data better than a 1-parameter prediction &mdash;
+      the question is whether the prediction captures the physics.
     </p>
   </header>
 
   <div class="nav-link">
-    <a href="index.html">← Three-model comparison</a> &middot;
-    <a href="sim.html">3D Simulation viewer</a>
+    <a href="index.html">&larr; Home</a> &middot;
+    <a href="generality.html">12 Weak-Field Tests</a>
   </div>
 
-  <!-- Overall score -->
+  <!-- Overall comparison -->
   <div id="score-summary"></div>
+
+  <!-- Important framing note -->
+  <div id="framing-note" style="max-width:820px; margin:0 auto 16px; padding:12px 18px; background:#1a1500; border:1px solid #3a3000; border-radius:6px; font-size:0.84rem; color:#cca; line-height:1.6;">
+    <strong style="color:#e8860c;">How to interpret this comparison:</strong>
+    NFW uses 3 free parameters per galaxy (525 total) to <em>fit</em> the data after the fact.
+    Khronon uses 1 parameter per galaxy (175 total) to <em>predict</em> the curve from baryonic mass.
+    A 3-param fit achieving lower &chi;&sup2; than a 1-param prediction is <strong>expected, not informative</strong>.
+    The meaningful test: does one universal equation with one predicted constant (a<sub>0</sub>) capture the shape of 175 diverse rotation curves? Browse the galaxies below to judge for yourself.
+  </div>
 
   <!-- Loading -->
   <div id="loading-status">
@@ -179,9 +190,10 @@
     <div class="rc-sidebar">
       <input type="text" id="galaxy-search" placeholder="Search galaxy..." />
       <div class="filter-bar">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="khronon">Khronon 較準確</button>
-        <button class="filter-btn" data-filter="nfw">NFW 較準確</button>
+        <button class="filter-btn active" data-filter="all">All 175</button>
+        <button class="filter-btn" data-filter="good">Good fit (&chi;&sup2;&lt;2)</button>
+        <button class="filter-btn" data-filter="moderate">Moderate (2-5)</button>
+        <button class="filter-btn" data-filter="poor">Poor (&gt;5)</button>
         <button class="filter-btn" data-filter="featured">Featured</button>
       </div>
       <div id="galaxy-list"></div>
@@ -213,34 +225,35 @@
 
   <!-- Physics note -->
   <section id="physics-note">
-    <h2>Why this matters</h2>
+    <h2>Understanding this comparison</h2>
     <div class="note-columns">
       <div class="note-col">
-        <h3>The rotation curve problem</h3>
+        <h3>Why NFW always &ldquo;fits better&rdquo;</h3>
         <ul>
-          <li>Stars in galaxies orbit <strong>faster than visible matter can explain</strong></li>
-          <li>Standard cosmology (ΛCDM) posits invisible <strong>dark matter halos</strong> (NFW profile)</li>
-          <li>Each galaxy needs 2-3 free parameters to fit its halo &mdash; 525+ total for 175 galaxies</li>
-          <li>After 40+ years, <strong>no dark matter particle has been detected</strong></li>
+          <li>NFW uses <strong>3 free parameters per galaxy</strong> (mass-to-light ratio + halo mass + concentration)</li>
+          <li>With 3 adjustable knobs, you can fit almost <em>any</em> smooth curve</li>
+          <li>This is <strong>not a prediction</strong> &mdash; it&rsquo;s a retroactive fit. The halo parameters are chosen <em>after</em> seeing the data</li>
+          <li>Total free parameters for 175 galaxies: <strong>525</strong></li>
         </ul>
       </div>
       <div class="note-col">
-        <h3>The Khronon prediction</h3>
+        <h3>Why Khronon is remarkable</h3>
         <ul>
-          <li>The τ framework predicts an acceleration scale <strong>a₀ = cH₀/(2π)</strong> from first principles</li>
-          <li>This equals 1.13 × 10⁻¹⁰ m/s² &mdash; <strong>within 6% of the empirical value</strong> (McGaugh 2016)</li>
-          <li>Only 1 free parameter per galaxy (mass-to-light ratio, physically motivated)</li>
-          <li>Zero "dark matter" parameters &mdash; the effect comes from <strong>spacetime entropy</strong></li>
+          <li>Uses <strong>1 free parameter per galaxy</strong> (mass-to-light ratio, physically constrained)</li>
+          <li>The acceleration scale a₀ = cH₀/(2π) is <strong>predicted, not fitted</strong></li>
+          <li>One universal equation for all 175 galaxies &mdash; from dwarf irregulars to giant spirals</li>
+          <li>Getting &chi;&sup2;/dof &sim; 2&ndash;3 with 1 param where a 3-param fit gets &sim;1 is <strong>a success, not a failure</strong></li>
+          <li>Total free parameters: <strong>175</strong> (3&times; fewer than NFW)</li>
         </ul>
       </div>
       <div class="note-col">
         <h3>How to read this chart</h3>
         <ul>
-          <li><strong>White dots</strong>: observed rotation velocities from radio + optical data</li>
+          <li><strong>White dots</strong>: observed rotation velocities (SPARC)</li>
           <li><strong>Gray dashed</strong>: baryonic (visible matter) contribution alone</li>
           <li><strong>Blue line</strong>: Khronon prediction &mdash; a₀ fixed, only M/L fitted</li>
-          <li><strong>Red line</strong>: best-fit NFW halo &mdash; 3 parameters adjusted per galaxy</li>
-          <li>Where blue matches white without red's extra freedom: Khronon wins</li>
+          <li><strong>Red line</strong>: best-fit NFW halo &mdash; 3 parameters fitted per galaxy</li>
+          <li>The blue line captures the <em>shape</em> of the rotation curve using only visible matter &mdash; that is the key test</li>
         </ul>
       </div>
     </div>
