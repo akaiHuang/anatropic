@@ -277,10 +277,13 @@
 
   <!-- ════════════ CONTROLS BAR ════════════ -->
   <div class="controls-bar">
+    <button class="mode-btn" id="btn-prev" title="Previous galaxy (← key)" style="padding:6px 12px; font-size:1rem;">&#9664;</button>
     <div class="galaxy-select">
-      <label style="color:#888; font-size:0.85rem;">Galaxy:</label>
       <select id="galaxy-selector"></select>
+      <span id="galaxy-counter" style="color:#555; font-size:0.75rem; min-width:50px; text-align:center;"></span>
     </div>
+    <button class="mode-btn" id="btn-next" title="Next galaxy (→ key)" style="padding:6px 12px; font-size:1rem;">&#9654;</button>
+    <input type="range" id="galaxy-slider" min="0" max="174" value="0" style="width:180px; accent-color:#e8860c;" title="Drag to browse" />
     <button class="mode-btn active" data-mode="tau">&tau; Theory</button>
     <button class="mode-btn" data-mode="cdm">&Lambda;CDM (dark matter halo)</button>
     <label style="color:#666; font-size:0.8rem; display:flex; align-items:center; gap:4px;">
@@ -299,6 +302,17 @@
 
     <!-- ════════════ PREDICTION PANEL ════════════ -->
     <div class="side-panel" id="pred-panel">
+      <div class="panel-section">
+        <h3>Real Photo</h3>
+        <div id="photo-content" style="text-align:center;">
+          <img id="galaxy-photo" src="" alt="" style="width:100%; max-width:280px; border-radius:4px; background:#111; min-height:140px; display:none;" />
+          <div id="photo-loading" style="color:#555; font-size:0.78rem; padding:20px 0;">Loading image...</div>
+          <div style="margin-top:4px;">
+            <a id="ned-link" href="#" target="_blank" rel="noopener" style="color:#e8860c; font-size:0.75rem; text-decoration:none;">View on NASA/IPAC NED &rarr;</a>
+          </div>
+          <div id="photo-note" style="font-size:0.7rem; color:#555; margin-top:4px; line-height:1.3;"></div>
+        </div>
+      </div>
       <div class="panel-section">
         <h3>Galaxy Properties</h3>
         <div id="props-content"></div>
@@ -581,12 +595,43 @@ sorted.forEach(g => {
   selector.appendChild(opt);
 });
 
-selector.addEventListener('change', () => loadGalaxy(selector.value));
+// Build flat list of all galaxy names (matching selector order, skip disabled)
+const allNames = sorted.map(g => g.name);
+let currentIdx = 0;
+const slider = document.getElementById('galaxy-slider');
+const counter = document.getElementById('galaxy-counter');
+slider.max = allNames.length - 1;
+
+function goToIndex(idx) {
+  idx = Math.max(0, Math.min(allNames.length - 1, idx));
+  currentIdx = idx;
+  selector.value = allNames[idx];
+  slider.value = idx;
+  counter.textContent = `${idx + 1} / ${allNames.length}`;
+  loadGalaxy(allNames[idx]);
+}
+
+selector.addEventListener('change', () => {
+  const idx = allNames.indexOf(selector.value);
+  if (idx >= 0) goToIndex(idx);
+});
+
+slider.addEventListener('input', () => goToIndex(parseInt(slider.value)));
+
+document.getElementById('btn-prev').addEventListener('click', () => goToIndex(currentIdx - 1));
+document.getElementById('btn-next').addEventListener('click', () => goToIndex(currentIdx + 1));
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); goToIndex(currentIdx - 1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); goToIndex(currentIdx + 1); }
+});
 
 // ── Mode buttons ─────────────────────────────────────────────────
-document.querySelectorAll('.mode-btn').forEach(btn => {
+document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentMode = btn.dataset.mode;
     updateVisibility();
@@ -597,6 +642,56 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 document.getElementById('toggle-orbit').addEventListener('change', e => {
   controls.autoRotate = e.target.checked;
 });
+
+// ── Galaxy photo from Legacy Survey / DSS ────────────────────────
+// RA/DEC lookup for SPARC galaxies (J2000 degrees)
+const COORDS = {
+  'NGC7793': [359.46,-32.59], 'NGC2403': [114.21,65.60], 'NGC3198': [154.98,45.55],
+  'NGC2841': [140.51,50.98], 'NGC7331': [339.27,34.42], 'NGC6503': [267.96,70.14],
+  'NGC3521': [166.45,-0.04], 'NGC2903': [143.04,21.50], 'DDO154': [188.46,27.15],
+  'IC2574': [157.10,68.41], 'NGC5055': [198.96,42.03], 'NGC2976': [146.81,67.92],
+  'NGC1003': [39.58,40.87], 'NGC3741': [174.03,45.28], 'NGC4010': [179.68,47.26],
+  'NGC6015': [239.31,62.31], 'UGC02885': [57.28,35.59], 'NGC0801': [30.61,38.10],
+  'NGC2955': [145.07,67.91], 'NGC5371': [208.92,40.46], 'NGC5907': [228.97,56.33],
+  'NGC4088': [182.58,50.54], 'NGC4157': [182.77,50.49], 'NGC4217': [184.24,47.09],
+  'NGC3109': [150.78,-26.16], 'NGC2915': [141.55,-76.63], 'NGC1090': [41.60,-0.25],
+  'NGC4183': [183.33,43.70], 'NGC4100': [182.08,49.58], 'UGC06787': [176.73,58.35],
+  'UGC09133': [213.66,45.54], 'UGC00128': [2.37,35.99], 'DDO161': [195.08,6.59],
+  'DDO168': [197.13,45.92], 'DDO170': [199.17,0.74], 'IC4202': [196.83,1.22],
+  'UGC04305': [124.73,70.72], 'UGC07577': [188.72,43.49], 'CamB': [57.33,67.09],
+};
+
+function loadPhoto(name) {
+  const img = document.getElementById('galaxy-photo');
+  const loading = document.getElementById('photo-loading');
+  const noteEl = document.getElementById('photo-note');
+  const nedLink = document.getElementById('ned-link');
+
+  nedLink.href = `https://ned.ipac.caltech.edu/byname?objname=${encodeURIComponent(name)}`;
+
+  const coords = COORDS[name];
+  if (coords) {
+    const [ra, dec] = coords;
+    // Use Legacy Survey cutout (best quality, covers most of the sky)
+    const url = `https://www.legacysurvey.org/viewer/jpeg-cutout?ra=${ra}&dec=${dec}&layer=ls-dr10&pixscale=0.5&size=256`;
+    img.style.display = 'none';
+    loading.style.display = 'block';
+    loading.textContent = 'Loading image...';
+    img.onload = () => { img.style.display = 'block'; loading.style.display = 'none'; };
+    img.onerror = () => {
+      // Fallback to DSS
+      img.src = `https://archive.stsci.edu/cgi-bin/dss_search?r=${ra}&d=${dec}&e=J2000&h=10&w=10&f=gif&v=poss2ukstu_red&s=on`;
+      img.onload = () => { img.style.display = 'block'; loading.style.display = 'none'; };
+      img.onerror = () => { loading.textContent = 'No image available'; img.style.display = 'none'; };
+    };
+    img.src = url;
+    noteEl.textContent = 'Photo: Legacy Survey DR10 (real observation). 3D model: generated from rotation curve data.';
+  } else {
+    img.style.display = 'none';
+    loading.textContent = 'Coordinates not in database';
+    noteEl.textContent = 'Click the NED link above to view this galaxy on NASA databases.';
+  }
+}
 
 // ── Generate 3D galaxy ───────────────────────────────────────────
 function loadGalaxy(name) {
@@ -853,6 +948,7 @@ function loadGalaxy(name) {
   updatePanel(g);
   updateHUD();
   drawTauProfile(g);
+  loadPhoto(g.name);
 }
 
 // ── Visibility control ───────────────────────────────────────────
@@ -1095,7 +1191,8 @@ window.addEventListener('resize', () => {
 });
 
 // ── Load default galaxy ──────────────────────────────────────────
-loadGalaxy('NGC7793');
+// Start with NGC7793 (first in featured list)
+goToIndex(0);
   </script>
 </body>
 </html>
