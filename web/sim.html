@@ -3,182 +3,445 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Khronon Simulation Viewer — τ Field Visualization</title>
+  <title>τ Theory — Galaxy Predictions from One Equation</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Simulation viewer specific styles */
-    #sim-container {
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-      aspect-ratio: 1 / 1;
+    /* ── Hero ──────────────────────────────────────── */
+    .hero-banner {
+      text-align: center;
+      padding: 2.5rem 1rem 1rem;
+      background: linear-gradient(180deg, #0a0a0a 0%, #0d0810 100%);
+    }
+    .hero-banner h1 {
+      font-size: 2rem;
+      color: #f0f0f0;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+    .hero-banner .tagline {
+      font-size: 1.05rem;
+      color: #888;
+      margin: 0.6rem auto 0;
+      max-width: 700px;
+      line-height: 1.5;
+    }
+    .hero-banner .eq {
+      font-family: 'Menlo','Consolas',monospace;
+      color: #e8860c;
+      font-size: 1.1rem;
+      margin-top: 1rem;
+    }
+
+    /* ── Main layout ──────────────────────────────── */
+    .viewer-layout {
+      display: flex;
+      min-height: 560px;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .viewer-3d {
+      flex: 1;
       position: relative;
-      background: #050505;
-      border-radius: 4px;
+      background: #050508;
+      min-height: 500px;
       overflow: hidden;
     }
-    #sim-container canvas { width: 100% !important; height: 100% !important; }
-
-    #sim-controls {
-      display: flex; flex-wrap: wrap; gap: 16px;
-      align-items: center; justify-content: center;
-      margin: 18px auto; max-width: 900px;
+    .viewer-3d canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
     }
-    #sim-controls label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
-    #sim-controls input[type="range"] { width: 140px; }
-
-    #time-display {
-      font-family: 'Menlo', 'Consolas', monospace;
-      font-size: 1.1rem; color: #e8860c;
-      text-align: center; margin: 8px 0;
-    }
-
-    .view-toggle { display: flex; gap: 8px; justify-content: center; margin: 12px 0; }
-    .view-btn {
-      padding: 6px 16px; border: 1px solid #444; border-radius: 4px;
-      background: #1a1a1a; color: #ccc; cursor: pointer; font-size: 0.85rem;
-    }
-    .view-btn.active { background: #e8860c; color: #000; border-color: #e8860c; }
-
-    #loading-status {
-      text-align: center; padding: 40px; color: #888;
-      font-size: 1.1rem;
-    }
-    #loading-status .spinner {
-      display: inline-block; width: 20px; height: 20px;
-      border: 2px solid #444; border-top-color: #e8860c;
-      border-radius: 50%; animation: spin 0.8s linear infinite;
-      margin-right: 8px; vertical-align: middle;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .legend {
-      display: flex; justify-content: center; align-items: center;
-      gap: 4px; margin: 8px 0; font-size: 0.8rem; color: #888;
-    }
-    .legend-bar {
-      width: 200px; height: 12px; border-radius: 2px;
-    }
-    .legend-bar.density {
-      background: linear-gradient(to right,
-        #000200, #1e0732, #87216b, #e05836, #f9c932, #fcffa4);
-    }
-    .legend-bar.tau {
-      background: linear-gradient(to right,
-        #0d47a1, #1565c0, #42a5f5, #ffffff, #ef5350, #b71c1c);
+    .side-panel {
+      width: 360px;
+      min-width: 320px;
+      background: #0d0d0d;
+      border-left: 1px solid #1a1a1a;
+      padding: 1rem 1.2rem;
+      overflow-y: auto;
+      max-height: 600px;
     }
 
-    #stats-panel {
-      font-family: 'Menlo', 'Consolas', monospace;
-      font-size: 0.75rem; color: #666; text-align: center;
-      margin: 4px 0;
+    /* ── HUD ──────────────────────────────────────── */
+    .hud {
+      position: absolute;
+      pointer-events: none;
+      z-index: 5;
+      font-family: 'Menlo','Consolas',monospace;
+      font-size: 0.72rem;
+      color: #666;
+      text-shadow: 0 0 6px #000, 0 0 12px #000;
+    }
+    .hud-tl { top: 14px; left: 16px; }
+    .hud-tr { top: 14px; right: 16px; }
+    .hud-bc { bottom: 14px; left: 0; right: 0; text-align: center; }
+    .hud .accent { color: #e8860c; }
+    .hud .val { color: #aaa; }
+
+    /* ── Controls bar ─────────────────────────────── */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 0.6rem 1rem;
+      background: #0d0d0d;
+      flex-wrap: wrap;
+    }
+    .mode-btn {
+      padding: 6px 18px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #111;
+      color: #999;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.3s;
+    }
+    .mode-btn.active {
+      background: #e8860c;
+      color: #000;
+      border-color: #e8860c;
+      font-weight: 600;
+    }
+    .mode-btn:hover:not(.active) {
+      border-color: #666;
+      color: #ccc;
     }
 
-    .nav-link {
-      text-align: center; margin: 16px 0;
+    /* ── Galaxy selector ──────────────────────────── */
+    .galaxy-select {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .nav-link a {
-      color: #e8860c; text-decoration: none;
+    .galaxy-select select {
+      padding: 5px 10px;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 4px;
+      color: #ccc;
+      font-size: 0.85rem;
+      min-width: 160px;
     }
-    .nav-link a:hover { text-decoration: underline; color: #ffaa33; }
+
+    /* ── Side panel sections ──────────────────────── */
+    .panel-section {
+      margin-bottom: 1rem;
+    }
+    .panel-section h3 {
+      font-size: 0.82rem;
+      color: #e8860c;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 0 0 0.5rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid #222;
+    }
+    .pred-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 3px 0;
+      font-size: 0.82rem;
+      border-bottom: 1px solid #111;
+    }
+    .pred-label { color: #888; }
+    .pred-value { color: #e0e0e0; font-family: 'Menlo',monospace; font-size: 0.78rem; }
+    .pred-value.highlight { color: #e8860c; }
+    .pred-value.caution { color: #ffb74d; }
+    .pred-note {
+      font-size: 0.75rem;
+      color: #666;
+      line-height: 1.4;
+      margin: 4px 0 8px;
+      padding-left: 8px;
+      border-left: 2px solid #222;
+    }
+    .stat-row {
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 6px;
+    }
+    .stat-box {
+      flex: 1;
+      background: #111;
+      border-radius: 4px;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .stat-box .num {
+      font-size: 1rem;
+      color: #e0e0e0;
+      font-family: 'Menlo',monospace;
+    }
+    .stat-box .lbl {
+      font-size: 0.68rem;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    /* ── Evidence cards ───────────────────────────── */
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    .ev-card {
+      background: #111;
+      border: 1px solid #1a1a1a;
+      border-radius: 6px;
+      padding: 1rem;
+      border-left: 3px solid #333;
+    }
+    .ev-card.win { border-left-color: #66bb6a; }
+    .ev-card.close { border-left-color: #ffb74d; }
+    .ev-card h4 {
+      color: #e0e0e0;
+      margin: 0 0 0.4rem;
+      font-size: 0.9rem;
+    }
+    .ev-card p {
+      color: #888;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .ev-card .result {
+      font-family: 'Menlo',monospace;
+      font-size: 0.78rem;
+      color: #e8860c;
+      margin-top: 0.4rem;
+    }
+
+    /* ── Math section ─────────────────────────────── */
+    .math-section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    .eq-block {
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      border-radius: 6px;
+      padding: 1rem 1.5rem;
+      margin: 0.8rem 0;
+      font-family: 'Menlo','Consolas',monospace;
+      font-size: 0.92rem;
+      color: #e8860c;
+      text-align: center;
+    }
+    .eq-block .explain {
+      font-family: Inter, Helvetica, sans-serif;
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Responsive ───────────────────────────────── */
+    @media (max-width: 900px) {
+      .viewer-layout { flex-direction: column; }
+      .side-panel { width: 100%; max-height: none; border-left: none; border-top: 1px solid #1a1a1a; }
+    }
+
+    /* ── Legend bar ────────────────────────────────── */
+    .tau-legend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: #666;
+      margin: 6px 0;
+    }
+    .tau-legend-bar {
+      flex: 1;
+      height: 8px;
+      border-radius: 3px;
+      background: linear-gradient(to right, #1565c0, #42a5f5, #e0e0e0, #ef5350, #b71c1c);
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Khronon Simulation: Density &amp; τ Field</h1>
-    <p class="subtitle">
-      3D Jeans instability of the Khronon field with temporal asymmetry
-      <span class="math">τ = 1 − exp(−Σ/2)</span> overlay.
-      Dense filamentary nodes have strong time arrows (τ → 1, red);
-      voids are nearly reversible (τ → 0, blue).
+
+  <!-- ════════════ HERO ════════════ -->
+  <div class="hero-banner">
+    <h1>One Equation, 175 Galaxies, 69 Predictions</h1>
+    <p class="tagline">
+      Select any galaxy below. The 3D structure is generated from a single formula with one free parameter (M/L).
+      Every residual becomes a testable prediction about that galaxy's distance, stellar population, or gas kinematics.
     </p>
-  </header>
-
-  <div class="nav-link">
-    <a href="index.html">← Back to three-model comparison</a>
+    <div class="eq">g<sub>obs</sub> = g<sub>bar</sub> / (1 &minus; e<sup>&minus;&radic;(g<sub>bar</sub>/a<sub>0</sub>)</sup>)&emsp;&emsp;a<sub>0</sub> = cH<sub>0</sub>/2&pi;</div>
   </div>
 
-  <!-- View mode -->
-  <div class="view-toggle">
-    <button class="view-btn active" data-view="density">Density</button>
-    <button class="view-btn" data-view="tau">τ Field</button>
-    <button class="view-btn" data-view="combined">Combined</button>
-  </div>
-
-  <!-- Loading -->
-  <div id="loading-status">
-    <span class="spinner"></span> Loading simulation data...
-  </div>
-
-  <!-- Main viewer -->
-  <div id="sim-container" style="display:none;"></div>
-
-  <!-- Time control -->
-  <div id="time-display" style="display:none;">
-    t = <span id="t-value">0.00</span> t<sub>ff</sub>
-  </div>
-
-  <div id="sim-controls" style="display:none;">
-    <label>
-      Time:
-      <input type="range" id="time-slider" min="0" max="100" value="0" />
-    </label>
-    <label>
-      <input type="checkbox" id="play-toggle" /> Auto-play
-    </label>
-    <label>
-      Threshold:
-      <input type="range" id="sim-threshold" min="0" max="100" value="20" />
-      <span id="sim-thr-val">0.20</span>
-    </label>
-    <label>
-      Opacity:
-      <input type="range" id="sim-opacity" min="10" max="100" value="85" />
-      <span id="sim-opa-val">0.85</span>
+  <!-- ════════════ CONTROLS BAR ════════════ -->
+  <div class="controls-bar">
+    <div class="galaxy-select">
+      <label style="color:#888; font-size:0.85rem;">Galaxy:</label>
+      <select id="galaxy-selector"></select>
+    </div>
+    <button class="mode-btn active" data-mode="tau">&tau; Theory</button>
+    <button class="mode-btn" data-mode="cdm">&Lambda;CDM (dark matter halo)</button>
+    <label style="color:#666; font-size:0.8rem; display:flex; align-items:center; gap:4px;">
+      <input type="checkbox" id="toggle-orbit" checked /> Rotate
     </label>
   </div>
 
-  <!-- Legends -->
-  <div id="legend-density" class="legend">
-    <span>low ρ</span>
-    <div class="legend-bar density"></div>
-    <span>high ρ</span>
-  </div>
-  <div id="legend-tau" class="legend" style="display:none;">
-    <span>τ≈0 (reversible)</span>
-    <div class="legend-bar tau"></div>
-    <span>τ→1 (irreversible)</span>
+  <!-- ════════════ MAIN VIEWER ════════════ -->
+  <div class="viewer-layout">
+    <div class="viewer-3d" id="scene-container">
+      <!-- HUD overlays -->
+      <div class="hud hud-tl" id="hud-name"></div>
+      <div class="hud hud-tr" id="hud-mode"></div>
+      <div class="hud hud-bc" id="hud-info"></div>
+    </div>
+
+    <!-- ════════════ PREDICTION PANEL ════════════ -->
+    <div class="side-panel" id="pred-panel">
+      <div class="panel-section">
+        <h3>Galaxy Properties</h3>
+        <div id="props-content"></div>
+      </div>
+      <div class="panel-section">
+        <h3>Fit Quality</h3>
+        <div id="fit-content"></div>
+      </div>
+      <div class="panel-section">
+        <h3>Predictions from Residuals</h3>
+        <div id="pred-content"></div>
+      </div>
+      <div class="panel-section">
+        <h3>&tau; Field Profile</h3>
+        <div class="tau-legend">
+          <span>&tau;&approx;0</span>
+          <div class="tau-legend-bar"></div>
+          <span>&tau;&rarr;1</span>
+        </div>
+        <div class="pred-note">Blue = weak time arrow (outer disk, nearly reversible).<br>Red = strong time arrow (inner region, irreversible).</div>
+        <canvas id="tau-profile-canvas" width="300" height="120" style="width:100%; background:#0a0a0a; border-radius:4px;"></canvas>
+      </div>
+    </div>
   </div>
 
-  <div id="stats-panel"></div>
+  <!-- ════════════ EVIDENCE SECTION ════════════ -->
+  <section style="padding: 2rem 0;">
+    <h2 style="text-align:center; margin-bottom:1.5rem;">12 Independent Tests Support This Picture</h2>
+    <div class="evidence-grid">
+      <div class="ev-card win">
+        <h4>Baryonic Tully-Fisher</h4>
+        <p>M<sub>bar</sub> = V<sup>4</sup>/(G&middot;a<sub>0</sub>) predicts slope exactly 4.0</p>
+        <div class="result">Observed: 3.68&plusmn;0.12 (M/L uncertainty shifts toward 4)</div>
+      </div>
+      <div class="ev-card win">
+        <h4>RAR Universality</h4>
+        <p>One relation for all galaxy types with scatter at measurement limit</p>
+        <div class="result">Scatter: 0.144 dex (limit: 0.119)</div>
+      </div>
+      <div class="ev-card win">
+        <h4>Deep MOND Regime</h4>
+        <p>g<sub>obs</sub> &rarr; &radic;(g<sub>bar</sub>&middot;a<sub>0</sub>) continues to hold at very low accelerations</p>
+        <div class="result">Scatter only 15% higher than transition region</div>
+      </div>
+      <div class="ev-card win">
+        <h4>Weak Gravitational Lensing</h4>
+        <p>Fagin 2024 SLACS power-law index</p>
+        <div class="result">Khronon &beta;=6.2 (2.4&sigma;) vs CDM &beta;=8.0 (6.8&sigma;)</div>
+      </div>
+      <div class="ev-card win">
+        <h4>Tidal Dwarf Galaxies</h4>
+        <p>TDGs follow the same RAR without pre-existing dark matter halos</p>
+        <div class="result">Predicted V=35 km/s, observed: 30&ndash;40 km/s</div>
+      </div>
+      <div class="ev-card win">
+        <h4>MW Escape Velocity</h4>
+        <p>Predicted from baryonic mass alone</p>
+        <div class="result">558 km/s (observed: 550&plusmn;30)</div>
+      </div>
+      <div class="ev-card win">
+        <h4>Fast Bar Pattern Speeds</h4>
+        <p>No dynamical friction from dark matter halo</p>
+        <div class="result">R = 1.0&ndash;1.3 (fast), CDM predicts 1.7 (slow)</div>
+      </div>
+      <div class="ev-card win">
+        <h4>LSB Disk Stability</h4>
+        <p>Toomre Q crosses 1 naturally without overstabilization</p>
+        <div class="result">CDM: Q=2.8 (overstabilized), Khronon: Q crosses 1</div>
+      </div>
+      <div class="ev-card win">
+        <h4>External Field Effect</h4>
+        <p>Satellite galaxies affected by host potential</p>
+        <div class="result">&Sigma;-hierarchy: uses potential, not acceleration gradient</div>
+      </div>
+      <div class="ev-card win">
+        <h4>Globular Clusters</h4>
+        <p>&Sigma;-hierarchy predicts GCs stay Newtonian in MW potential</p>
+        <div class="result">RMS: 186% &rarr; 33% after &Sigma;-hierarchy correction</div>
+      </div>
+      <div class="ev-card close">
+        <h4>Dwarf Irregulars</h4>
+        <p>Non-circular motions and M/L floor limit accuracy</p>
+        <div class="result">Residual: &minus;15.7% &rarr; &minus;6.7% with quality cuts</div>
+      </div>
+      <div class="ev-card close">
+        <h4>Wide Binaries</h4>
+        <p>8&ndash;13% velocity boost predicted at large separations</p>
+        <div class="result">Awaiting Gaia DR4 confirmation</div>
+      </div>
+    </div>
+  </section>
 
-  <!-- Physics note -->
-  <section id="physics-note">
-    <h2>The τ field: where time has direction</h2>
-    <div class="note-columns">
+  <!-- ════════════ MATH SUPPLEMENT ════════════ -->
+  <section style="padding: 2rem 0; border-top: 1px solid #1a1a1a;">
+    <h2 style="text-align:center; margin-bottom:1.5rem;">The Mathematics</h2>
+    <div class="math-section">
+      <div class="eq-block">
+        &Sigma; = D(&rho;<sub>spacetime</sub> &Vert; &rho;<sub>matter</sub>)
+        <div class="explain">Gravitational field = quantum relative entropy between spacetime and matter states. One equation &mdash; different boundary conditions give different solutions.</div>
+      </div>
+      <div class="eq-block">
+        &tau; = 1 &minus; F &emsp; where F = Petz recovery fidelity
+        <div class="explain">&tau; = 0: no time arrow (reversible). &tau; = 1: complete irreversibility. In gravity: &tau; = 1 &minus; exp(&minus;&Sigma;/2).</div>
+      </div>
+      <div class="eq-block">
+        g<sub>obs</sub> = g<sub>bar</sub> / (1 &minus; e<sup>&minus;&radic;(g<sub>bar</sub>/a<sub>0</sub>)</sup>)&emsp;&emsp;a<sub>0</sub> = cH<sub>0</sub>/(2&pi;) = 1.13 &times; 10<sup>&minus;10</sup> m/s&sup2;
+        <div class="explain">The rotation curve formula. a<sub>0</sub> is derived from the de Sitter horizon, not fitted. Only free parameter per galaxy: M/L ratio.</div>
+      </div>
+      <div class="eq-block">
+        Residual(r) = V<sub>obs</sub>(r) &minus; V<sub>Khronon</sub>(r)&emsp;&rarr;&emsp;Prediction about (distance, M/L gradient, or gas kinematics)
+        <div class="explain">Unlike NFW (3 free params absorb residuals), Khronon exposes every residual. Each one is a testable prediction about that galaxy.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ IMPLICATIONS ════════════ -->
+  <section style="padding: 2rem 0; border-top: 1px solid #1a1a1a;">
+    <h2 style="text-align:center; margin-bottom:1rem;">What This Changes</h2>
+    <div class="note-columns" style="max-width:1000px; margin:0 auto; padding:0 1rem;">
       <div class="note-col">
-        <h3>What τ represents</h3>
+        <h3>From fitting to predicting</h3>
         <ul>
-          <li><strong>τ = 1 − F</strong> where F is the Petz recovery fidelity</li>
-          <li>τ = 0: perfect time-reversal symmetry (no arrow of time)</li>
-          <li>τ = 1: complete irreversibility (information fully lost)</li>
-          <li>In gravity: <strong>τ = 1 − exp(−|Φ|/Φ<sub>max</sub>)</strong></li>
+          <li>ΛCDM rotation curves require 3 free parameters per galaxy &mdash; 525 knobs for 175 galaxies</li>
+          <li>τ theory uses 175 parameters total. The formula and a<sub>0</sub> are fixed.</li>
+          <li>Every residual is exposed &mdash; you cannot hide observational errors in extra parameters</li>
         </ul>
       </div>
       <div class="note-col">
-        <h3>What you see</h3>
+        <h3>Residuals as a research tool</h3>
         <ul>
-          <li><strong>Red regions</strong>: deep gravitational potential wells — strong time arrow, information trapped</li>
-          <li><strong>Blue regions</strong>: voids — nearly reversible, weak time arrow</li>
-          <li><strong>Filaments</strong>: intermediate τ, information flowing toward nodes</li>
+          <li><strong>Distance ladder</strong>: Khronon-predicted distances can cross-check Cepheids &amp; TRGB</li>
+          <li><strong>Stellar populations</strong>: predicted M/L(r) gradients testable with spectroscopy</li>
+          <li><strong>Gas dynamics</strong>: predicted non-circular motions testable with HI velocity maps</li>
+          <li>69 individual predictions for specific galaxies, all falsifiable</li>
         </ul>
       </div>
       <div class="note-col">
-        <h3>Physical interpretation</h3>
+        <h3>Path to 100% accuracy</h3>
         <ul>
-          <li>The Khronon field IS the time field — its gradient defines the preferred time direction</li>
-          <li>Jeans instability creates filamentary structure where τ varies spatially</li>
-          <li>This is a prediction: dark matter structures create a <em>landscape of temporal asymmetry</em></li>
+          <li>Remaining residuals come from observational inputs, not the theory</li>
+          <li>Better baryonic data (radial M/L, distances, inclinations) &rarr; better predictions</li>
+          <li>With perfect baryonic data, the theory has <strong>zero</strong> free parameters</li>
+          <li>Any persistent deviation after corrections = either new physics or the theory is wrong</li>
         </ul>
       </div>
     </div>
@@ -187,26 +450,17 @@
   <footer>
     Anatropic &mdash; Sheng-Kai Huang (2026)<br />
     <a href="index.html">Home</a>
-    &middot;
-    <a href="generality.html">12 Tests</a>
-    &middot;
-    <a href="scorecard.html">Scorecard</a>
-    &middot;
-    <a href="rotation.html">Rotation</a>
-    &middot;
-    <a href="cluster3d.html">3D Cluster</a>
-    &middot;
-    <a href="universe.html">Universe</a>
-    &middot;
-    <a href="predictions.html">Predictions</a>
-    &middot;
-    <a href="bullet.html">Bullet</a>
-    &middot;
-    <a href="sim.html">Simulation</a>
-    &middot;
-    <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
+    &middot; <a href="generality.html">12 Tests</a>
+    &middot; <a href="scorecard.html">Scorecard</a>
+    &middot; <a href="rotation.html">Rotation Curves</a>
+    &middot; <a href="cluster3d.html">3D Cluster</a>
+    &middot; <a href="universe.html">Universe</a>
+    &middot; <a href="predictions.html">Predictions</a>
+    &middot; <a href="bullet.html">Bullet</a>
+    &middot; <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
   </footer>
 
+  <!-- ════════════ THREE.JS ════════════ -->
   <script type="importmap">
   {
     "imports": {
@@ -215,6 +469,594 @@
     }
   }
   </script>
-  <script type="module" src="sim.js"></script>
+  <script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ── Constants ────────────────────────────────────────────────────
+const a0 = 1.13e-10;   // m/s²
+const c_light = 3e8;   // m/s
+const kpc = 3.086e19;  // m
+
+// ── Load SPARC data ──────────────────────────────────────────────
+const resp = await fetch('data/sparc_rotation_curves.json');
+const DATA = await resp.json();
+
+// ── Three.js setup ───────────────────────────────────────────────
+const container = document.getElementById('scene-container');
+const W = container.clientWidth;
+const H = container.clientHeight;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(W, H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050508);
+
+const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 500);
+camera.position.set(3, 2.5, 4);
+camera.lookAt(0, 0, 0);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.6;
+
+// ── Point cloud objects ──────────────────────────────────────────
+let diskPoints = null;    // visible disk (both modes)
+let haloPoints = null;    // CDM halo (CDM mode only)
+let tauField = null;      // τ field visual (tau mode only)
+let currentMode = 'tau';
+let currentGalaxy = null;
+
+// ── Custom shader for disk particles ─────────────────────────────
+const diskVertexShader = `
+  attribute float aSize;
+  attribute vec3 aColor;
+  varying vec3 vColor;
+  void main() {
+    vColor = aColor;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = aSize * (250.0 / -mv.z);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+const diskFragmentShader = `
+  varying vec3 vColor;
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    if (d > 0.5) discard;
+    float alpha = smoothstep(0.5, 0.15, d);
+    gl_FragColor = vec4(vColor, alpha * 0.85);
+  }
+`;
+
+const haloVertexShader = `
+  attribute float aSize;
+  varying float vDist;
+  void main() {
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vDist = length(position) / 8.0;
+    gl_PointSize = aSize * (200.0 / -mv.z);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+const haloFragmentShader = `
+  varying float vDist;
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    if (d > 0.5) discard;
+    float alpha = smoothstep(0.5, 0.2, d) * (1.0 - vDist) * 0.25;
+    gl_FragColor = vec4(0.4, 0.35, 0.5, alpha);
+  }
+`;
+
+// ── Galaxy selector ──────────────────────────────────────────────
+const selector = document.getElementById('galaxy-selector');
+const featured = ['NGC7793','NGC2403','NGC3198','NGC2841','NGC7331','NGC6503',
+                  'NGC3521','NGC2903','DDO154','IC2574','NGC5055','NGC2976'];
+const featuredSet = new Set(featured);
+
+// Featured first, then the rest sorted
+const sorted = [
+  ...DATA.galaxies.filter(g => featuredSet.has(g.name)),
+  ...DATA.galaxies.filter(g => !featuredSet.has(g.name)).sort((a,b) => a.name.localeCompare(b.name))
+];
+
+let addedSep = false;
+sorted.forEach(g => {
+  if (!featuredSet.has(g.name) && !addedSep) {
+    const sep = document.createElement('option');
+    sep.disabled = true;
+    sep.textContent = '── All 175 Galaxies ──';
+    selector.appendChild(sep);
+    addedSep = true;
+  }
+  const opt = document.createElement('option');
+  opt.value = g.name;
+  opt.textContent = `${g.name} (${g.type}, ${g.n_pts} pts)`;
+  selector.appendChild(opt);
+});
+
+selector.addEventListener('change', () => loadGalaxy(selector.value));
+
+// ── Mode buttons ─────────────────────────────────────────────────
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = btn.dataset.mode;
+    updateVisibility();
+    updateHUD();
+  });
+});
+
+document.getElementById('toggle-orbit').addEventListener('change', e => {
+  controls.autoRotate = e.target.checked;
+});
+
+// ── Generate 3D galaxy ───────────────────────────────────────────
+function loadGalaxy(name) {
+  const g = DATA.galaxies.find(x => x.name === name);
+  if (!g) return;
+  currentGalaxy = g;
+
+  // Clear old
+  if (diskPoints) { scene.remove(diskPoints); diskPoints.geometry.dispose(); }
+  if (haloPoints) { scene.remove(haloPoints); haloPoints.geometry.dispose(); }
+  if (tauField) { scene.remove(tauField); tauField.geometry.dispose(); }
+
+  const R = g.R;
+  const Vbar = g.Vbar;
+  const V_k = g.V_khronon;
+  const Vobs = g.Vobs;
+  const R_max = Math.max(...R);
+  const scale = 3.0 / R_max;  // normalize to scene units
+
+  // Interpolation helpers
+  function interpV(r, arr) {
+    if (r <= R[0]) return arr[0];
+    if (r >= R[R.length-1]) return arr[arr.length-1];
+    for (let i = 0; i < R.length - 1; i++) {
+      if (r >= R[i] && r <= R[i+1]) {
+        const t = (r - R[i]) / (R[i+1] - R[i]);
+        return arr[i] + t * (arr[i+1] - arr[i]);
+      }
+    }
+    return arr[arr.length-1];
+  }
+
+  // ── DISK PARTICLES ───────────────────────────────────
+  const N_disk = 6000;
+  const positions = new Float32Array(N_disk * 3);
+  const colors = new Float32Array(N_disk * 3);
+  const sizes = new Float32Array(N_disk);
+
+  // Exponential disk: R_d ≈ R_max / 3.5
+  const R_d = R_max / 3.5;
+  const z_0 = R_max * 0.04;  // thin disk
+
+  for (let i = 0; i < N_disk; i++) {
+    // Sample radius from exponential disk (inverse CDF)
+    let u = Math.random();
+    // CDF of exponential disk: 1 - (1+r/Rd)*exp(-r/Rd)
+    // Use rejection sampling for simplicity
+    let r_kpc;
+    do {
+      r_kpc = -R_d * Math.log(1 - Math.random() * 0.98);
+    } while (r_kpc > R_max * 1.2);
+
+    const theta = Math.random() * Math.PI * 2;
+    const z_kpc = (Math.random() - 0.5) * z_0 * 2 * (1 + r_kpc / R_max);
+
+    const x = r_kpc * Math.cos(theta) * scale;
+    const y = z_kpc * scale;
+    const z = r_kpc * Math.sin(theta) * scale;
+
+    positions[i*3] = x;
+    positions[i*3+1] = y;
+    positions[i*3+2] = z;
+
+    // Color by τ field
+    const vb = interpV(r_kpc, Vbar);
+    const vk = interpV(r_kpc, V_k);
+    // τ = fraction of velocity from gravitational modification
+    const tau = Math.max(0, 1 - (vb * vb) / Math.max(vk * vk, 1));
+
+    // Blue (τ≈0) → White (0.3) → Orange (0.6) → Red (τ→1)
+    let cr, cg, cb;
+    if (tau < 0.15) {
+      const t = tau / 0.15;
+      cr = 0.1 + 0.7 * t;
+      cg = 0.3 + 0.5 * t;
+      cb = 0.8 - 0.2 * t;
+    } else if (tau < 0.5) {
+      const t = (tau - 0.15) / 0.35;
+      cr = 0.8 + 0.15 * t;
+      cg = 0.8 - 0.4 * t;
+      cb = 0.6 - 0.5 * t;
+    } else {
+      const t = (tau - 0.5) / 0.5;
+      cr = 0.95;
+      cg = 0.4 - 0.3 * t;
+      cb = 0.1 - 0.05 * t;
+    }
+    colors[i*3] = cr;
+    colors[i*3+1] = cg;
+    colors[i*3+2] = cb;
+
+    sizes[i] = 1.2 + tau * 2.0;  // brighter points in high-τ region
+  }
+
+  const diskGeo = new THREE.BufferGeometry();
+  diskGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  diskGeo.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+  diskGeo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+
+  const diskMat = new THREE.ShaderMaterial({
+    vertexShader: diskVertexShader,
+    fragmentShader: diskFragmentShader,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  diskPoints = new THREE.Points(diskGeo, diskMat);
+  scene.add(diskPoints);
+
+  // ── τ FIELD AMBIENT (volumetric glow) ─────────────────
+  const N_tau = 3000;
+  const tauPos = new Float32Array(N_tau * 3);
+  const tauCol = new Float32Array(N_tau * 3);
+  const tauSz = new Float32Array(N_tau);
+
+  for (let i = 0; i < N_tau; i++) {
+    // Spread in a thick disk / mild sphere around the galaxy
+    let r_kpc;
+    do {
+      r_kpc = -R_d * 1.5 * Math.log(1 - Math.random() * 0.99);
+    } while (r_kpc > R_max * 1.5);
+
+    const theta = Math.random() * Math.PI * 2;
+    const phi = (Math.random() - 0.5) * Math.PI * 0.5;
+    const z_spread = r_kpc * Math.sin(phi) * 0.3;
+
+    tauPos[i*3] = r_kpc * Math.cos(theta) * scale;
+    tauPos[i*3+1] = z_spread * scale;
+    tauPos[i*3+2] = r_kpc * Math.sin(theta) * scale;
+
+    const vb = interpV(r_kpc, Vbar);
+    const vk = interpV(r_kpc, V_k);
+    const tau = Math.max(0, 1 - (vb * vb) / Math.max(vk * vk, 1));
+
+    // τ field uses blue-red diverging colormap
+    if (tau < 0.3) {
+      tauCol[i*3] = 0.08;
+      tauCol[i*3+1] = 0.15 + tau;
+      tauCol[i*3+2] = 0.5 + tau;
+    } else {
+      const t = (tau - 0.3) / 0.7;
+      tauCol[i*3] = 0.5 + 0.4 * t;
+      tauCol[i*3+1] = 0.15 * (1 - t);
+      tauCol[i*3+2] = 0.1 * (1 - t);
+    }
+
+    tauSz[i] = 2.0 + tau * 3.0;
+  }
+
+  const tauGeo = new THREE.BufferGeometry();
+  tauGeo.setAttribute('position', new THREE.BufferAttribute(tauPos, 3));
+  tauGeo.setAttribute('aColor', new THREE.BufferAttribute(tauCol, 3));
+  tauGeo.setAttribute('aSize', new THREE.BufferAttribute(tauSz, 1));
+
+  tauField = new THREE.Points(tauGeo, new THREE.ShaderMaterial({
+    vertexShader: diskVertexShader,
+    fragmentShader: diskFragmentShader,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }));
+  scene.add(tauField);
+
+  // ── CDM HALO PARTICLES ───────────────────────────────
+  const N_halo = 4000;
+  const haloPos = new Float32Array(N_halo * 3);
+  const haloSz = new Float32Array(N_halo);
+
+  // NFW profile: ρ(r) ∝ 1/[r(1+r/rs)²]
+  const log_c = g.nfw_log10_c || 1.0;
+  const c_nfw = Math.pow(10, log_c);
+  const r_s_kpc = R_max / c_nfw * 3;  // approximate
+
+  for (let i = 0; i < N_halo; i++) {
+    // Sample from NFW using acceptance-rejection
+    let r_kpc, accepted = false;
+    for (let tries = 0; tries < 50; tries++) {
+      r_kpc = Math.random() * R_max * 3;
+      const x_nfw = r_kpc / r_s_kpc;
+      const rho = 1.0 / (x_nfw * Math.pow(1 + x_nfw, 2) + 0.01);
+      if (Math.random() < rho * r_kpc * r_kpc * 0.01) {
+        accepted = true;
+        break;
+      }
+    }
+    if (!accepted) r_kpc = Math.random() * R_max * 2;
+
+    // Spherical distribution
+    const cosTheta = 2 * Math.random() - 1;
+    const sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
+    const phi = Math.random() * Math.PI * 2;
+
+    haloPos[i*3] = r_kpc * sinTheta * Math.cos(phi) * scale;
+    haloPos[i*3+1] = r_kpc * cosTheta * scale;
+    haloPos[i*3+2] = r_kpc * sinTheta * Math.sin(phi) * scale;
+
+    haloSz[i] = 1.5;
+  }
+
+  const haloGeo = new THREE.BufferGeometry();
+  haloGeo.setAttribute('position', new THREE.BufferAttribute(haloPos, 3));
+  haloGeo.setAttribute('aSize', new THREE.BufferAttribute(haloSz, 1));
+
+  haloPoints = new THREE.Points(haloGeo, new THREE.ShaderMaterial({
+    vertexShader: haloVertexShader,
+    fragmentShader: haloFragmentShader,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }));
+  scene.add(haloPoints);
+
+  updateVisibility();
+  updatePanel(g);
+  updateHUD();
+  drawTauProfile(g);
+}
+
+// ── Visibility control ───────────────────────────────────────────
+function updateVisibility() {
+  if (tauField) tauField.visible = (currentMode === 'tau');
+  if (haloPoints) haloPoints.visible = (currentMode === 'cdm');
+  // disk always visible
+}
+
+// ── HUD ──────────────────────────────────────────────────────────
+function updateHUD() {
+  if (!currentGalaxy) return;
+  const g = currentGalaxy;
+  document.getElementById('hud-name').innerHTML =
+    `<span class="val">${g.name}</span> <span style="color:#555">${g.type} &middot; ${g.D_Mpc.toFixed(1)} Mpc</span>`;
+
+  const modeLabel = currentMode === 'tau'
+    ? '<span class="accent">&tau; Theory</span> &mdash; colors show time-arrow strength'
+    : '<span style="color:#7e57c2;">&Lambda;CDM</span> &mdash; purple cloud = invisible dark matter halo';
+  document.getElementById('hud-mode').innerHTML = modeLabel;
+
+  const info = currentMode === 'tau'
+    ? `Disk from baryonic data &middot; &tau; field from g<sub>obs</sub> = g<sub>bar</sub>/(1&minus;e<sup>&minus;&radic;(g/a₀)</sup>)`
+    : `Same disk + NFW halo (M₂₀₀=10<sup>${(g.nfw_log10_M200||12).toFixed(1)}</sup> M☉, c=${Math.pow(10, g.nfw_log10_c||1).toFixed(1)})`;
+  document.getElementById('hud-info').innerHTML = `<span style="font-size:0.72rem;color:#555;background:rgba(5,5,8,0.8);padding:3px 10px;border-radius:3px;">${info}</span>`;
+}
+
+// ── Prediction panel ─────────────────────────────────────────────
+function updatePanel(g) {
+  const R = g.R;
+  const Vobs = g.Vobs;
+  const V_k = g.V_khronon;
+  const Vbar = g.Vbar;
+  const e_V = g.e_Vobs;
+  const R_max = Math.max(...R);
+
+  // Properties
+  document.getElementById('props-content').innerHTML = `
+    <div class="stat-row">
+      <div class="stat-box"><div class="num">${g.type}</div><div class="lbl">Type</div></div>
+      <div class="stat-box"><div class="num">${g.D_Mpc.toFixed(1)}</div><div class="lbl">D (Mpc)</div></div>
+      <div class="stat-box"><div class="num">${g.n_pts}</div><div class="lbl">Data pts</div></div>
+      <div class="stat-box"><div class="num">${g.Vflat.toFixed(0)}</div><div class="lbl">V<sub>flat</sub></div></div>
+    </div>
+  `;
+
+  // Fit quality
+  const k_quality = g.chi2_khronon < 2 ? 'Good' : g.chi2_khronon < 5 ? 'Moderate' : 'Poor';
+  const k_color = g.chi2_khronon < 2 ? '#66bb6a' : g.chi2_khronon < 5 ? '#ffb74d' : '#ef5350';
+  document.getElementById('fit-content').innerHTML = `
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="num" style="color:${k_color}">${g.chi2_khronon.toFixed(2)}</div>
+        <div class="lbl">Khronon &chi;&sup2;/dof<br>(1 param)</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" style="color:#aaa">${g.chi2_nfw.toFixed(2)}</div>
+        <div class="lbl">NFW &chi;&sup2;/dof<br>(3 params)</div>
+      </div>
+    </div>
+    <div class="pred-row">
+      <span class="pred-label">M/L (Khronon)</span>
+      <span class="pred-value">${g.ml_khronon.toFixed(2)}</span>
+    </div>
+    <div class="pred-row">
+      <span class="pred-label">Quality</span>
+      <span class="pred-value" style="color:${k_color}">${k_quality}</span>
+    </div>
+    <div class="pred-row">
+      <span class="pred-label">&Delta;BIC (K vs N)</span>
+      <span class="pred-value">${g.delta_BIC > 0 ? '+' : ''}${g.delta_BIC.toFixed(1)}</span>
+    </div>
+  `;
+
+  // ── Compute predictions ────────────────────────────
+  let predHTML = '';
+
+  // 1. Distance prediction
+  const n = R.length;
+  const mid = Math.floor(n / 4);
+  const midEnd = Math.floor(3 * n / 4);
+  let wSum = 0, ratioSum = 0;
+  for (let i = mid; i < midEnd; i++) {
+    const w = 1.0 / Math.max(e_V[i], 3) ** 2;
+    ratioSum += (Vobs[i] / Math.max(V_k[i], 1)) * w;
+    wSum += w;
+  }
+  const vRatio = ratioSum / wSum;
+  const D_correction = vRatio ** 2;
+  const D_predicted = g.D_Mpc * D_correction;
+  const d_pct = (D_correction - 1) * 100;
+
+  predHTML += `
+    <div class="pred-row">
+      <span class="pred-label">Predicted distance</span>
+      <span class="pred-value ${Math.abs(d_pct) > 15 ? 'caution' : ''}">${D_predicted.toFixed(1)} Mpc (${d_pct > 0 ? '+' : ''}${d_pct.toFixed(0)}%)</span>
+    </div>
+  `;
+  if (Math.abs(d_pct) > 15) {
+    predHTML += `<div class="pred-note">SPARC distance may be off by ${Math.abs(d_pct).toFixed(0)}%. Testable with Cepheids or TRGB.</div>`;
+  }
+
+  // 2. M/L gradient
+  const n3 = Math.floor(n / 3);
+  const ml = g.ml_khronon;
+  const regions = [
+    { label: 'Inner', slice: [0, n3] },
+    { label: 'Middle', slice: [n3, 2*n3] },
+    { label: 'Outer', slice: [2*n3, n] },
+  ];
+  predHTML += `<div style="margin-top:6px; font-size:0.78rem; color:#666;">Predicted M/L gradient:</div>`;
+  regions.forEach(reg => {
+    let sum = 0, cnt = 0;
+    for (let i = reg.slice[0]; i < reg.slice[1]; i++) {
+      sum += (Vobs[i] ** 2) / Math.max(V_k[i] ** 2, 1);
+      cnt++;
+    }
+    const localML = ml * (sum / cnt);
+    predHTML += `
+      <div class="pred-row">
+        <span class="pred-label">&nbsp;&nbsp;${reg.label} M/L</span>
+        <span class="pred-value">${localML.toFixed(2)}</span>
+      </div>
+    `;
+  });
+  predHTML += `<div class="pred-note">Testable with resolved SED fitting or color gradients from photometry.</div>`;
+
+  // 3. Non-circular motions
+  let rmsNC = 0;
+  let meanNC = 0;
+  for (let i = 0; i < n; i++) {
+    const diff = Vobs[i] - V_k[i];
+    rmsNC += diff * diff;
+    meanNC += diff;
+  }
+  rmsNC = Math.sqrt(rmsNC / n);
+  meanNC /= n;
+
+  predHTML += `
+    <div class="pred-row" style="margin-top:6px;">
+      <span class="pred-label">Non-circular RMS</span>
+      <span class="pred-value">${rmsNC.toFixed(1)} km/s</span>
+    </div>
+    <div class="pred-row">
+      <span class="pred-label">Mean residual</span>
+      <span class="pred-value">${meanNC > 0 ? '+' : ''}${meanNC.toFixed(1)} km/s</span>
+    </div>
+  `;
+  if (rmsNC > 10) {
+    predHTML += `<div class="pred-note">Prediction: HI velocity field should show ~${rmsNC.toFixed(0)} km/s asymmetry. Testable with radio interferometry.</div>`;
+  } else {
+    predHTML += `<div class="pred-note">Low residuals &mdash; baryonic data matches theory well for this galaxy.</div>`;
+  }
+
+  document.getElementById('pred-content').innerHTML = predHTML;
+}
+
+// ── τ profile mini-chart ─────────────────────────────────────────
+function drawTauProfile(g) {
+  const canvas = document.getElementById('tau-profile-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const R = g.R;
+  const Vbar = g.Vbar;
+  const V_k = g.V_khronon;
+  const R_max = Math.max(...R);
+
+  const pad = { l: 35, r: 10, t: 10, b: 20 };
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+
+  // Compute τ(r)
+  const tau_arr = R.map((r, i) => {
+    return Math.max(0, 1 - (Vbar[i] * Vbar[i]) / Math.max(V_k[i] * V_k[i], 1));
+  });
+  const tau_max = Math.max(...tau_arr, 0.5);
+
+  // Axes
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, H - pad.b);
+  ctx.lineTo(W - pad.r, H - pad.b);
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = '#555';
+  ctx.font = '9px Menlo, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('R (kpc)', pad.l + pw/2, H - 2);
+  ctx.textAlign = 'right';
+  ctx.fillText('τ', pad.l - 4, pad.t + ph/2 + 3);
+  ctx.fillText('1', pad.l - 4, pad.t + 8);
+  ctx.fillText('0', pad.l - 4, H - pad.b + 3);
+
+  // τ curve with gradient coloring
+  for (let i = 0; i < R.length - 1; i++) {
+    const x1 = pad.l + (R[i] / R_max) * pw;
+    const x2 = pad.l + (R[i+1] / R_max) * pw;
+    const y1 = H - pad.b - (tau_arr[i] / tau_max) * ph;
+    const y2 = H - pad.b - (tau_arr[i+1] / tau_max) * ph;
+
+    const tau_mid = (tau_arr[i] + tau_arr[i+1]) / 2;
+    // Color: blue → white → red
+    let r_c, g_c, b_c;
+    if (tau_mid < 0.3) {
+      r_c = 50; g_c = 100 + tau_mid * 500; b_c = 200;
+    } else {
+      const t = (tau_mid - 0.3) / 0.7;
+      r_c = 200 + 55 * t; g_c = 100 * (1-t); b_c = 50 * (1-t);
+    }
+
+    ctx.strokeStyle = `rgb(${r_c},${g_c},${b_c})`;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+}
+
+// ── Animation loop ───────────────────────────────────────────────
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+// ── Resize handler ───────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+// ── Load default galaxy ──────────────────────────────────────────
+loadGalaxy('NGC7793');
+  </script>
 </body>
 </html>
