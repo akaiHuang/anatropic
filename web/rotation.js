@@ -32,9 +32,9 @@
     buildGalaxyList();
     setupEvents();
 
-    // Select a galaxy where Khronon shines (better than NFW with fewer params)
-    const bestDefaults = ['NGC7793', 'NGC3521', 'DDO154', 'NGC2976'];
-    const first = DATA.galaxies.find(g => bestDefaults.includes(g.name)) || DATA.galaxies[0];
+    // Select first featured galaxy — show honestly, let the data speak
+    const featured = DATA.metadata.featured;
+    const first = DATA.galaxies.find(g => featured.includes(g.name)) || DATA.galaxies[0];
     selectGalaxy(first.name);
   }
 
@@ -260,14 +260,12 @@
     ctx.fillText(g.name, ml, mt - 14);
 
     ctx.font = '12px Inter, Helvetica, sans-serif';
-    // Show Khronon prediction quality — emphasize it's a prediction, not a fit
+    // Show both fits honestly — the point is parameter count, not winning
     const qualColor = g.chi2_khronon < 2 ? '#66bb6a' :
                       g.chi2_khronon < 5 ? '#e8860c' : '#ef5350';
-    const qualText = g.chi2_khronon < 2 ? 'Good' :
-                     g.chi2_khronon < 5 ? 'Moderate' : 'Poor';
     ctx.fillStyle = qualColor;
     ctx.textAlign = 'right';
-    ctx.fillText(`Khronon prediction: ${qualText} (\u03C7\u00B2/dof = ${g.chi2_khronon.toFixed(2)}, 1 free param, a\u2080 predicted)`, ml + pw, mt - 14);
+    ctx.fillText(`Khronon \u03C7\u00B2/dof = ${g.chi2_khronon.toFixed(2)} (1 param)  \u00B7  NFW = ${g.chi2_nfw.toFixed(2)} (3 params)`, ml + pw, mt - 14);
 
     // Clip to plot area
     ctx.save();
@@ -290,18 +288,6 @@
       }
       ctx.closePath();
       ctx.fill();
-
-      // Label the gap
-      const midIdx = Math.floor(R.length * 0.7);
-      const gapMidX = xPos(R[midIdx]);
-      const gapMidY = (yPos(Vobs[midIdx]) + yPos(Vbar[midIdx])) / 2;
-      const showNFW = document.getElementById('show-nfw').checked;
-      if (!showNFW && Vobs[midIdx] - Vbar[midIdx] > 20) {
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.font = '11px Inter, Helvetica, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('\u2190 gap Khronon explains', gapMidX, gapMidY);
-      }
 
       // Baryonic line (dashed gray)
       ctx.strokeStyle = '#555';

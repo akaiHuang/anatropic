@@ -214,12 +214,12 @@
 
       <div class="toggle-row">
         <label><input type="checkbox" id="show-errorbars" checked /> Error bars</label>
-        <label><input type="checkbox" id="show-baryonic" checked /> Baryonic (no theory)</label>
+        <label><input type="checkbox" id="show-baryonic" checked /> Baryonic</label>
         <label><input type="checkbox" id="show-khronon" checked /> Khronon (1 param)</label>
-        <label><input type="checkbox" id="show-nfw" /> <span style="color:#999;">Show NFW fit (3 params)</span></label>
+        <label><input type="checkbox" id="show-nfw" checked /> NFW (3 params)</label>
       </div>
       <div style="text-align:center; font-size:0.78rem; color:#888; margin-top:4px;">
-        The key comparison: gray dashed line (baryonic only) completely fails &mdash; blue line (Khronon) fills the gap with one equation and one predicted constant.
+        NFW fits better because it uses 3 free parameters per galaxy (525 total). Khronon uses 1 per galaxy with a<sub>0</sub> = cH<sub>0</sub>/2&pi; predicted, not fitted &mdash; fewer parameters, stronger prediction.
       </div>
 
       <div id="galaxy-info"></div>
