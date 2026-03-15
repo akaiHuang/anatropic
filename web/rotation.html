@@ -214,9 +214,12 @@
 
       <div class="toggle-row">
         <label><input type="checkbox" id="show-errorbars" checked /> Error bars</label>
-        <label><input type="checkbox" id="show-baryonic" checked /> Baryonic</label>
-        <label><input type="checkbox" id="show-khronon" checked /> Khronon</label>
-        <label><input type="checkbox" id="show-nfw" checked /> NFW</label>
+        <label><input type="checkbox" id="show-baryonic" checked /> Baryonic (no theory)</label>
+        <label><input type="checkbox" id="show-khronon" checked /> Khronon (1 param)</label>
+        <label><input type="checkbox" id="show-nfw" /> <span style="color:#999;">Show NFW fit (3 params)</span></label>
+      </div>
+      <div style="text-align:center; font-size:0.78rem; color:#888; margin-top:4px;">
+        The key comparison: gray dashed line (baryonic only) completely fails &mdash; blue line (Khronon) fills the gap with one equation and one predicted constant.
       </div>
 
       <div id="galaxy-info"></div>
