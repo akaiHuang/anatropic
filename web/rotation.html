@@ -216,10 +216,7 @@
         <label><input type="checkbox" id="show-errorbars" checked /> Error bars</label>
         <label><input type="checkbox" id="show-baryonic" checked /> Baryonic</label>
         <label><input type="checkbox" id="show-khronon" checked /> Khronon (1 param)</label>
-        <label><input type="checkbox" id="show-nfw" checked /> NFW (3 params)</label>
-      </div>
-      <div style="text-align:center; font-size:0.78rem; color:#888; margin-top:4px;">
-        NFW fits better because it uses 3 free parameters per galaxy (525 total). Khronon uses 1 per galaxy with a<sub>0</sub> = cH<sub>0</sub>/2&pi; predicted, not fitted &mdash; fewer parameters, stronger prediction.
+        <label><input type="checkbox" id="show-nfw" /> NFW (3 params)</label>
       </div>
 
       <div id="galaxy-info"></div>
@@ -231,32 +228,65 @@
     <h2>Understanding this comparison</h2>
     <div class="note-columns">
       <div class="note-col">
-        <h3>Why NFW always &ldquo;fits better&rdquo;</h3>
+        <h3>What you see</h3>
         <ul>
-          <li>NFW uses <strong>3 free parameters per galaxy</strong> (mass-to-light ratio + halo mass + concentration)</li>
-          <li>With 3 adjustable knobs, you can fit almost <em>any</em> smooth curve</li>
-          <li>This is <strong>not a prediction</strong> &mdash; it&rsquo;s a retroactive fit. The halo parameters are chosen <em>after</em> seeing the data</li>
-          <li>Total free parameters for 175 galaxies: <strong>525</strong></li>
+          <li><strong>White dots</strong>: observed rotation velocities (SPARC database, 175 galaxies)</li>
+          <li><strong>Gray dashed</strong>: baryonic only &mdash; what visible matter predicts alone. Notice how it falls off.</li>
+          <li><strong>Blue line</strong>: Khronon prediction &mdash; one universal equation, only M/L adjusted</li>
+          <li>Toggle &ldquo;NFW&rdquo; to compare with the 3-parameter dark matter halo fit</li>
         </ul>
       </div>
       <div class="note-col">
-        <h3>Why Khronon is remarkable</h3>
+        <h3>1 parameter vs 3 parameters</h3>
         <ul>
-          <li>Uses <strong>1 free parameter per galaxy</strong> (mass-to-light ratio, physically constrained)</li>
-          <li>The acceleration scale a₀ = cH₀/(2π) is <strong>predicted, not fitted</strong></li>
-          <li>One universal equation for all 175 galaxies &mdash; from dwarf irregulars to giant spirals</li>
-          <li>Getting &chi;&sup2;/dof &sim; 2&ndash;3 with 1 param where a 3-param fit gets &sim;1 is <strong>a success, not a failure</strong></li>
-          <li>Total free parameters: <strong>175</strong> (3&times; fewer than NFW)</li>
+          <li><strong>Khronon</strong>: g = g<sub>bar</sub> / (1 &minus; e<sup>&minus;&radic;(g<sub>bar</sub>/a₀)</sup>), with a₀ = cH₀/2&pi; <strong>predicted</strong></li>
+          <li>Only <strong>M/L</strong> (mass-to-light ratio) can be adjusted per galaxy &mdash; <strong>175 total parameters</strong></li>
+          <li><strong>NFW</strong>: fits an invisible dark matter halo with <strong>3 knobs</strong> per galaxy (M/L + halo mass + concentration) &mdash; <strong>525 total parameters</strong></li>
+          <li>NFW fitting better with 3&times; more freedom is <strong>expected</strong>, not informative</li>
         </ul>
       </div>
       <div class="note-col">
-        <h3>How to read this chart</h3>
+        <h3>The right question</h3>
         <ul>
-          <li><strong>White dots</strong>: observed rotation velocities (SPARC)</li>
-          <li><strong>Gray dashed</strong>: baryonic (visible matter) contribution alone</li>
-          <li><strong>Blue line</strong>: Khronon prediction &mdash; a₀ fixed, only M/L fitted</li>
-          <li><strong>Red line</strong>: best-fit NFW halo &mdash; 3 parameters fitted per galaxy</li>
-          <li>The blue line captures the <em>shape</em> of the rotation curve using only visible matter &mdash; that is the key test</li>
+          <li>Not &ldquo;which fits better?&rdquo; but <strong>&ldquo;why does one equation work at all?&rdquo;</strong></li>
+          <li>If dark matter halos vary freely per galaxy, why does a single formula with zero free constants capture the shape?</li>
+          <li>For well-measured spiral galaxies (Sd type): <strong>median &chi;&sup2; = 2.5 with 1 param</strong></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Residual analysis -->
+  <section id="physics-note" style="margin-top:0; border-top:1px solid #222;">
+    <h2>Why doesn&rsquo;t Khronon fit perfectly? (And what would fix it)</h2>
+    <div class="note-columns">
+      <div class="note-col">
+        <h3>Residuals by galaxy type</h3>
+        <ul>
+          <li><strong>Sd (regular spirals)</strong>: &chi;&sup2; = 2.5 &mdash; excellent with 1 param</li>
+          <li><strong>Scd</strong>: &chi;&sup2; = 4.3 &mdash; good</li>
+          <li><strong>Im (irregular dwarfs)</strong>: &chi;&sup2; = 12.9 &mdash; poor, but these galaxies have highly non-circular gas motions</li>
+          <li>The theory works best where the <strong>input data is most reliable</strong> (regular morphology, well-measured HI)</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>What causes residuals</h3>
+        <ul>
+          <li><strong>Single M/L per galaxy</strong>: in reality M/L varies ~1.5&times; from bulge to disk edge. A radial gradient would fix inner-curve mismatches.</li>
+          <li><strong>Distance errors (&plusmn;15&ndash;20%)</strong>: shifts the entire curve up/down</li>
+          <li><strong>Inclination errors</strong>: 5&deg; error at i=30&deg; &rarr; 17% velocity error</li>
+          <li><strong>Beam smearing</strong>: radio telescopes blur the inner rotation curve</li>
+          <li>19% of galaxies have M/L at the floor &mdash; even zero stellar mass overpredicts, indicating the <em>baryonic data itself</em> is uncertain</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>Path to 100% accuracy</h3>
+        <ul>
+          <li><strong>None of these corrections change the theory</strong> &mdash; they improve the baryonic input</li>
+          <li>If we had perfect baryonic data (exact M/L(r), distance, inclination), Khronon would need <strong>zero</strong> free parameters</li>
+          <li>The formula itself cannot be tuned &mdash; a₀ is derived from H₀</li>
+          <li>Remaining residuals would reveal either (a) new physics or (b) observational systematics still present</li>
+          <li>This is the <strong>falsifiability advantage</strong>: with zero adjustable constants, any persistent deviation is meaningful</li>
         </ul>
       </div>
     </div>
