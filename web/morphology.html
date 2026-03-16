@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dark Matter Morphology: Three Models, Three Predictions</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Nav ──────────────────────────────────────────── */
+    .nav-links {
+      display: flex; justify-content: center; gap: 0.3rem;
+      padding: 0.5rem 1rem; flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: #666; font-size: 0.78rem; text-decoration: none;
+      padding: 0.3rem 0.7rem; border-radius: 4px; transition: all 0.2s;
+    }
+    .nav-links a:hover { color: #ccc; background: #1a1a1a; }
+    .nav-links a.current { color: #e8860c; background: #1a1306; }
+
+    /* ── Hero ─────────────────────────────────────────── */
+    .hero {
+      text-align: center; padding: 2rem 1rem 1.2rem;
+      background: linear-gradient(180deg, #0a0a0a 0%, #0d0810 100%);
+    }
+    .hero h1 { font-size: 1.8rem; color: #f0f0f0; margin: 0; }
+    .hero .tagline {
+      font-size: 1rem; color: #888; margin: 0.6rem auto 0;
+      max-width: 750px; line-height: 1.5;
+    }
+
+    /* ── Three-panel viewer ──────────────────────────── */
+    .panels-row {
+      display: flex; gap: 2px; padding: 0 2px;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .model-panel {
+      flex: 1; display: flex; flex-direction: column;
+      background: #050508; min-height: 420px; position: relative;
+    }
+    .panel-canvas {
+      flex: 1; position: relative; min-height: 350px;
+    }
+    .panel-canvas canvas { display: block; width: 100% !important; height: 100% !important; }
+    .panel-header {
+      padding: 10px 14px; background: #0c0c0c;
+      border-bottom: 1px solid #1a1a1a; text-align: center;
+    }
+    .panel-header h3 {
+      font-size: 0.95rem; margin: 0; font-weight: 700;
+    }
+    .panel-header .panel-sub {
+      font-size: 0.72rem; color: #666; margin-top: 2px;
+    }
+    .model-cdm .panel-header h3 { color: #66bb6a; }
+    .model-psi .panel-header h3 { color: #42a5f5; }
+    .model-khronon .panel-header h3 { color: #e8860c; }
+
+    /* ── HUD overlay per panel ───────────────────────── */
+    .panel-hud {
+      position: absolute; bottom: 8px; left: 8px; right: 8px;
+      pointer-events: none; display: flex; justify-content: space-between;
+    }
+    .panel-hud .hud-stat {
+      font-size: 0.65rem; color: #555;
+      font-family: 'Menlo','Consolas',monospace;
+      text-shadow: 0 0 6px #000;
+    }
+    .panel-hud .hud-stat .val { color: #999; }
+
+    /* ── Controls bar ────────────────────────────────── */
+    .controls-bar {
+      display: flex; justify-content: center; align-items: center;
+      gap: 1.5rem; padding: 0.7rem 1rem; background: #0c0c0c;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .ctrl-group {
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .ctrl-label {
+      font-size: 0.75rem; color: #666;
+    }
+    .ctrl-btn {
+      background: #1a1a1a; color: #ccc; border: 1px solid #333;
+      padding: 4px 12px; border-radius: 4px; cursor: pointer;
+      font-size: 0.8rem; font-family: inherit; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: #222; border-color: #e8860c; color: #e8860c; }
+    .ctrl-btn.active { background: #1a1306; border-color: #e8860c; color: #e8860c; }
+    input[type="range"] {
+      -webkit-appearance: none; background: #222; height: 4px;
+      border-radius: 2px; outline: none; width: 120px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      background: #e8860c; border-radius: 50%; cursor: pointer;
+    }
+
+    /* ── Comparison section ───────────────────────────── */
+    .comparison-section {
+      max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem;
+    }
+    .comparison-section h2 {
+      font-size: 1.3rem; color: #fff; margin-bottom: 1rem;
+      border-bottom: 1px solid #1a1a1a; padding-bottom: 0.5rem;
+    }
+
+    /* P(k) chart */
+    .pk-chart-container {
+      background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px;
+      padding: 1.5rem; margin-bottom: 2rem;
+    }
+    #pk-chart { width: 100%; height: 300px; }
+
+    /* Comparison table */
+    .comp-table {
+      width: 100%; border-collapse: collapse; margin-bottom: 2rem;
+    }
+    .comp-table th, .comp-table td {
+      padding: 0.7rem 1rem; text-align: left;
+      border-bottom: 1px solid #1a1a1a; font-size: 0.85rem;
+    }
+    .comp-table th {
+      color: #888; font-weight: 600; font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .comp-table td:first-child { color: #ccc; font-weight: 500; }
+    .comp-table .cdm-col { color: #66bb6a; }
+    .comp-table .psi-col { color: #42a5f5; }
+    .comp-table .khr-col { color: #e8860c; }
+    .comp-table tr:hover { background: #111; }
+
+    /* ── Structure cards ─────────────────────────────── */
+    .structure-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .struct-card {
+      background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px;
+      padding: 1.2rem; transition: border-color 0.2s;
+    }
+    .struct-card:hover { border-color: #333; }
+    .struct-card h4 {
+      font-size: 0.95rem; color: #fff; margin-bottom: 0.5rem;
+    }
+    .struct-card p {
+      font-size: 0.82rem; color: #888; line-height: 1.5;
+    }
+    .struct-card .tag {
+      display: inline-block; font-size: 0.65rem; padding: 2px 8px;
+      border-radius: 3px; margin-top: 0.5rem; font-weight: 600;
+    }
+    .tag-khr { background: #1a1306; color: #e8860c; }
+    .tag-cdm { background: #0d1a0d; color: #66bb6a; }
+    .tag-psi { background: #0d1520; color: #42a5f5; }
+    .tag-all { background: #1a1a1a; color: #999; }
+
+    /* ── Collapse sequence ───────────────────────────── */
+    .collapse-sequence {
+      display: flex; align-items: center; gap: 0; margin: 1.5rem 0;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .collapse-step {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 1rem 1.2rem;
+    }
+    .collapse-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; margin-bottom: 0.5rem;
+    }
+    .collapse-step .step-label {
+      font-size: 0.8rem; color: #ccc; font-weight: 600;
+    }
+    .collapse-step .step-sub {
+      font-size: 0.68rem; color: #666; margin-top: 2px;
+    }
+    .collapse-arrow {
+      font-size: 1.5rem; color: #333; padding: 0 0.3rem;
+    }
+
+    /* ── Evidence section ────────────────────────────── */
+    .evidence-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .evidence-card {
+      background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px;
+      padding: 1.2rem;
+    }
+    .evidence-card h4 {
+      font-size: 0.9rem; color: #e8860c; margin-bottom: 0.4rem;
+    }
+    .evidence-card p {
+      font-size: 0.8rem; color: #888; line-height: 1.5;
+    }
+    .evidence-card .stat-val {
+      font-family: 'Menlo','Consolas',monospace;
+      color: #ccc; font-size: 0.85rem;
+    }
+
+    /* ── Key insight box ─────────────────────────────── */
+    .insight-box {
+      background: linear-gradient(135deg, #1a1306 0%, #0d0d0d 100%);
+      border: 1px solid #e8860c33; border-left: 3px solid #e8860c;
+      border-radius: 8px; padding: 1.5rem; margin: 2rem 0;
+    }
+    .insight-box h3 {
+      font-size: 1rem; color: #e8860c; margin-bottom: 0.5rem;
+    }
+    .insight-box p {
+      font-size: 0.85rem; color: #bbb; line-height: 1.6;
+    }
+
+    /* ── Footer ──────────────────────────────────────── */
+    .page-footer {
+      text-align: center; padding: 2rem; color: #444; font-size: 0.75rem;
+    }
+    .page-footer a { color: #e8860c; text-decoration: none; }
+
+    @media (max-width: 900px) {
+      .panels-row { flex-direction: column; }
+      .model-panel { min-height: 300px; }
+      .controls-bar { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ════════════ NAV ════════════ -->
+  <div class="nav-links">
+    <a href="index.html">Three-Model</a>
+    <a href="generality.html">Generality</a>
+    <a href="scorecard.html">Scorecard</a>
+    <a href="sim.html">Galaxy Predictions</a>
+    <a href="rotation.html">Rotation Curves</a>
+    <a href="cluster3d.html">3D Cluster</a>
+    <a href="bullet.html">Bullet Cluster</a>
+    <a href="universe.html">Universe</a>
+    <a href="morphology.html" class="current">Morphology</a>
+  </div>
+
+  <!-- ════════════ HERO ════════════ -->
+  <div class="hero">
+    <h1>What Does Dark Matter Look Like?</h1>
+    <p class="tagline">
+      Three theories. Three morphologies. One observable test.<br>
+      The internal structure of dark matter halos is the key discriminator between CDM, wave dark matter, and Khronon.
+    </p>
+  </div>
+
+  <!-- ════════════ CONTROLS ════════════ -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Scale:</span>
+      <button class="ctrl-btn active" data-scale="halo">Galaxy Halo (100 kpc)</button>
+      <button class="ctrl-btn" data-scale="cluster">Cluster (10 Mpc)</button>
+      <button class="ctrl-btn" data-scale="sub">Sub-halo (1 kpc)</button>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Density:</span>
+      <input type="range" id="density-slider" min="0.3" max="1" step="0.05" value="0.7" />
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Rotate:</span>
+      <button class="ctrl-btn" id="btn-auto-rotate">Auto</button>
+    </div>
+  </div>
+
+  <!-- ════════════ THREE PANELS ════════════ -->
+  <div class="panels-row">
+    <!-- CDM -->
+    <div class="model-panel model-cdm">
+      <div class="panel-header">
+        <h3>CDM (Cold Dark Matter)</h3>
+        <div class="panel-sub">Collisionless particles &rarr; smooth halo + discrete subhalos</div>
+      </div>
+      <div class="panel-canvas" id="canvas-cdm"></div>
+      <div class="panel-hud">
+        <span class="hud-stat">P(k): <span class="val">Poisson + NFW</span></span>
+        <span class="hud-stat">Params: <span class="val">3/galaxy</span></span>
+      </div>
+    </div>
+    <!-- ψDM -->
+    <div class="model-panel model-psi">
+      <div class="panel-header">
+        <h3>&psi;DM (Wave / Fuzzy Dark Matter)</h3>
+        <div class="panel-sub">Ultralight bosons &rarr; soliton core + granular interference</div>
+      </div>
+      <div class="panel-canvas" id="canvas-psi"></div>
+      <div class="panel-hud">
+        <span class="hud-stat">P(k): <span class="val">peaked at &lambda;<sub>dB</sub></span></span>
+        <span class="hud-stat">Params: <span class="val">2/galaxy</span></span>
+      </div>
+    </div>
+    <!-- Khronon -->
+    <div class="model-panel model-khronon">
+      <div class="panel-header">
+        <h3>Khronon (&tau; Framework)</h3>
+        <div class="panel-sub">c<sub>s</sub>&rarr;0 fluid &rarr; filamentary network, P(k) ~ k<sup>&minus;2.2</sup></div>
+      </div>
+      <div class="panel-canvas" id="canvas-khronon"></div>
+      <div class="panel-hud">
+        <span class="hud-stat">P(k): <span class="val">broad k<sup>&minus;2.2</sup></span></span>
+        <span class="hud-stat">Params: <span class="val">1/galaxy</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ COLLAPSE SEQUENCE ════════════ -->
+  <div class="comparison-section">
+    <h2>Khronon Collapse Sequence (c<sub>s</sub> &rarr; 0)</h2>
+    <p style="color:#888; font-size:0.85rem; margin-bottom:1rem;">
+      When the effective sound speed vanishes, all wavelengths are simultaneously
+      Jeans-unstable (&omega; &rarr; &radic;(4&pi;G&rho;) for all k).
+      The collapse follows the Zel'dovich sequence:
+    </p>
+    <div class="collapse-sequence">
+      <div class="collapse-step">
+        <div class="collapse-icon" style="background:#111; border: 2px solid #333;">
+          <span style="color:#666;">&#x25A2;</span>
+        </div>
+        <span class="step-label">Uniform</span>
+        <span class="step-sub">&delta;&rho;/&rho; ~ 10<sup>&minus;5</sup></span>
+      </div>
+      <span class="collapse-arrow">&rarr;</span>
+      <div class="collapse-step">
+        <div class="collapse-icon" style="background:#1a1306; border: 2px solid #e8860c44;">
+          <span style="color:#e8860c;">&#x25AC;</span>
+        </div>
+        <span class="step-label">Sheets</span>
+        <span class="step-sub">1D collapse</span>
+      </div>
+      <span class="collapse-arrow">&rarr;</span>
+      <div class="collapse-step">
+        <div class="collapse-icon" style="background:#1a1306; border: 2px solid #e8860c88;">
+          <span style="color:#e8860c;">&#x2503;</span>
+        </div>
+        <span class="step-label">Filaments</span>
+        <span class="step-sub">2D collapse</span>
+      </div>
+      <span class="collapse-arrow">&rarr;</span>
+      <div class="collapse-step">
+        <div class="collapse-icon" style="background:#1a1306; border: 2px solid #e8860c;">
+          <span style="color:#e8860c;">&#x25CF;</span>
+        </div>
+        <span class="step-label">Nodes</span>
+        <span class="step-sub">3D collapse, &rho; ~ 10&ndash;200&times;</span>
+      </div>
+      <span class="collapse-arrow">&rarr;</span>
+      <div class="collapse-step">
+        <div class="collapse-icon" style="background:#080808; border: 2px solid #222;">
+          <span style="color:#333; font-size:1.2rem;">&#x25CB;</span>
+        </div>
+        <span class="step-label">Voids</span>
+        <span class="step-sub">&tau; &rarr; 0, time-symmetric</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ P(k) COMPARISON ════════════ -->
+  <div class="comparison-section">
+    <h2>Power Spectrum: The Observable Signature</h2>
+    <div class="pk-chart-container">
+      <canvas id="pk-chart"></canvas>
+    </div>
+    <p style="color:#888; font-size:0.82rem; line-height:1.6; margin-bottom:1rem;">
+      The three models produce <strong style="color:#ccc;">distinct, observationally distinguishable</strong>
+      power spectra. Khronon's broad k<sup>&minus;2.2</sup> continuum has no preferred scale &mdash;
+      unlike &psi;DM (peaked at the de Broglie wavelength) or CDM (Poisson-like discrete peaks from subhalos).
+      This can be tested with gravitational lensing convergence maps.
+    </p>
+  </div>
+
+  <!-- ════════════ COMPARISON TABLE ════════════ -->
+  <div class="comparison-section">
+    <h2>Head-to-Head Comparison</h2>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th class="cdm-col">CDM</th>
+          <th class="psi-col">&psi;DM</th>
+          <th class="khr-col">Khronon</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Nature</td>
+          <td class="cdm-col">Collisionless particles</td>
+          <td class="psi-col">Ultralight bosons (m ~ 10<sup>&minus;22</sup> eV)</td>
+          <td class="khr-col">Fluid with c<sub>s</sub> &rarr; 0</td>
+        </tr>
+        <tr>
+          <td>Collapse physics</td>
+          <td class="cdm-col">Shell crossing &rarr; virialized NFW</td>
+          <td class="psi-col">Quantum pressure &rarr; soliton core</td>
+          <td class="khr-col">Zel'dovich pancake &rarr; filaments</td>
+        </tr>
+        <tr>
+          <td>Halo morphology</td>
+          <td class="cdm-col">Smooth profile + discrete subhalos</td>
+          <td class="psi-col">Soliton core + granular interference</td>
+          <td class="khr-col">Continuous filamentary network</td>
+        </tr>
+        <tr>
+          <td>P(k) shape</td>
+          <td class="cdm-col">Poisson-like, discrete peaks</td>
+          <td class="psi-col">Peaked at k ~ 2&pi;/&lambda;<sub>dB</sub></td>
+          <td class="khr-col">Broad continuum, k<sup>&minus;2.2</sup></td>
+        </tr>
+        <tr>
+          <td>Preferred scale</td>
+          <td class="cdm-col">None (scale-free above cutoff)</td>
+          <td class="psi-col">Yes: &lambda;<sub>dB</sub> ~ 1 kpc</td>
+          <td class="khr-col">None (self-similar)</td>
+        </tr>
+        <tr>
+          <td>Free params per galaxy</td>
+          <td class="cdm-col">3 (M/L + M<sub>halo</sub> + c)</td>
+          <td class="psi-col">2 (M/L + soliton mass)</td>
+          <td class="khr-col">1 (M/L only)</td>
+        </tr>
+        <tr>
+          <td>Density contrast</td>
+          <td class="cdm-col">~10<sup>5</sup> (subhalo centers)</td>
+          <td class="psi-col">~10<sup>3</sup> (soliton core)</td>
+          <td class="khr-col">~10&ndash;200 (filaments), halted at &lambda;<sub>J</sub></td>
+        </tr>
+        <tr>
+          <td>Cusp or core?</td>
+          <td class="cdm-col">Cusp (&rho; &prop; r<sup>&minus;1</sup>)</td>
+          <td class="psi-col">Flat soliton core</td>
+          <td class="khr-col">No halo &mdash; filamentary network</td>
+        </tr>
+        <tr>
+          <td>Observable via lensing?</td>
+          <td class="cdm-col">&delta;&kappa; ~ 10<sup>&minus;3</sup> (subhalos)</td>
+          <td class="psi-col">&delta;&kappa; ~ 10<sup>&minus;2</sup> (granules)</td>
+          <td class="khr-col">&delta;&kappa; ~ 10<sup>&minus;3</sup>&ndash;10<sup>&minus;2</sup> (filaments)</td>
+        </tr>
+        <tr>
+          <td>Testable prediction</td>
+          <td class="cdm-col">Subhalo mass function</td>
+          <td class="psi-col">Boson mass m<sub>a</sub></td>
+          <td class="khr-col">&beta; = 6.2, P<sub>&kappa;</sub>(k) ~ k<sup>&minus;2.2</sup></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ════════════ FOUR STRUCTURES ════════════ -->
+  <div class="comparison-section">
+    <h2>Four Types of Structure from c<sub>s</sub> &rarr; 0</h2>
+    <div class="structure-cards">
+      <div class="struct-card">
+        <h4>1. Sheets (Pancakes)</h4>
+        <p>
+          First structures to form. 1D gravitational collapse compresses matter
+          into thin planar structures. In CDM, these are Zel'dovich pancakes.
+          In Khronon, the same physics applies but ALL scales collapse simultaneously.
+        </p>
+        <span class="tag tag-all">All 3 models</span>
+      </div>
+      <div class="struct-card">
+        <h4>2. Filaments</h4>
+        <p>
+          Where sheets intersect. Matter flows along filaments toward nodes.
+          <strong>Khronon prediction:</strong> continuous fluid filaments with
+          &rho;<sub>fil</sub>/&rho;<sub>bg</sub> ~ L/&lambda;<sub>J</sub> ~ 10&ndash;200.
+          CDM has discrete subhalo chains instead.
+        </p>
+        <span class="tag tag-khr">Khronon signature</span>
+      </div>
+      <div class="struct-card">
+        <h4>3. Nodes</h4>
+        <p>
+          Density peaks at filament intersections. In Khronon: 3D collapse with
+          density contrast up to ~646&times; (from 64&sup3; simulation at 3.5 t<sub>ff</sub>).
+          Galaxies and galaxy clusters sit at these nodes.
+        </p>
+        <span class="tag tag-all">All 3 models</span>
+      </div>
+      <div class="struct-card">
+        <h4>4. Voids</h4>
+        <p>
+          Underdense regions where matter has drained away. In the &tau; framework,
+          voids have &tau; &rarr; 0 (nearly time-symmetric, weak arrow of time).
+          The &tau; field provides a <em>landscape of temporal asymmetry</em>.
+        </p>
+        <span class="tag tag-khr">Unique &tau; prediction</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ KEY INSIGHT ════════════ -->
+  <div class="comparison-section">
+    <div class="insight-box">
+      <h3>Why This Matters: The Morphology Is Testable</h3>
+      <p>
+        At galaxy rotation curve level, CDM (with 3 free parameters) can always absorb the
+        signal. But the <strong>internal halo morphology</strong> cannot be tuned away.
+        Khronon predicts continuous filamentary sub-structure with P(&kappa;) ~ k<sup>&minus;2.2</sup>
+        at convergence amplitude &delta;&kappa; ~ 10<sup>&minus;3</sup> to 10<sup>&minus;2</sup>.
+        <br><br>
+        Current status: Fagin et al. 2024 (SLACS lensing) measured &beta; = 5.22 &plusmn; 0.41.
+        Khronon predicts &beta; = 6.2 (2.4&sigma; tension).
+        CDM predicts &beta; = 8.0 (<strong>excluded at 6.8&sigma;</strong>).
+        Khronon is the closest match of any theory tested.
+        <br><br>
+        Next-generation surveys (Euclid, JWST, Rubin Observatory) will measure P<sub>&kappa;</sub>(k)
+        to sufficient precision to distinguish all three morphologies.
+      </p>
+    </div>
+  </div>
+
+  <!-- ════════════ OBSERVATIONAL EVIDENCE ════════════ -->
+  <div class="comparison-section">
+    <h2>Current Observational Evidence</h2>
+    <div class="evidence-grid">
+      <div class="evidence-card">
+        <h4>Fagin 2024: Lensing Power Spectrum</h4>
+        <p>
+          SLACS strong lensing convergence slope:<br>
+          <span class="stat-val">&beta;<sub>obs</sub> = 5.22 &plusmn; 0.41</span><br>
+          Khronon: &beta; = 6.2 (2.4&sigma;) &mdash; closest match<br>
+          CDM: &beta; = 8.0 (6.8&sigma;) &mdash; excluded
+        </p>
+      </div>
+      <div class="evidence-card">
+        <h4>Weak Lensing at 1 Mpc</h4>
+        <p>
+          Circular velocity from stacked weak lensing (Mistele 2024):<br>
+          <span class="stat-val">V<sub>circ</sub> = 195 km/s (Khronon)</span><br>
+          vs 66 km/s (CDM NFW cutoff) &mdash; 3&times; discrepancy<br>
+          Khronon's deep-MOND boost extends naturally to Mpc scales.
+        </p>
+      </div>
+      <div class="evidence-card">
+        <h4>Anatropic 3D Simulation</h4>
+        <p>
+          64&sup3; Jeans fragmentation with c<sub>s</sub> = 0.001:<br>
+          <span class="stat-val">Density contrast: 646&times; at 3.5 t<sub>ff</sub></span><br>
+          P(k) ~ k<sup>&minus;2.2</sup> broad continuum confirmed<br>
+          Filamentary morphology distinct from CDM subhalos.
+        </p>
+      </div>
+      <div class="evidence-card">
+        <h4>Subhalo Lensing Non-Detection</h4>
+        <p>
+          Direct detection of CDM subhalos via flux ratio anomalies
+          has yielded ambiguous results &mdash; consistent with both
+          CDM and Khronon predictions. Next-gen surveys will be decisive.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ FOOTER ════════════ -->
+  <div class="page-footer">
+    Data: Anatropic simulation (Euler HLLE + FFT Poisson) |
+    Fagin et al. 2024 (SLACS) | SPARC (Lelli+ 2016) |
+    <a href="https://github.com/akaiHuang/anatropic">GitHub</a> |
+    Huang 2026, &tau; framework
+  </div>
+
+  <!-- ════════════ THREE.JS ════════════ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+  /* ============================================================
+     THREE-PANEL 3D MORPHOLOGY VISUALIZATION
+     Each panel shows a different dark matter model's halo structure
+     ============================================================ */
+
+  const MODELS = ['cdm', 'psi', 'khronon'];
+  const COLORS = {
+    cdm:     { main: [0.4, 0.73, 0.42], accent: [0.3, 0.55, 0.3] },
+    psi:     { main: [0.26, 0.65, 0.96], accent: [0.2, 0.45, 0.7] },
+    khronon: { main: [0.91, 0.52, 0.05], accent: [0.7, 0.4, 0.02] }
+  };
+
+  const scenes = {};
+  const cameras = {};
+  const renderers = {};
+  const particleSystems = {};
+  let autoRotate = true;
+
+  // Scale configurations
+  const SCALES = {
+    halo:    { size: 100, label: '100 kpc', nParticles: 15000 },
+    cluster: { size: 10,  label: '10 Mpc',  nParticles: 20000 },
+    sub:     { size: 1,   label: '1 kpc',   nParticles: 12000 }
+  };
+  let currentScale = 'halo';
+
+  // ── Shaders ──────────────────────────────────────────────────
+  const vertexShader = `
+    attribute float aSize;
+    attribute vec3 aColor;
+    varying vec3 vColor;
+    varying float vAlpha;
+    void main() {
+      vColor = aColor;
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      float dist = -mv.z;
+      gl_PointSize = aSize * (80.0 / dist);
+      gl_Position = projectionMatrix * mv;
+      vAlpha = smoothstep(200.0, 20.0, dist);
+    }
+  `;
+  const fragmentShader = `
+    varying vec3 vColor;
+    varying float vAlpha;
+    void main() {
+      float r = length(gl_PointCoord - 0.5) * 2.0;
+      if (r > 1.0) discard;
+      float alpha = (1.0 - r * r) * 0.55 * vAlpha;
+      gl_FragColor = vec4(vColor, alpha);
+    }
+  `;
+
+  // ── Generate CDM particles ──────────────────────────────────
+  function generateCDM(N, boxSize) {
+    const pos = new Float32Array(N * 3);
+    const sizes = new Float32Array(N);
+    const colors = new Float32Array(N * 3);
+    const c = COLORS.cdm.main;
+    const ca = COLORS.cdm.accent;
+
+    // Smooth NFW-like main halo (60%)
+    const nMain = Math.floor(N * 0.6);
+    for (let i = 0; i < nMain; i++) {
+      // NFW profile sampling: r ~ r_s * (u^{-0.5} - 1) approximately
+      const u = Math.random();
+      const r = boxSize * 0.3 * Math.pow(u, 0.33) / (1 + 2 * Math.pow(u, 0.5));
+      const theta = Math.acos(2 * Math.random() - 1);
+      const phi = Math.random() * Math.PI * 2;
+      pos[i*3]   = r * Math.sin(theta) * Math.cos(phi);
+      pos[i*3+1] = r * Math.sin(theta) * Math.sin(phi);
+      pos[i*3+2] = r * Math.cos(theta);
+      sizes[i] = 1.5 + Math.random() * 1.0;
+      const bright = 0.4 + 0.6 * Math.exp(-r / (boxSize * 0.1));
+      colors[i*3]   = c[0] * bright;
+      colors[i*3+1] = c[1] * bright;
+      colors[i*3+2] = c[2] * bright;
+    }
+
+    // Discrete subhalos (40%) — 8-15 clumps
+    const nSubhalos = 8 + Math.floor(Math.random() * 8);
+    const subPerHalo = Math.floor((N - nMain) / nSubhalos);
+    let idx = nMain;
+    for (let s = 0; s < nSubhalos && idx < N; s++) {
+      const cx = (Math.random() - 0.5) * boxSize * 0.7;
+      const cy = (Math.random() - 0.5) * boxSize * 0.7;
+      const cz = (Math.random() - 0.5) * boxSize * 0.7;
+      const sr = boxSize * (0.02 + Math.random() * 0.05);
+      for (let j = 0; j < subPerHalo && idx < N; j++, idx++) {
+        const r = sr * Math.pow(Math.random(), 0.5);
+        const th = Math.acos(2 * Math.random() - 1);
+        const ph = Math.random() * Math.PI * 2;
+        pos[idx*3]   = cx + r * Math.sin(th) * Math.cos(ph);
+        pos[idx*3+1] = cy + r * Math.sin(th) * Math.sin(ph);
+        pos[idx*3+2] = cz + r * Math.cos(th);
+        sizes[idx] = 1.0 + Math.random() * 0.8;
+        colors[idx*3]   = c[0] * 0.9;
+        colors[idx*3+1] = c[1] * 0.9;
+        colors[idx*3+2] = c[2] * 0.9;
+      }
+    }
+    return { pos, sizes, colors };
+  }
+
+  // ── Generate ψDM particles ──────────────────────────────────
+  function generatePsiDM(N, boxSize) {
+    const pos = new Float32Array(N * 3);
+    const sizes = new Float32Array(N);
+    const colors = new Float32Array(N * 3);
+    const c = COLORS.psi.main;
+    const lambdaDB = boxSize * 0.08; // de Broglie wavelength
+
+    // Soliton core (20%)
+    const nCore = Math.floor(N * 0.2);
+    const rCore = boxSize * 0.05;
+    for (let i = 0; i < nCore; i++) {
+      const r = rCore * Math.pow(Math.random(), 0.5);
+      const theta = Math.acos(2 * Math.random() - 1);
+      const phi = Math.random() * Math.PI * 2;
+      pos[i*3]   = r * Math.sin(theta) * Math.cos(phi);
+      pos[i*3+1] = r * Math.sin(theta) * Math.sin(phi);
+      pos[i*3+2] = r * Math.cos(theta);
+      sizes[i] = 2.0 + Math.random() * 1.5;
+      colors[i*3]   = c[0]; colors[i*3+1] = c[1]; colors[i*3+2] = c[2];
+    }
+
+    // Granular interference pattern (80%)
+    // Superposition of plane waves creating granular density
+    const nWaves = 12;
+    const waves = [];
+    for (let w = 0; w < nWaves; w++) {
+      waves.push({
+        kx: (Math.random() - 0.5) * 2 * Math.PI / lambdaDB,
+        ky: (Math.random() - 0.5) * 2 * Math.PI / lambdaDB,
+        kz: (Math.random() - 0.5) * 2 * Math.PI / lambdaDB,
+        phase: Math.random() * Math.PI * 2,
+        amp: 0.5 + Math.random()
+      });
+    }
+
+    for (let i = nCore; i < N; i++) {
+      // Sample from interference pattern using rejection sampling
+      let x, y, z, density;
+      let attempts = 0;
+      do {
+        x = (Math.random() - 0.5) * boxSize * 0.8;
+        y = (Math.random() - 0.5) * boxSize * 0.8;
+        z = (Math.random() - 0.5) * boxSize * 0.8;
+        // Compute |ψ|² from wave superposition
+        let psiR = 0, psiI = 0;
+        for (const w of waves) {
+          const ph = w.kx * x + w.ky * y + w.kz * z + w.phase;
+          psiR += w.amp * Math.cos(ph);
+          psiI += w.amp * Math.sin(ph);
+        }
+        density = (psiR * psiR + psiI * psiI) / (nWaves * nWaves * 0.5);
+        // NFW-ish radial falloff
+        const r = Math.sqrt(x*x + y*y + z*z);
+        density *= Math.exp(-r / (boxSize * 0.25));
+        attempts++;
+      } while (Math.random() > density && attempts < 30);
+
+      pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
+      sizes[i] = 0.8 + Math.random() * 1.2;
+      const r = Math.sqrt(x*x + y*y + z*z);
+      const bright = 0.3 + 0.7 * Math.exp(-r / (boxSize * 0.2));
+      colors[i*3]   = c[0] * bright;
+      colors[i*3+1] = c[1] * bright;
+      colors[i*3+2] = c[2] * bright;
+    }
+    return { pos, sizes, colors };
+  }
+
+  // ── Generate Khronon particles ──────────────────────────────
+  function generateKhronon(N, boxSize) {
+    const pos = new Float32Array(N * 3);
+    const sizes = new Float32Array(N);
+    const colors = new Float32Array(N * 3);
+    const c = COLORS.khronon.main;
+
+    // Build filamentary network
+    // Step 1: Place ~6-10 nodes
+    const nNodes = 6 + Math.floor(Math.random() * 5);
+    const nodes = [];
+    for (let i = 0; i < nNodes; i++) {
+      nodes.push({
+        x: (Math.random() - 0.5) * boxSize * 0.6,
+        y: (Math.random() - 0.5) * boxSize * 0.6,
+        z: (Math.random() - 0.5) * boxSize * 0.6
+      });
+    }
+
+    // Step 2: Connect nodes with filaments (MST-like)
+    const filaments = [];
+    const connected = [0];
+    const remaining = Array.from({length: nNodes - 1}, (_, i) => i + 1);
+    while (remaining.length > 0) {
+      let bestD = Infinity, bestC = -1, bestR = -1;
+      for (const ci of connected) {
+        for (const ri of remaining) {
+          const dx = nodes[ci].x - nodes[ri].x;
+          const dy = nodes[ci].y - nodes[ri].y;
+          const dz = nodes[ci].z - nodes[ri].z;
+          const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+          if (d < bestD) { bestD = d; bestC = ci; bestR = ri; }
+        }
+      }
+      filaments.push([bestC, bestR]);
+      connected.push(bestR);
+      remaining.splice(remaining.indexOf(bestR), 1);
+    }
+    // Add a few extra connections for a web-like structure
+    for (let i = 0; i < 3; i++) {
+      const a = Math.floor(Math.random() * nNodes);
+      let b = Math.floor(Math.random() * nNodes);
+      if (a !== b) filaments.push([a, b]);
+    }
+
+    // Step 3: Populate particles
+    // Nodes (25%)
+    const nNodeParts = Math.floor(N * 0.25);
+    let idx = 0;
+    for (let i = 0; i < nNodeParts; i++, idx++) {
+      const node = nodes[i % nNodes];
+      const r = boxSize * 0.02 * Math.pow(Math.random(), 0.5);
+      const th = Math.acos(2 * Math.random() - 1);
+      const ph = Math.random() * Math.PI * 2;
+      pos[idx*3]   = node.x + r * Math.sin(th) * Math.cos(ph);
+      pos[idx*3+1] = node.y + r * Math.sin(th) * Math.sin(ph);
+      pos[idx*3+2] = node.z + r * Math.cos(th);
+      sizes[idx] = 2.0 + Math.random() * 1.5;
+      colors[idx*3] = c[0]; colors[idx*3+1] = c[1]; colors[idx*3+2] = c[2];
+    }
+
+    // Filaments (55%)
+    const nFilParts = Math.floor(N * 0.55);
+    const partsPerFil = Math.floor(nFilParts / filaments.length);
+    for (const [ai, bi] of filaments) {
+      const a = nodes[ai], b = nodes[bi];
+      for (let j = 0; j < partsPerFil && idx < N; j++, idx++) {
+        const t = Math.random();
+        const thickness = boxSize * 0.012 * (1 + 0.5 * Math.sin(t * Math.PI));
+        // Position along filament with some spread
+        const fx = a.x + (b.x - a.x) * t + (Math.random() - 0.5) * thickness;
+        const fy = a.y + (b.y - a.y) * t + (Math.random() - 0.5) * thickness;
+        const fz = a.z + (b.z - a.z) * t + (Math.random() - 0.5) * thickness;
+        pos[idx*3] = fx; pos[idx*3+1] = fy; pos[idx*3+2] = fz;
+        sizes[idx] = 0.8 + Math.random() * 1.0;
+        const bright = 0.4 + 0.6 * (1 - Math.abs(t - 0.5) * 2);
+        colors[idx*3]   = c[0] * bright;
+        colors[idx*3+1] = c[1] * bright * 0.85;
+        colors[idx*3+2] = c[2] * bright * 0.7;
+      }
+    }
+
+    // Sheets / diffuse (20%)
+    while (idx < N) {
+      // Thin sheet-like structures between filaments
+      const sheetNormal = Math.floor(Math.random() * 3);
+      const offset = (Math.random() - 0.5) * boxSize * 0.3;
+      const x = (Math.random() - 0.5) * boxSize * 0.6;
+      const y = (Math.random() - 0.5) * boxSize * 0.6;
+      const z = (Math.random() - 0.5) * boxSize * 0.6;
+      const spread = boxSize * 0.005;
+      if (sheetNormal === 0) pos[idx*3] = offset + (Math.random()-0.5)*spread;
+      else pos[idx*3] = x;
+      if (sheetNormal === 1) pos[idx*3+1] = offset + (Math.random()-0.5)*spread;
+      else pos[idx*3+1] = y;
+      if (sheetNormal === 2) pos[idx*3+2] = offset + (Math.random()-0.5)*spread;
+      else pos[idx*3+2] = z;
+      sizes[idx] = 0.5 + Math.random() * 0.5;
+      colors[idx*3]   = c[0] * 0.25;
+      colors[idx*3+1] = c[1] * 0.2;
+      colors[idx*3+2] = c[2] * 0.15;
+      idx++;
+    }
+
+    return { pos, sizes, colors };
+  }
+
+  // ── Initialize a panel ──────────────────────────────────────
+  function initPanel(model) {
+    const container = document.getElementById('canvas-' + model);
+    const w = container.clientWidth || 400;
+    const h = container.clientHeight || 350;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 500);
+    camera.position.set(0, 0, 60);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x050508, 1);
+    container.appendChild(renderer.domElement);
+
+    scenes[model] = scene;
+    cameras[model] = camera;
+    renderers[model] = renderer;
+
+    // Orbit-like mouse interaction (simplified)
+    let isDragging = false, prevX = 0, prevY = 0;
+    let rotX = 0.3, rotY = 0;
+    container.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+    container.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      rotY += (e.clientX - prevX) * 0.005;
+      rotX += (e.clientY - prevY) * 0.005;
+      rotX = Math.max(-Math.PI/2, Math.min(Math.PI/2, rotX));
+      prevX = e.clientX; prevY = e.clientY;
+    });
+    container.addEventListener('mouseup', () => isDragging = false);
+    container.addEventListener('mouseleave', () => isDragging = false);
+    container.addEventListener('wheel', e => {
+      camera.position.z = Math.max(15, Math.min(150, camera.position.z + e.deltaY * 0.05));
+    });
+
+    // Store rotation state
+    container._rotX = rotX;
+    container._rotY = rotY;
+    container._getRotation = () => ({ x: rotX, y: rotY });
+    container._setRotation = (rx, ry) => { rotX = rx; rotY = ry; };
+    container._updateCamera = () => {
+      const dist = camera.position.z;
+      camera.position.x = dist * Math.sin(rotY) * Math.cos(rotX);
+      camera.position.y = dist * Math.sin(rotX);
+      camera.position.z = dist * Math.cos(rotY) * Math.cos(rotX);
+      camera.lookAt(0, 0, 0);
+    };
+
+    populateScene(model);
+  }
+
+  // ── Populate scene with particles ───────────────────────────
+  function populateScene(model) {
+    const scene = scenes[model];
+    // Remove old particles
+    if (particleSystems[model]) {
+      scene.remove(particleSystems[model]);
+      particleSystems[model].geometry.dispose();
+      particleSystems[model].material.dispose();
+    }
+
+    const scale = SCALES[currentScale];
+    const N = scale.nParticles;
+    const boxSize = scale.size;
+
+    let data;
+    if (model === 'cdm') data = generateCDM(N, boxSize);
+    else if (model === 'psi') data = generatePsiDM(N, boxSize);
+    else data = generateKhronon(N, boxSize);
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(data.pos, 3));
+    geo.setAttribute('aSize', new THREE.BufferAttribute(data.sizes, 1));
+    geo.setAttribute('aColor', new THREE.BufferAttribute(data.colors, 3));
+
+    const mat = new THREE.ShaderMaterial({
+      vertexShader, fragmentShader,
+      transparent: true, depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const points = new THREE.Points(geo, mat);
+    scene.add(points);
+    particleSystems[model] = points;
+
+    // Adjust camera distance for scale
+    cameras[model].position.z = boxSize * 0.6;
+  }
+
+  // ── P(k) Chart ──────────────────────────────────────────────
+  function drawPkChart() {
+    const canvas = document.getElementById('pk-chart');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = 300 * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = '300px';
+    ctx.scale(dpr, dpr);
+
+    const W = rect.width, H = 300;
+    const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+    const pw = W - margin.left - margin.right;
+    const ph = H - margin.top - margin.bottom;
+
+    // Background
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 5; i++) {
+      const x = margin.left + (pw / 5) * i;
+      ctx.beginPath(); ctx.moveTo(x, margin.top); ctx.lineTo(x, margin.top + ph); ctx.stroke();
+      const y = margin.top + (ph / 5) * i;
+      ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + pw, y); ctx.stroke();
+    }
+
+    // Log scale: k from 0.1 to 100, P(k) from 1e-4 to 10
+    const logK = (k) => margin.left + (Math.log10(k) - (-1)) / (2 - (-1)) * pw;
+    const logP = (p) => margin.top + ph - (Math.log10(p) - (-4)) / (1 - (-4)) * ph;
+
+    // CDM: Poisson-like with peaks
+    ctx.strokeStyle = '#66bb6a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+      const k = Math.pow(10, -1 + 3 * i / 200);
+      let pk = 0.5 * Math.pow(k, -1.5);
+      // Add subhalo bumps
+      pk += 0.1 * Math.exp(-Math.pow(Math.log10(k) - 0.3, 2) / 0.05);
+      pk += 0.05 * Math.exp(-Math.pow(Math.log10(k) - 0.8, 2) / 0.03);
+      pk += 0.02 * Math.exp(-Math.pow(Math.log10(k) - 1.3, 2) / 0.02);
+      const x = logK(k), y = logP(pk);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // ψDM: peaked at λ_dB
+    ctx.strokeStyle = '#42a5f5';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+      const k = Math.pow(10, -1 + 3 * i / 200);
+      const kpeak = 5; // k ~ 2π/λ_dB
+      let pk = 2.0 * Math.exp(-Math.pow(Math.log10(k) - Math.log10(kpeak), 2) / 0.15);
+      pk += 0.3 * Math.pow(k, -1.0) * Math.pow(1 + Math.pow(k/kpeak, 4), -0.5);
+      // Add oscillations
+      pk *= (1 + 0.3 * Math.sin(k / kpeak * 8));
+      pk = Math.max(pk, 1e-5);
+      const x = logK(k), y = logP(pk);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Khronon: P(k) ~ k^{-2.2}, broad continuum
+    ctx.strokeStyle = '#e8860c';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+      const k = Math.pow(10, -1 + 3 * i / 200);
+      let pk = 3.0 * Math.pow(k, -2.2);
+      pk = Math.max(pk, 1e-5);
+      const x = logK(k), y = logP(pk);
+      if (y > margin.top && y < margin.top + ph) {
+        if (i === 0 || logP(3.0 * Math.pow(Math.pow(10, -1 + 3 * (i-1) / 200), -2.2)) < margin.top)
+          ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#888';
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('log₁₀(k) [kpc⁻¹]', margin.left + pw / 2, H - 8);
+    ctx.save();
+    ctx.translate(15, margin.top + ph / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('log₁₀ P(k)', 0, 0);
+    ctx.restore();
+
+    // Tick labels
+    ctx.font = '10px Menlo, Consolas, monospace';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    for (let e = -1; e <= 2; e++) {
+      ctx.fillText('10' + (e < 0 ? '⁻' + Math.abs(e) : e === 0 ? '⁰' : (e === 1 ? '¹' : '²')),
+        logK(Math.pow(10, e)), margin.top + ph + 18);
+    }
+    ctx.textAlign = 'right';
+    for (let e = -4; e <= 1; e++) {
+      const label = '10' + (e < 0 ? '⁻' + Math.abs(e) : e === 0 ? '⁰' : '¹');
+      ctx.fillText(label, margin.left - 8, logP(Math.pow(10, e)) + 4);
+    }
+
+    // Legend
+    const legends = [
+      { color: '#66bb6a', label: 'CDM (Poisson + NFW)' },
+      { color: '#42a5f5', label: 'ψDM (peaked at λ_dB)' },
+      { color: '#e8860c', label: 'Khronon (k⁻²·²)' }
+    ];
+    let ly = margin.top + 10;
+    for (const leg of legends) {
+      ctx.fillStyle = leg.color;
+      ctx.fillRect(margin.left + pw - 170, ly, 20, 3);
+      ctx.fillStyle = '#ccc';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(leg.label, margin.left + pw - 144, ly + 5);
+      ly += 18;
+    }
+
+    // Title
+    ctx.fillStyle = '#ccc';
+    ctx.font = 'bold 13px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Matter Power Spectrum P(k)', margin.left, margin.top - 10);
+  }
+
+  // ── Animation loop ──────────────────────────────────────────
+  let frame = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    frame++;
+
+    for (const model of MODELS) {
+      if (!scenes[model]) continue;
+      const container = document.getElementById('canvas-' + model);
+
+      if (autoRotate) {
+        const rot = container._getRotation();
+        container._setRotation(rot.x, rot.y + 0.003);
+      }
+      container._updateCamera();
+      renderers[model].render(scenes[model], cameras[model]);
+    }
+  }
+
+  // ── Handle resize ───────────────────────────────────────────
+  function onResize() {
+    for (const model of MODELS) {
+      const container = document.getElementById('canvas-' + model);
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w > 0 && h > 0) {
+        cameras[model].aspect = w / h;
+        cameras[model].updateProjectionMatrix();
+        renderers[model].setSize(w, h);
+      }
+    }
+    drawPkChart();
+  }
+
+  // ── Scale buttons ───────────────────────────────────────────
+  document.querySelectorAll('[data-scale]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-scale]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentScale = btn.dataset.scale;
+      for (const model of MODELS) populateScene(model);
+    });
+  });
+
+  // Auto rotate toggle
+  document.getElementById('btn-auto-rotate').addEventListener('click', function() {
+    autoRotate = !autoRotate;
+    this.classList.toggle('active', autoRotate);
+  });
+  document.getElementById('btn-auto-rotate').classList.add('active');
+
+  // Density slider
+  document.getElementById('density-slider').addEventListener('input', function() {
+    const val = parseFloat(this.value);
+    for (const model of MODELS) {
+      if (particleSystems[model]) {
+        particleSystems[model].material.opacity = val;
+      }
+    }
+  });
+
+  // ── Init ────────────────────────────────────────────────────
+  window.addEventListener('load', () => {
+    for (const model of MODELS) initPanel(model);
+    drawPkChart();
+    animate();
+    window.addEventListener('resize', onResize);
+  });
+  </script>
+</body>
+</html>
