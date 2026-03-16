@@ -418,6 +418,223 @@
       color: #e0e0e0;
     }
 
+    /* ── Pre-Registration Section ──────────────────────────── */
+    .prereg-section {
+      max-width: 1100px;
+      margin: 2.5rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .prereg-banner {
+      background: linear-gradient(135deg, #0d1a0d 0%, #0d0d0d 50%, #1a1306 100%);
+      border: 1px solid #e8860c44;
+      border-radius: 10px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .prereg-banner::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #e8860c, #4caf50, #e8860c);
+    }
+    .prereg-banner .prereg-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 3px;
+      background: rgba(232, 134, 12, 0.15);
+      color: #e8860c;
+      border: 1px solid rgba(232, 134, 12, 0.3);
+      margin-bottom: 0.8rem;
+    }
+    .prereg-banner h2 {
+      font-size: 1.3rem;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .prereg-banner .prereg-date {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.82rem;
+      color: #e8860c;
+      margin-bottom: 0.6rem;
+    }
+    .prereg-banner .prereg-desc {
+      font-size: 0.85rem;
+      color: #999;
+      line-height: 1.65;
+      max-width: 800px;
+    }
+
+    .prereg-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-bottom: 2rem;
+    }
+
+    .prereg-card {
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 10px;
+      padding: 1.8rem 2rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .prereg-card:hover {
+      border-color: #e8860c55;
+    }
+    .prereg-card .preg-num {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.72rem;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .prereg-card h3 {
+      font-size: 1.05rem;
+      color: #f0f0f0;
+      margin-bottom: 0.7rem;
+    }
+    .prereg-card .preg-prediction {
+      background: #111;
+      border: 1px solid #222;
+      border-left: 3px solid #e8860c;
+      border-radius: 0 6px 6px 0;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .prereg-card .preg-prediction .preg-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #e8860c;
+      margin-bottom: 4px;
+    }
+    .prereg-card .preg-prediction .preg-value {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: 700;
+    }
+    .prereg-card .preg-prediction .preg-detail {
+      font-size: 0.82rem;
+      color: #aaa;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .prereg-compare {
+      margin-bottom: 1rem;
+    }
+    .prereg-compare table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .prereg-compare th {
+      text-align: left;
+      padding: 6px 10px;
+      color: #666;
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #222;
+    }
+    .prereg-compare td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .prereg-compare .model-name { color: #bbb; font-weight: 500; }
+    .prereg-compare .val-cdm { color: #66bb6a; }
+    .prereg-compare .val-psi { color: #42a5f5; }
+    .prereg-compare .val-khr { color: #e8860c; font-weight: 600; }
+    .prereg-compare .val-obs { color: #cc66cc; }
+    .prereg-compare .status-closest {
+      font-size: 0.68rem;
+      background: rgba(232, 134, 12, 0.15);
+      color: #e8860c;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+    .prereg-compare .status-excluded {
+      font-size: 0.68rem;
+      background: rgba(239, 83, 80, 0.15);
+      color: #ef5350;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .prereg-card .preg-test {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .prereg-card .preg-test-item {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.7rem 0.9rem;
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 6px;
+    }
+    .prereg-card .preg-test-item .ptl {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 3px;
+    }
+    .prereg-card .preg-test-item .ptl.test-by { color: #ffcc80; }
+    .prereg-card .preg-test-item .ptl.timeline { color: #90caf9; }
+    .prereg-card .preg-test-item .ptl.disc { color: #ce93d8; }
+    .prereg-card .preg-test-item .ptv {
+      font-size: 0.82rem;
+      color: #aaa;
+      line-height: 1.5;
+    }
+
+    .prereg-card .preg-attribution {
+      margin-top: 1rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid #1e1e1e;
+      font-size: 0.75rem;
+      color: #666;
+      line-height: 1.5;
+    }
+    .prereg-card .preg-attribution .attr-known { color: #888; }
+    .prereg-card .preg-attribution .attr-ours { color: #e8860c; }
+
+    .prereg-stamp {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .prereg-stamp .stamp-text {
+      font-size: 0.78rem;
+      color: #666;
+      line-height: 1.6;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .prereg-stamp .stamp-text strong { color: #999; }
+    .prereg-stamp .stamp-hash {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 0.72rem;
+      color: #444;
+      margin-top: 0.5rem;
+    }
+
     /* ── Responsive ─────────────────────────────────────────── */
     @media (max-width: 760px) {
       .pred-grid { grid-template-columns: 1fr; }
@@ -429,6 +646,9 @@
       .timeline-track::before { left: 70px; }
       .tl-year { left: -80px; width: 60px; font-size: 0.75rem; }
       .tl-dot { left: -17px; }
+      .prereg-banner { padding: 1.5rem; }
+      .prereg-card { padding: 1.2rem; }
+      .prereg-card .preg-test { flex-direction: column; }
     }
   </style>
 </head>
@@ -452,7 +672,294 @@
     <a href="scorecard.html">Observational scorecard</a>
     &nbsp;&middot;&nbsp;
     <a href="generality.html">12 independent tests</a>
+    &nbsp;&middot;&nbsp;
+    <a href="morphology.html">Halo morphology</a>
   </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       PRE-REGISTRATION: FORMAL PREDICTIONS
+       Published 2026-03-16, BEFORE Euclid DR1 / Rubin Year 1
+       ════════════════════════════════════════════════════════════ -->
+  <div class="prereg-section" id="pre-registration">
+
+    <div class="prereg-banner">
+      <span class="prereg-badge">Pre-Registration</span>
+      <h2>Formal Predictions: Dark Matter Halo Morphology</h2>
+      <div class="prereg-date">Published: 2026-03-16 &mdash; BEFORE Euclid DR1 &amp; Rubin LSST Year 1</div>
+      <p class="prereg-desc">
+        The following three quantitative predictions are formally registered here before
+        Euclid Data Release 1 (~2027) and Rubin Observatory LSST Year 1 data (~2026&ndash;2027)
+        become available. The Khronon/&tau; framework makes specific, falsifiable claims about
+        dark matter halo morphology that differ qualitatively and quantitatively from both
+        &Lambda;CDM and &psi;DM (fuzzy dark matter). This pre-registration ensures these
+        predictions cannot be accused of post-hoc fitting.
+      </p>
+    </div>
+
+    <div class="prereg-grid">
+
+      <!-- ── PREDICTION A: Convergence Power Spectrum ── -->
+      <div class="prereg-card" id="prereg-pk">
+        <div class="preg-num">PREDICTION A</div>
+        <h3>Convergence Power Spectrum Slope</h3>
+
+        <div class="preg-prediction">
+          <div class="preg-label">Khronon Prediction</div>
+          <div class="preg-value">P<sub>&kappa;</sub>(k) ~ k<sup>&minus;2.2</sup></div>
+          <div class="preg-detail">
+            From Jeans fragmentation simulation (Euler&ndash;Poisson, 64&sup3; grid, c<sub>s</sub> = 0.001).
+            The c<sub>s</sub> &rarr; 0 limit makes ALL wavelengths simultaneously Jeans-unstable,
+            producing a self-similar filamentary network with a broad, featureless power-law continuum
+            &mdash; no preferred scale.
+          </div>
+        </div>
+
+        <div class="prereg-compare">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Predicted P<sub>&kappa;</sub>(k)</th>
+                <th>Physical origin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="val-cdm">&#x25CF; &Lambda;CDM</td>
+                <td class="val-cdm">~ k<sup>&minus;1.7</sup></td>
+                <td style="color:#888;">NFW profile + discrete subhalo Poisson noise</td>
+              </tr>
+              <tr>
+                <td class="val-psi">&#x25CF; &psi;DM</td>
+                <td class="val-psi">~ k<sup>&minus;3.0</sup></td>
+                <td style="color:#888;">Soliton core suppresses small-scale power; quantum pressure smoothing</td>
+              </tr>
+              <tr>
+                <td class="val-khr">&#x25CF; Khronon</td>
+                <td class="val-khr">~ k<sup>&minus;2.2</sup> <span class="status-closest">OUR PREDICTION</span></td>
+                <td style="color:#888;">Continuous filamentary network from c<sub>s</sub>&rarr;0 Jeans fragmentation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="preg-test">
+          <div class="preg-test-item">
+            <div class="ptl test-by">How to test</div>
+            <div class="ptv">
+              Gravitational lensing convergence maps from Euclid strong lensing
+              and Rubin LSST weak lensing. Sub-halo scale power spectrum
+              at k ~ 1&ndash;100 kpc<sup>&minus;1</sup>.
+            </div>
+          </div>
+          <div class="preg-test-item">
+            <div class="ptl timeline">Expected timeline</div>
+            <div class="ptv">
+              Euclid DR1: ~2027. Rubin Year 1: ~2026&ndash;2027.
+              Full discrimination: Euclid DR2 (~2029).
+            </div>
+          </div>
+          <div class="preg-test-item">
+            <div class="ptl disc">Discriminating power</div>
+            <div class="ptv">
+              VERY HIGH &mdash; the three slopes (&minus;1.7, &minus;2.2, &minus;3.0) are
+              well-separated. A single precise measurement rules out at least two models.
+            </div>
+          </div>
+        </div>
+
+        <div class="preg-attribution">
+          <span class="attr-known">Known physics:</span> Jeans instability (Jeans 1902), Zel'dovich collapse (1970), lensing convergence formalism.
+          <br>
+          <span class="attr-ours">Our contribution:</span> Application to Khronon EOS c<sub>s</sub>&sup2;(k) = (&mu;<sub>0</sub>/k)&sup2;; specific slope &minus;2.2 from simulation; prediction of featureless continuum (no preferred scale).
+        </div>
+      </div>
+
+
+      <!-- ── PREDICTION B: Lensing Power-Law Slope ── -->
+      <div class="prereg-card" id="prereg-beta">
+        <div class="preg-num">PREDICTION B</div>
+        <h3>Lensing Power-Law Slope &beta;</h3>
+
+        <div class="preg-prediction">
+          <div class="preg-label">Khronon Prediction</div>
+          <div class="preg-value">&beta; = 6.2</div>
+          <div class="preg-detail">
+            Derived by mapping the Khronon density field to gravitational lensing
+            convergence and fitting the resulting power spectrum.
+            Already compared against Fagin et al. 2024 SLACS strong lensing data.
+          </div>
+        </div>
+
+        <div class="prereg-compare">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>&beta; value</th>
+                <th>Tension with SLACS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="val-cdm">&#x25CF; &Lambda;CDM</td>
+                <td class="val-cdm">&beta; = 8.0</td>
+                <td><span class="status-excluded">6.8&sigma; excluded</span></td>
+              </tr>
+              <tr>
+                <td class="val-khr">&#x25CF; Khronon</td>
+                <td class="val-khr">&beta; = 6.2 <span class="status-closest">CLOSEST</span></td>
+                <td style="color:#ffb74d;">2.4&sigma; tension</td>
+              </tr>
+              <tr>
+                <td class="val-obs">&#x25CF; Observed (SLACS)</td>
+                <td class="val-obs">&beta; = 5.22 &plusmn; 0.41</td>
+                <td style="color:#888;">Fagin et al. 2024 (arXiv:2403.13881)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="preg-test">
+          <div class="preg-test-item">
+            <div class="ptl test-by">How to test</div>
+            <div class="ptv">
+              Extended strong lensing samples from Euclid (10,000+ lenses vs. SLACS ~100).
+              Larger sample will tighten the observed &beta; uncertainty by ~10&times;.
+              Flux ratio anomalies from quad lenses directly probe substructure.
+            </div>
+          </div>
+          <div class="preg-test-item">
+            <div class="ptl timeline">Expected timeline</div>
+            <div class="ptv">
+              Euclid DR1 lens catalog: ~2027.
+              Definitive &beta; measurement: Euclid full survey ~2029.
+            </div>
+          </div>
+          <div class="preg-test-item">
+            <div class="ptl disc">Discriminating power</div>
+            <div class="ptv">
+              VERY HIGH &mdash; CDM is already excluded at 6.8&sigma; by current data.
+              Khronon is the closest match of any theory tested.
+              More lenses will determine if 2.4&sigma; tension is real or statistical fluctuation.
+            </div>
+          </div>
+        </div>
+
+        <div class="preg-attribution">
+          <span class="attr-known">Known physics:</span> Gravitational lensing formalism; SLACS survey and &beta; measurement (Fagin et al. 2024).
+          <br>
+          <span class="attr-ours">Our contribution:</span> Calculation of &beta; = 6.2 from Khronon density field; comparison against SLACS data; identification that CDM is excluded while Khronon is closest.
+        </div>
+      </div>
+
+
+      <!-- ── PREDICTION C: Halo Morphology ── -->
+      <div class="prereg-card" id="prereg-morphology">
+        <div class="preg-num">PREDICTION C</div>
+        <h3>Halo Morphology: No Discrete Subhalos</h3>
+
+        <div class="preg-prediction">
+          <div class="preg-label">Khronon Prediction</div>
+          <div class="preg-value">Continuous filamentary network &mdash; no discrete subhalos</div>
+          <div class="preg-detail">
+            Khronon is a fluid with c<sub>s</sub> &rarr; 0. Unlike CDM particles, it cannot
+            undergo shell crossing. The result is a continuous density field organized into
+            filaments, not a smooth halo hosting discrete bound substructures.
+            This is a qualitative, model-defining difference.
+          </div>
+        </div>
+
+        <div class="prereg-compare">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Halo substructure</th>
+                <th>Physical mechanism</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="val-cdm">&#x25CF; &Lambda;CDM</td>
+                <td class="val-cdm">Smooth NFW + discrete subhalos</td>
+                <td style="color:#888;">Hierarchical merging; smaller halos survive as bound substructures</td>
+              </tr>
+              <tr>
+                <td class="val-psi">&#x25CF; &psi;DM</td>
+                <td class="val-psi">Soliton core + granular interference</td>
+                <td style="color:#888;">Quantum pressure creates central soliton; wave interference creates granules</td>
+              </tr>
+              <tr>
+                <td class="val-khr">&#x25CF; Khronon</td>
+                <td class="val-khr">Continuous filaments <span class="status-closest">OUR PREDICTION</span></td>
+                <td style="color:#888;">c<sub>s</sub>&rarr;0 Jeans instability; no shell crossing &rarr; no discrete clumps</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="preg-test">
+          <div class="preg-test-item">
+            <div class="ptl test-by">How to test</div>
+            <div class="ptv">
+              <strong>Euclid strong lensing:</strong> Flux ratio anomalies in quadruply-imaged quasars.
+              Discrete subhalos produce specific anomaly patterns; continuous filaments produce different ones.
+              <br>
+              <strong>Rubin LSST:</strong> Stellar stream gaps. CDM subhalos create gaps in stellar streams;
+              a continuous density field produces different perturbation signatures.
+            </div>
+          </div>
+          <div class="preg-test-item">
+            <div class="ptl timeline">Expected timeline</div>
+            <div class="ptv">
+              Euclid quad lenses: ~2027&ndash;2028.
+              Rubin stream gap statistics: ~2027 (Year 1 data).
+              Definitive: combined analysis ~2029&ndash;2030.
+            </div>
+          </div>
+          <div class="preg-test-item">
+            <div class="ptl disc">Discriminating power</div>
+            <div class="ptv">
+              EXTREMELY HIGH &mdash; this is a qualitative difference.
+              Discrete subhalos vs. continuous filaments vs. quantum granules
+              produce fundamentally different observational signatures that cannot be tuned away
+              with free parameters.
+            </div>
+          </div>
+        </div>
+
+        <div class="preg-attribution">
+          <span class="attr-known">Known physics:</span> CDM subhalo mass function (Springel+ 2008); &psi;DM soliton profiles (Schive+ 2014); stellar stream dynamics; lensing flux ratio anomaly formalism.
+          <br>
+          <span class="attr-ours">Our contribution:</span> Prediction that Khronon produces NO discrete subhalos &mdash; only continuous filamentary structure. This follows from the fluid nature of the Khronon field (c<sub>s</sub>&rarr;0, no shell crossing).
+          Specific observational signatures (filamentary lensing patterns, absence of stream gaps) are our predictions.
+        </div>
+      </div>
+
+    </div><!-- /prereg-grid -->
+
+
+    <!-- ── Pre-Registration Stamp ── -->
+    <div class="prereg-stamp">
+      <p class="stamp-text">
+        These predictions were published on <strong>2026-03-16</strong>, before Euclid DR1 (~2027)
+        and Rubin LSST Year 1 (~2026&ndash;2027) data releases.
+        The quantitative values (&beta; = 6.2, P<sub>&kappa;</sub> ~ k<sup>&minus;2.2</sup>)
+        and qualitative claim (continuous filaments, no discrete subhalos) are fixed and will not
+        be retroactively adjusted.
+        <br><br>
+        See also: <a href="morphology.html" style="color:#e8860c;text-decoration:none;">Interactive halo morphology comparison</a>
+        for 3D visualizations of the three predictions.
+      </p>
+      <div class="stamp-hash">
+        Pre-registration record: anatropic.org/predictions#pre-registration | 2026-03-16T00:00:00Z
+      </div>
+    </div>
+
+  </div><!-- /prereg-section -->
+
 
   <!-- ════════════ SUMMARY BAR ════════════ -->
   <div class="summary-bar">
@@ -1254,6 +1761,7 @@
           <span class="tl-item"><strong>JWST Cycle 4&ndash;5</strong> &mdash; high-z rotation curves (#14)</span>
           <span class="tl-item"><strong>VLT/Keck</strong> &mdash; Eri II GC spectroscopy (#11)</span>
           <span class="tl-item"><strong>Euclid DR1</strong> &mdash; weak lensing + cluster mergers (#10)</span>
+          <span class="tl-item"><strong>Euclid DR1 + Rubin Y1</strong> &mdash; P<sub>&kappa;</sub>(k) slope + &beta; + halo morphology (<a href="#pre-registration" style="color:#e8860c;text-decoration:none;">Pre-Reg A/B/C</a>)</span>
         </div>
       </div>
 
@@ -1302,6 +1810,8 @@
     <a href="universe.html">Universe</a>
     &middot;
     <a href="predictions.html">Predictions</a>
+    &middot;
+    <a href="morphology.html">Morphology</a>
     &middot;
     <a href="bullet.html">Bullet</a>
     &middot;
