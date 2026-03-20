@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cosmic Timeline — ΛCDM vs Khronon τ</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Page-specific styles ──────────────────────────── */
+    .lifecycle-page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem 3rem;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 2.5rem 1rem 1rem;
+    }
+    .hero h1 {
+      font-size: 1.8rem;
+      color: #f0f0f0;
+      margin: 0;
+      letter-spacing: -0.3px;
+    }
+    .hero .tagline {
+      font-size: 0.95rem;
+      color: #888;
+      margin: 0.7rem auto 0;
+      max-width: 780px;
+      line-height: 1.55;
+    }
+    .hero .eq {
+      font-family: 'Menlo','Consolas',monospace;
+      color: #e8860c;
+      font-size: 0.95rem;
+      margin-top: 0.8rem;
+    }
+
+    /* ── Timeline slider ──────────────────────────────── */
+    .timeline-container {
+      max-width: 900px;
+      margin: 1.8rem auto 0.6rem;
+      padding: 0 1rem;
+    }
+    .timeline-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: #666;
+      margin-bottom: 0.35rem;
+      padding: 0 2px;
+    }
+    .timeline-labels span {
+      text-align: center;
+      flex: 1;
+      transition: color 0.3s;
+    }
+    .timeline-labels span.active-label {
+      color: #e8860c;
+      font-weight: 600;
+    }
+    #timeline-slider {
+      width: 100%;
+      accent-color: #e8860c;
+      cursor: pointer;
+      height: 6px;
+    }
+    .timeline-phase-name {
+      text-align: center;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-top: 0.5rem;
+      min-height: 1.6rem;
+    }
+    .timeline-phase-sub {
+      text-align: center;
+      font-size: 0.82rem;
+      color: #777;
+      margin-top: 0.2rem;
+      min-height: 1.2rem;
+    }
+
+    /* ── Play button ──────────────────────────────────── */
+    .play-controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 0.6rem;
+    }
+    .play-btn {
+      background: #1a1a1a;
+      color: #ccc;
+      border: 1px solid #333;
+      padding: 0.3rem 1.2rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .play-btn:hover {
+      background: #2a2a2a;
+      border-color: #e8860c;
+      color: #fff;
+    }
+    .play-btn.active {
+      background: #1a1408;
+      border-color: #e8860c;
+      color: #e8860c;
+    }
+
+    /* ── Dual panels ──────────────────────────────────── */
+    .dual-panels {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.2rem;
+    }
+    .viz-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+    }
+    .viz-panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .viz-panel-title.lcdm { color: #ffaa44; }
+    .viz-panel-title.khronon { color: #66aaff; }
+
+    .canvas-wrap {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 560px;
+      background: #050508;
+      border: 1px solid #1a1a1a;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .canvas-wrap canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .panel-dynamic-label {
+      font-size: 0.78rem;
+      color: #999;
+      text-align: center;
+      margin-top: 0.5rem;
+      padding: 0 0.5rem;
+      min-height: 2.6rem;
+      line-height: 1.45;
+    }
+    .panel-dynamic-label em {
+      color: #e8860c;
+      font-style: normal;
+    }
+
+    /* ── Explanation box ──────────────────────────────── */
+    .explanation-box {
+      max-width: 900px;
+      margin: 2rem auto 0;
+      padding: 1.5rem 2rem;
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      border-radius: 8px;
+    }
+    .explanation-box h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .explanation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .explanation-col h4 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+    }
+    .explanation-col h4.lcdm-h { color: #ffaa44; }
+    .explanation-col h4.tau-h { color: #66aaff; }
+    .explanation-col h4.diff-h { color: #e8860c; }
+    .explanation-col p {
+      font-size: 0.82rem;
+      color: #999;
+      line-height: 1.5;
+      min-height: 4rem;
+    }
+    .explanation-col p strong {
+      color: #ccc;
+    }
+
+    /* ── Footer author ────────────────────────────────── */
+    .page-footer {
+      text-align: center;
+      padding: 2.5rem 1rem 1rem;
+      font-size: 0.78rem;
+      color: #555;
+    }
+    .page-footer a {
+      color: #e8860c;
+      text-decoration: none;
+    }
+    .page-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Responsive ────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .dual-panels { flex-direction: column; align-items: center; }
+      .viz-panel { max-width: 560px; width: 100%; }
+      .explanation-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="lifecycle-page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Cosmic Timeline &mdash; &Lambda;CDM vs Khronon &tau;</h1>
+    <p class="tagline">
+      The same cosmic structure, two different stories. On the left, dark matter particles
+      cluster under gravity. On the right, temporal asymmetry &tau; emerges from information
+      flow &mdash; no new particles needed.
+    </p>
+    <p class="eq">&tau; = 1 &minus; exp(&minus;&Sigma;/2) &nbsp;&nbsp;|&nbsp;&nbsp; &Sigma; = 2 ln Q</p>
+  </div>
+
+  <!-- Timeline slider -->
+  <div class="timeline-container">
+    <div class="timeline-labels" id="phase-labels">
+      <span>Uniform</span>
+      <span>Filaments</span>
+      <span>Clusters</span>
+      <span>Black Hole</span>
+      <span>Evaporation</span>
+      <span>Info Return</span>
+    </div>
+    <input type="range" id="timeline-slider" min="0" max="1000" value="0" step="1" />
+    <div class="timeline-phase-name" id="phase-name">Phase 1: Uniform Density</div>
+    <div class="timeline-phase-sub" id="phase-sub">z &asymp; 1100 &mdash; Recombination era</div>
+    <div class="play-controls">
+      <button class="play-btn" id="btn-play">Play</button>
+      <button class="play-btn" id="btn-reset">Reset</button>
+    </div>
+  </div>
+
+  <!-- Dual 3D panels -->
+  <div class="dual-panels">
+    <div class="viz-panel">
+      <div class="viz-panel-title lcdm">&Lambda;CDM</div>
+      <div class="canvas-wrap" id="canvas-lcdm"></div>
+      <div class="panel-dynamic-label" id="label-lcdm">Dark matter particles in near-uniform distribution</div>
+    </div>
+    <div class="viz-panel">
+      <div class="viz-panel-title khronon">Khronon &tau;</div>
+      <div class="canvas-wrap" id="canvas-tau"></div>
+      <div class="panel-dynamic-label" id="label-tau">&tau; &asymp; 0 everywhere &mdash; time is symmetric</div>
+    </div>
+  </div>
+
+  <!-- Explanation box -->
+  <div class="explanation-box">
+    <h3 id="explanation-title">What is happening</h3>
+    <div class="explanation-grid">
+      <div class="explanation-col">
+        <h4 class="lcdm-h">&Lambda;CDM says</h4>
+        <p id="exp-lcdm">Dark matter particles are nearly uniformly distributed with tiny density perturbations seeded by inflation. These perturbations will grow under gravitational instability.</p>
+      </div>
+      <div class="explanation-col">
+        <h4 class="tau-h">Khronon &tau; says</h4>
+        <p id="exp-tau">Temporal asymmetry is near zero everywhere. The universe is close to time-symmetric &mdash; retrodiction is easy, and the Petz recovery map operates at near-unit fidelity.</p>
+      </div>
+      <div class="explanation-col">
+        <h4 class="diff-h">Key difference</h4>
+        <p id="exp-diff">Both frameworks agree on the initial conditions. The difference is ontological: &Lambda;CDM postulates invisible particles; the &tau; framework sees the same gravitational effects as emergent from information flow.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="page-footer">
+    Sheng-Kai Huang &nbsp;|&nbsp; <a href="index.html">&larr; Back to main</a>
+  </div>
+
+</div>
+
+<!-- Three.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ── Phase data ─────────────────────────────────────────
+  const PHASES = [
+    {
+      name: 'Phase 1: Uniform Density',
+      sub: 'z \u2248 1100 \u2014 Recombination era',
+      labelL: 'Dark matter particles in near-uniform distribution',
+      labelR: '\u03c4 \u2248 0 everywhere \u2014 time is symmetric',
+      expL: 'Dark matter particles are nearly uniformly distributed with tiny density perturbations seeded by inflation. These perturbations will grow under gravitational instability.',
+      expR: 'Temporal asymmetry is near zero everywhere. The universe is close to time-symmetric \u2014 retrodiction is easy, and the Petz recovery map operates at near-unit fidelity.',
+      expD: 'Both frameworks agree on the initial conditions. The difference is ontological: \u039bCDM postulates invisible particles; the \u03c4 framework sees the same gravitational effects as emergent from information flow.'
+    },
+    {
+      name: 'Phase 2: Filament Formation',
+      sub: 'z \u2248 2\u201310 \u2014 Cosmic web emerges',
+      labelL: 'Dark matter halos forming along filaments',
+      labelR: '\u03c4 increasing at nodes \u2014 time\'s arrow strengthening',
+      expL: 'Dark matter collapses along filaments first, creating the cosmic web. Halos form at the intersections of filaments, providing gravitational wells for baryonic matter.',
+      expR: 'Where matter concentrates, \u03a3 = D(\u03c1\u2016\u03c1\u2080) grows, and \u03c4 = 1 \u2212 exp(\u2212\u03a3/2) increases. The cosmic web is a map of where time\'s arrow is strengthening \u2014 retrodiction becomes harder at nodes.',
+      expD: '\u039bCDM builds structure via invisible particle clustering. In the \u03c4 framework, the same structure arises because information becomes increasingly trapped at density peaks \u2014 no new particles, just information geometry.'
+    },
+    {
+      name: 'Phase 3: Galaxy Clusters',
+      sub: 'z \u2248 0.5\u20132 \u2014 Cluster formation',
+      labelL: 'CDM particles virializing in potential wells',
+      labelR: 'Information becoming trapped \u2014 retrodiction failing',
+      expL: 'Massive dark matter halos host galaxy clusters. The dark matter has virialized in deep potential wells, with mass ratios ~5:1 dark-to-baryonic confirming the CDM paradigm.',
+      expR: '\u03c4 \u2192 0.5 at cluster cores. The Petz recovery fidelity F = exp(\u2212\u03a3/2) has dropped to ~0.5 \u2014 half the information about the past is irretrievable. The cluster core is profoundly time-asymmetric.',
+      expD: '\u039bCDM explains the mass discrepancy by adding matter. The \u03c4 framework explains it by the geometry of information loss: high \u03c4 regions curve spacetime exactly as dark matter would, via \u03a3 = 2 ln Q.'
+    },
+    {
+      name: 'Phase 4: Black Hole Formation',
+      sub: 'Gravitational collapse \u2014 event horizon',
+      labelL: 'Supermassive black hole forms, event horizon appears',
+      labelR: '\u03c4 \u2192 1: complete irreversibility, \u03a3 \u2192 \u221e',
+      expL: 'A supermassive black hole forms at the cluster center. An event horizon appears \u2014 a causal boundary beyond which nothing escapes. Information that falls in is apparently lost forever.',
+      expR: '\u03c4 = 1 \u2212 exp(\u2212\u03a3/2) \u2192 1 as \u03a3 = 2 ln Q diverges at the horizon. This is complete Petz recovery failure. The event horizon is not a geometric accident \u2014 it is the surface where retrodiction becomes impossible.',
+      expD: 'In \u039bCDM, the horizon is a geometric feature. In the \u03c4 framework, it has informational meaning: \u03c4 = 1 is the point of no return for information. This immediately connects to the information paradox.'
+    },
+    {
+      name: 'Phase 5: Hawking Evaporation',
+      sub: 'Black hole radiates \u2014 slow information leak',
+      labelL: 'Hawking radiation escapes, information lost?',
+      labelR: '\u03c4 begins to decrease \u2014 information leaking out',
+      expL: 'Hawking radiation carries energy away, but appears thermal \u2014 it contains no information about what fell in. The information paradox: where did the information go? \u039bCDM has no built-in answer.',
+      expR: 'As the black hole shrinks, \u03a3 decreases and \u03c4 begins to drop below 1. The Petz recovery map begins to work partially again. Information is gradually encoded in correlations between early and late Hawking quanta.',
+      expD: '\u039bCDM + quantum field theory faces a paradox. The \u03c4 framework predicts: as long as the total process is unitary (Petz-recoverable), \u03c4 must decrease during evaporation. Information return is not optional \u2014 it is required by \u03c4 < 1.'
+    },
+    {
+      name: 'Phase 6: Information Return',
+      sub: 'Complete evaporation \u2014 unitarity restored',
+      labelL: 'Information paradox unresolved in classical \u039bCDM',
+      labelR: '\u03c4 \u2192 0: all information recovered, unitarity preserved',
+      expL: 'After complete evaporation, \u039bCDM + semiclassical gravity leaves the information paradox open. Various proposals exist (complementarity, firewalls, islands) but no consensus resolution within the standard framework.',
+      expR: 'Complete evaporation returns \u03c4 \u2192 0. The Petz recovery map restores to near-perfect fidelity. The information paradox is resolved by construction: the full process has \u03c4 = 0, meaning unitarity is preserved. What looked like information loss was \u03c4 temporarily approaching 1.',
+      expD: 'This is the deepest difference. \u039bCDM treats the information paradox as a puzzle to be solved. The \u03c4 framework dissolves it: \u03c4 parameterizes how much information is temporarily inaccessible. Full evaporation = \u03c4 \u2192 0 = information returned. No paradox.'
+    }
+  ];
+
+  // ── DOM refs ──────────────────────────────────────────
+  const slider    = document.getElementById('timeline-slider');
+  const phaseName = document.getElementById('phase-name');
+  const phaseSub  = document.getElementById('phase-sub');
+  const labelL    = document.getElementById('label-lcdm');
+  const labelR    = document.getElementById('label-tau');
+  const expL      = document.getElementById('exp-lcdm');
+  const expR      = document.getElementById('exp-tau');
+  const expD      = document.getElementById('exp-diff');
+  const phaseLabelsEl = document.getElementById('phase-labels');
+  const btnPlay   = document.getElementById('btn-play');
+  const btnReset  = document.getElementById('btn-reset');
+
+  // ── Three.js setup ─────────────────────────────────────
+  const N_PARTICLES = 3000;
+
+  function createScene(containerId) {
+    const container = document.getElementById(containerId);
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+
+    const scene    = new THREE.Scene();
+    const camera   = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
+    camera.position.set(0, 0, 4.2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x050508, 1);
+    container.appendChild(renderer.domElement);
+
+    // Particle geometry
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(N_PARTICLES * 3);
+    const colors    = new Float32Array(N_PARTICLES * 3);
+    const seeds     = new Float32Array(N_PARTICLES * 4); // seed data for animation
+
+    for (let i = 0; i < N_PARTICLES; i++) {
+      // uniform random in cube [-1.5, 1.5]
+      positions[i*3]   = (Math.random() - 0.5) * 3;
+      positions[i*3+1] = (Math.random() - 0.5) * 3;
+      positions[i*3+2] = (Math.random() - 0.5) * 3;
+      colors[i*3]   = 1;
+      colors[i*3+1] = 1;
+      colors[i*3+2] = 1;
+      // seed: filament affinity, cluster affinity, angle, radius
+      seeds[i*4]   = Math.random();     // filament ID (0-1)
+      seeds[i*4+1] = Math.random();     // cluster affinity
+      seeds[i*4+2] = Math.random() * Math.PI * 2; // angle
+      seeds[i*4+3] = Math.random();     // radial seed
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.025,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      sizeAttenuation: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    return { scene, camera, renderer, geometry, material, points, seeds, container };
+  }
+
+  const sceneL = createScene('canvas-lcdm');
+  const sceneR = createScene('canvas-tau');
+
+  // ── Pre-compute filament/cluster structure ─────────────
+  // Define 8 filament attractor lines and 5 cluster nodes
+  const FILAMENT_AXES = [];
+  for (let i = 0; i < 8; i++) {
+    const theta = Math.random() * Math.PI;
+    const phi   = Math.random() * Math.PI * 2;
+    FILAMENT_AXES.push(new THREE.Vector3(
+      Math.sin(theta) * Math.cos(phi),
+      Math.sin(theta) * Math.sin(phi),
+      Math.cos(theta)
+    ));
+  }
+
+  const CLUSTER_NODES = [];
+  for (let i = 0; i < 5; i++) {
+    CLUSTER_NODES.push(new THREE.Vector3(
+      (Math.random() - 0.5) * 2,
+      (Math.random() - 0.5) * 2,
+      (Math.random() - 0.5) * 2
+    ));
+  }
+  // sort by distance from origin for "main" cluster
+  CLUSTER_NODES.sort((a, b) => a.length() - b.length());
+
+  // ── Initial positions (saved) ─────────────────────────
+  const initPosL = new Float32Array(N_PARTICLES * 3);
+  const initPosR = new Float32Array(N_PARTICLES * 3);
+  const posArrL  = sceneL.geometry.attributes.position.array;
+  const posArrR  = sceneR.geometry.attributes.position.array;
+  for (let i = 0; i < N_PARTICLES * 3; i++) {
+    initPosL[i] = posArrL[i];
+    initPosR[i] = posArrR[i];
+  }
+
+  // ── Compute target positions for each phase ───────────
+  function computeTargetPos(seeds, initPos, phase) {
+    const out = new Float32Array(N_PARTICLES * 3);
+
+    for (let i = 0; i < N_PARTICLES; i++) {
+      const ix = initPos[i*3], iy = initPos[i*3+1], iz = initPos[i*3+2];
+      const s0 = seeds[i*4], s1 = seeds[i*4+1], s2 = seeds[i*4+2], s3 = seeds[i*4+3];
+
+      if (phase === 0) {
+        // Uniform with tiny perturbation
+        out[i*3]   = ix + (Math.random() - 0.5) * 0.02;
+        out[i*3+1] = iy + (Math.random() - 0.5) * 0.02;
+        out[i*3+2] = iz + (Math.random() - 0.5) * 0.02;
+      }
+      else if (phase === 1) {
+        // Filament formation: attract toward nearest filament axis
+        const fi = Math.floor(s0 * FILAMENT_AXES.length) % FILAMENT_AXES.length;
+        const axis = FILAMENT_AXES[fi];
+        const t = (s3 - 0.5) * 3; // position along axis
+        const target = axis.clone().multiplyScalar(t);
+        // perpendicular offset
+        const perp = new THREE.Vector3(ix, iy, iz).sub(target);
+        perp.sub(axis.clone().multiplyScalar(perp.dot(axis)));
+        const shrink = 0.3;
+        target.add(perp.multiplyScalar(shrink));
+        out[i*3]   = target.x;
+        out[i*3+1] = target.y;
+        out[i*3+2] = target.z;
+      }
+      else if (phase === 2) {
+        // Galaxy clusters: attract toward cluster nodes
+        const ci = Math.floor(s1 * CLUSTER_NODES.length) % CLUSTER_NODES.length;
+        const node = CLUSTER_NODES[ci];
+        const spread = 0.15 + s3 * 0.35;
+        out[i*3]   = node.x + Math.cos(s2) * Math.sin(s2 * 2.3) * spread;
+        out[i*3+1] = node.y + Math.sin(s2) * Math.cos(s2 * 1.7) * spread;
+        out[i*3+2] = node.z + Math.cos(s2 * 3.1) * spread;
+        // Some particles remain in filaments
+        if (s1 > 0.7) {
+          const fi = Math.floor(s0 * FILAMENT_AXES.length) % FILAMENT_AXES.length;
+          const axis = FILAMENT_AXES[fi];
+          const t = (s3 - 0.5) * 2.5;
+          out[i*3]   = axis.x * t + (Math.random() - 0.5) * 0.15;
+          out[i*3+1] = axis.y * t + (Math.random() - 0.5) * 0.15;
+          out[i*3+2] = axis.z * t + (Math.random() - 0.5) * 0.15;
+        }
+      }
+      else if (phase === 3) {
+        // Black hole: everything collapses to center
+        const r = s3 * 0.4;
+        out[i*3]   = Math.cos(s2) * Math.sin(s2 * 2) * r;
+        out[i*3+1] = Math.sin(s2) * Math.cos(s2 * 3) * r;
+        out[i*3+2] = Math.cos(s2 * 1.5) * r;
+      }
+      else if (phase === 4) {
+        // Hawking evaporation: core shrinks, some particles radiate outward
+        if (s1 < 0.6) {
+          // core remnant
+          const r = s3 * 0.15;
+          out[i*3]   = Math.cos(s2) * Math.sin(s2 * 2) * r;
+          out[i*3+1] = Math.sin(s2) * Math.cos(s2 * 3) * r;
+          out[i*3+2] = Math.cos(s2 * 1.5) * r;
+        } else {
+          // radiated particles
+          const r = 0.5 + s3 * 1.8;
+          out[i*3]   = Math.cos(s2) * Math.sin(s2 * 2.3) * r;
+          out[i*3+1] = Math.sin(s2) * Math.cos(s2 * 1.7) * r;
+          out[i*3+2] = Math.cos(s2 * 3.1) * r;
+        }
+      }
+      else if (phase === 5) {
+        // Information return: uniform again
+        out[i*3]   = (s0 - 0.5) * 3.2;
+        out[i*3+1] = (s1 - 0.5) * 3.2;
+        out[i*3+2] = (s3 - 0.5) * 3.2;
+      }
+    }
+    return out;
+  }
+
+  // Pre-compute all phase targets
+  const targetsL = [];
+  const targetsR = [];
+  for (let p = 0; p < 6; p++) {
+    targetsL.push(computeTargetPos(sceneL.seeds, initPosL, p));
+    targetsR.push(computeTargetPos(sceneR.seeds, initPosR, p));
+  }
+
+  // ── Color functions ────────────────────────────────────
+  // LCDM: purple-to-orange by density (approximated by distance from center)
+  function colorLCDM(positions, colors, phase, t) {
+    for (let i = 0; i < N_PARTICLES; i++) {
+      const x = positions[i*3], y = positions[i*3+1], z = positions[i*3+2];
+      const r = Math.sqrt(x*x + y*y + z*z);
+
+      // density proxy: inverse of distance from nearest cluster
+      let minD = 10;
+      for (const node of CLUSTER_NODES) {
+        const d = Math.sqrt((x-node.x)**2 + (y-node.y)**2 + (z-node.z)**2);
+        if (d < minD) minD = d;
+      }
+      const density = Math.max(0, Math.min(1, 1 - minD / 2));
+      const phaseFactor = Math.min(1, phase / 2); // ramp up contrast
+
+      // purple (0.4, 0.1, 0.6) -> orange (1.0, 0.6, 0.1)
+      const d = density * phaseFactor;
+      colors[i*3]   = 0.4 + d * 0.6;         // R
+      colors[i*3+1] = 0.1 + d * 0.5;         // G
+      colors[i*3+2] = 0.6 - d * 0.5;         // B
+
+      // Phase 3+: intense orange/white for core
+      if (phase >= 3) {
+        const coreD = r;
+        const coreFac = Math.max(0, 1 - coreD / 0.5);
+        const cf = coreFac * Math.min(1, (phase - 2.5) * 2);
+        colors[i*3]   = colors[i*3]   * (1 - cf) + cf * 1.0;
+        colors[i*3+1] = colors[i*3+1] * (1 - cf) + cf * 0.85;
+        colors[i*3+2] = colors[i*3+2] * (1 - cf) + cf * 0.4;
+      }
+
+      // Phase 4: dim radiated particles, question mark feel
+      if (phase >= 4) {
+        const radD = r;
+        if (radD > 0.5) {
+          const dim = 0.3;
+          colors[i*3]   *= dim;
+          colors[i*3+1] *= dim;
+          colors[i*3+2] *= dim;
+        }
+      }
+
+      // Phase 5: gray/dim everything (unresolved)
+      if (phase >= 4.8) {
+        const grayMix = Math.min(1, (phase - 4.8) * 5);
+        const gray = 0.25;
+        colors[i*3]   = colors[i*3]   * (1 - grayMix) + grayMix * gray;
+        colors[i*3+1] = colors[i*3+1] * (1 - grayMix) + grayMix * gray;
+        colors[i*3+2] = colors[i*3+2] * (1 - grayMix) + grayMix * gray;
+      }
+    }
+  }
+
+  // Khronon tau: blue-white-red by tau value
+  function colorTau(positions, colors, phase, t) {
+    for (let i = 0; i < N_PARTICLES; i++) {
+      const x = positions[i*3], y = positions[i*3+1], z = positions[i*3+2];
+      const r = Math.sqrt(x*x + y*y + z*z);
+
+      // tau proxy based on density/distance-from-center
+      let tau;
+      if (phase < 1) {
+        tau = phase * 0.05; // near zero
+      } else if (phase < 2) {
+        // filament nodes get higher tau
+        let minD = 10;
+        for (const node of CLUSTER_NODES) {
+          const d = Math.sqrt((x-node.x)**2 + (y-node.y)**2 + (z-node.z)**2);
+          if (d < minD) minD = d;
+        }
+        tau = (1 - Math.min(1, minD / 2)) * 0.3 * (phase - 1 + 1);
+      } else if (phase < 3) {
+        let minD = 10;
+        for (const node of CLUSTER_NODES) {
+          const d = Math.sqrt((x-node.x)**2 + (y-node.y)**2 + (z-node.z)**2);
+          if (d < minD) minD = d;
+        }
+        tau = (1 - Math.min(1, minD / 1.5)) * 0.55;
+      } else if (phase < 4) {
+        // black hole: tau -> 1 at center
+        tau = Math.max(0, 1 - r / 0.6);
+      } else if (phase < 5) {
+        // evaporation: tau decreasing from center outward
+        const evapProgress = phase - 4;
+        if (r < 0.3) {
+          tau = Math.max(0, 1 - evapProgress * 0.7);
+        } else {
+          tau = Math.max(0, 0.5 - evapProgress * 0.4 - r * 0.1);
+        }
+      } else {
+        // information return: tau -> 0
+        tau = Math.max(0, 0.1 * (1 - (phase - 5)));
+      }
+
+      tau = Math.max(0, Math.min(1, tau));
+
+      // Colormap: blue (tau=0) -> white (tau=0.5) -> red (tau=1)
+      if (tau < 0.5) {
+        const t2 = tau * 2; // 0..1
+        colors[i*3]   = 0.15 + t2 * 0.85;   // R: 0.15 -> 1
+        colors[i*3+1] = 0.25 + t2 * 0.75;   // G: 0.25 -> 1
+        colors[i*3+2] = 0.9  + t2 * 0.1;    // B: 0.9  -> 1
+      } else {
+        const t2 = (tau - 0.5) * 2; // 0..1
+        colors[i*3]   = 1.0;                  // R: 1
+        colors[i*3+1] = 1.0 - t2 * 0.75;     // G: 1 -> 0.25
+        colors[i*3+2] = 1.0 - t2 * 0.85;     // B: 1 -> 0.15
+      }
+
+      // Phase 5-6: final return to blue
+      if (phase >= 5) {
+        const returnMix = Math.min(1, (phase - 5) * 1.5);
+        colors[i*3]   = colors[i*3]   * (1 - returnMix) + returnMix * 0.15;
+        colors[i*3+1] = colors[i*3+1] * (1 - returnMix) + returnMix * 0.35;
+        colors[i*3+2] = colors[i*3+2] * (1 - returnMix) + returnMix * 0.9;
+      }
+    }
+  }
+
+  // ── Update positions by interpolation ─────────────────
+  function updatePositions(posArr, targets, phase) {
+    const pi = Math.floor(Math.max(0, Math.min(5, phase)));
+    const pj = Math.min(5, pi + 1);
+    const frac = phase - pi;
+
+    const tA = targets[pi];
+    const tB = targets[pj];
+
+    for (let i = 0; i < N_PARTICLES * 3; i++) {
+      posArr[i] = tA[i] * (1 - frac) + tB[i] * frac;
+    }
+  }
+
+  // ── Phase label highlighting ──────────────────────────
+  function updatePhaseLabels(phase) {
+    const labels = phaseLabelsEl.children;
+    const pi = Math.round(phase / 5 * 5);
+    for (let i = 0; i < labels.length; i++) {
+      labels[i].classList.toggle('active-label', i === Math.min(5, Math.max(0, Math.round(phase))));
+    }
+  }
+
+  // ── Main update ────────────────────────────────────────
+  let currentPhase = 0;
+
+  function updateViz(phase) {
+    currentPhase = phase;
+
+    // Update positions
+    updatePositions(posArrL, targetsL, phase);
+    updatePositions(posArrR, targetsR, phase);
+
+    sceneL.geometry.attributes.position.needsUpdate = true;
+    sceneR.geometry.attributes.position.needsUpdate = true;
+
+    // Update colors
+    colorLCDM(posArrL, sceneL.geometry.attributes.color.array, phase);
+    colorTau(posArrR, sceneR.geometry.attributes.color.array, phase);
+
+    sceneL.geometry.attributes.color.needsUpdate = true;
+    sceneR.geometry.attributes.color.needsUpdate = true;
+
+    // Update point size based on phase
+    const baseSize = 0.025;
+    if (phase > 2.5 && phase < 5) {
+      sceneL.material.size = baseSize * (1 + (phase - 2.5) * 0.3);
+      sceneR.material.size = baseSize * (1 + (phase - 2.5) * 0.3);
+    } else {
+      sceneL.material.size = baseSize;
+      sceneR.material.size = baseSize;
+    }
+
+    // Update text
+    const pi = Math.min(5, Math.max(0, Math.round(phase)));
+    const pd = PHASES[pi];
+    phaseName.textContent = pd.name;
+    phaseSub.innerHTML    = pd.sub;
+    labelL.textContent    = pd.labelL;
+    labelR.innerHTML      = pd.labelR;
+    expL.textContent      = pd.expL;
+    expR.textContent      = pd.expR;
+    expD.textContent      = pd.expD;
+    updatePhaseLabels(phase);
+  }
+
+  // ── Slider ─────────────────────────────────────────────
+  slider.addEventListener('input', () => {
+    const val = parseFloat(slider.value) / 1000;  // 0..1
+    const phase = val * 5;  // 0..5
+    updateViz(phase);
+  });
+
+  // ── Play / Reset ───────────────────────────────────────
+  let playing = false;
+  let playStart = null;
+  const PLAY_DURATION = 30000; // 30 seconds for full cycle
+
+  btnPlay.addEventListener('click', () => {
+    playing = !playing;
+    btnPlay.textContent = playing ? 'Pause' : 'Play';
+    btnPlay.classList.toggle('active', playing);
+    if (playing) {
+      const currentVal = parseFloat(slider.value) / 1000;
+      playStart = performance.now() - currentVal * PLAY_DURATION;
+    }
+  });
+
+  btnReset.addEventListener('click', () => {
+    playing = false;
+    btnPlay.textContent = 'Play';
+    btnPlay.classList.remove('active');
+    slider.value = 0;
+    updateViz(0);
+  });
+
+  // ── Slow rotation ──────────────────────────────────────
+  let rotAngle = 0;
+
+  // ── Resize handler ─────────────────────────────────────
+  function onResize() {
+    [sceneL, sceneR].forEach(s => {
+      const w = s.container.clientWidth;
+      const h = s.container.clientHeight;
+      s.camera.aspect = w / h;
+      s.camera.updateProjectionMatrix();
+      s.renderer.setSize(w, h);
+    });
+  }
+  window.addEventListener('resize', onResize);
+
+  // ── Animation loop ─────────────────────────────────────
+  function animate(now) {
+    requestAnimationFrame(animate);
+
+    // Auto-play
+    if (playing) {
+      const elapsed = now - playStart;
+      let progress = elapsed / PLAY_DURATION;
+      if (progress >= 1) {
+        progress = 1;
+        playing = false;
+        btnPlay.textContent = 'Play';
+        btnPlay.classList.remove('active');
+      }
+      slider.value = Math.round(progress * 1000);
+      updateViz(progress * 5);
+    }
+
+    // Slow rotation
+    rotAngle += 0.002;
+    const rDist = 4.2;
+    [sceneL, sceneR].forEach(s => {
+      s.camera.position.x = Math.sin(rotAngle) * rDist * 0.3;
+      s.camera.position.z = Math.cos(rotAngle) * rDist;
+      s.camera.position.y = Math.sin(rotAngle * 0.5) * rDist * 0.15;
+      s.camera.lookAt(0, 0, 0);
+    });
+
+    // Render
+    sceneL.renderer.render(sceneL.scene, sceneL.camera);
+    sceneR.renderer.render(sceneR.scene, sceneR.camera);
+  }
+
+  // ── Initialize ─────────────────────────────────────────
+  updateViz(0);
+  requestAnimationFrame(animate);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khronon Simulation Viewer — τ Field Visualization</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Simulation viewer specific styles */
+    #sim-container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+      position: relative;
+      background: #050505;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #sim-container canvas { width: 100% !important; height: 100% !important; }
+
+    #sim-controls {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      align-items: center; justify-content: center;
+      margin: 18px auto; max-width: 900px;
+    }
+    #sim-controls label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+    #sim-controls input[type="range"] { width: 140px; }
+
+    #time-display {
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 1.1rem; color: #e8860c;
+      text-align: center; margin: 8px 0;
+    }
+
+    .view-toggle { display: flex; gap: 8px; justify-content: center; margin: 12px 0; }
+    .view-btn {
+      padding: 6px 16px; border: 1px solid #444; border-radius: 4px;
+      background: #1a1a1a; color: #ccc; cursor: pointer; font-size: 0.85rem;
+    }
+    .view-btn.active { background: #e8860c; color: #000; border-color: #e8860c; }
+
+    #loading-status {
+      text-align: center; padding: 40px; color: #888;
+      font-size: 1.1rem;
+    }
+    #loading-status .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 2px solid #444; border-top-color: #e8860c;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      margin-right: 8px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .legend {
+      display: flex; justify-content: center; align-items: center;
+      gap: 4px; margin: 8px 0; font-size: 0.8rem; color: #888;
+    }
+    .legend-bar {
+      width: 200px; height: 12px; border-radius: 2px;
+    }
+    .legend-bar.density {
+      background: linear-gradient(to right,
+        #000200, #1e0732, #87216b, #e05836, #f9c932, #fcffa4);
+    }
+    .legend-bar.tau {
+      background: linear-gradient(to right,
+        #0d47a1, #1565c0, #42a5f5, #ffffff, #ef5350, #b71c1c);
+    }
+
+    #stats-panel {
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 0.75rem; color: #666; text-align: center;
+      margin: 4px 0;
+    }
+
+    .nav-link {
+      text-align: center; margin: 16px 0;
+    }
+    .nav-link a {
+      color: #e8860c; text-decoration: none;
+    }
+    .nav-link a:hover { text-decoration: underline; color: #ffaa33; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Cosmic Web: τ Field Visualization</h1>
+    <p class="subtitle">Where does time flow strongest in the universe?</p>
+  </header>
+
+  <div class="nav-link">
+    <a href="index.html">← Back to three-model comparison</a>
+  </div>
+
+  <!-- Physics explanation FIRST -->
+  <section id="physics-note" style="margin-top:0;">
+    <h2>The τ field: where time has direction</h2>
+    <div class="note-columns">
+      <div class="note-col">
+        <h3>What τ represents</h3>
+        <p>τ = 1 − exp(−Σ/2), where Σ = D(ρ<sub>spacetime</sub> ‖ ρ<sub>matter</sub>) is the quantum relative entropy between spacetime geometry and matter content.</p>
+        <ul>
+          <li><strong>τ = 0</strong>: time-reversal symmetry intact. No arrow of time. The past can be perfectly recovered from the present.</li>
+          <li><strong>τ → 1</strong>: complete irreversibility. Information about the past is lost. Time flows in one direction only.</li>
+          <li>In the weak gravitational field: <strong>Σ ≈ 2Φ/c²</strong>, where Φ is the gravitational potential.</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>Three views</h3>
+        <ul>
+          <li><strong>Density</strong> (purple-orange): where matter is. Filaments, nodes, and voids — the cosmic web, same as any standard simulation.</li>
+          <li><strong>τ Field</strong> (blue-white-red): where time's arrow is strong. White/red = deep potential wells, strong irreversibility. Blue = voids, nearly reversible.</li>
+          <li><strong>Combined</strong>: both at once. Color = τ (blue→red), brightness = density. Bright red = dense + irreversible. Dark = empty + reversible.</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3>Physical interpretation</h3>
+        <ul>
+          <li>The cosmic web is not just a map of <em>where matter is</em> — it is a map of <em>where time flows strongest</em>.</li>
+          <li>Galaxy clusters sit at nodes where τ is highest: time is most irreversible, information is most trapped.</li>
+          <li>Cosmic voids have τ ≈ 0: time is nearly symmetric, retrodiction (recovering the past) is easiest.</li>
+          <li>Filaments are channels of intermediate τ along which matter — and temporal asymmetry — flows toward nodes.</li>
+        </ul>
+        <p style="margin-top:12px;font-size:0.85rem;color:#888;">Note: colors show relative τ distribution (contrast-enhanced). In the real cosmic web, τ ~ 10<sup>−5</sup> (weak field). The structure is physically correct; absolute values are scaled for visualization.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- View mode buttons IN THE MIDDLE -->
+  <div class="view-toggle">
+    <button class="view-btn active" data-view="density">Density</button>
+    <button class="view-btn" data-view="tau">τ Field</button>
+    <button class="view-btn" data-view="combined">Combined</button>
+  </div>
+
+  <!-- Legends -->
+  <div id="legend-density" class="legend">
+    <span>low ρ</span>
+    <div class="legend-bar density"></div>
+    <span>high ρ</span>
+  </div>
+  <div id="legend-tau" class="legend" style="display:none;">
+    <span>τ≈0 (reversible)</span>
+    <div class="legend-bar tau"></div>
+    <span>τ→1 (irreversible)</span>
+  </div>
+
+  <!-- Controls IN THE MIDDLE (between buttons and viewer) -->
+  <div id="sim-controls" style="display:none; flex-direction:column; align-items:center; gap:8px;">
+    <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:center;">
+      <label>
+        Time:
+        <input type="range" id="time-slider" min="0" max="100" value="0" />
+      </label>
+      <label>
+        <input type="checkbox" id="play-toggle" /> Auto-play
+      </label>
+      <label>
+        Threshold:
+        <input type="range" id="sim-threshold" min="0" max="100" value="20" />
+        <span id="sim-thr-val">0.20</span>
+      </label>
+      <label>
+        Opacity:
+        <input type="range" id="sim-opacity" min="10" max="100" value="85" />
+        <span id="sim-opa-val">0.85</span>
+      </label>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; font-size:0.78rem; color:#777; margin-top:2px;">
+      <span><strong>Time</strong> — epoch (0 = uniform → 3.5 t<sub>ff</sub> = collapsed)</span>
+      <span><strong>Threshold</strong> — hide low-density (↑ = only filaments)</span>
+      <span><strong>Opacity</strong> — volume transparency</span>
+    </div>
+  </div>
+
+  <div id="time-display" style="display:none;">
+    t = <span id="t-value">0.00</span> t<sub>ff</sub>
+  </div>
+
+  <div id="stats-panel"></div>
+
+  <!-- Loading -->
+  <div id="loading-status">
+    <span class="spinner"></span> Loading simulation data...
+  </div>
+
+  <!-- 3D viewer BELOW everything -->
+  <div id="sim-container" style="display:none;"></div>
+
+  <!-- Remove duplicate physics note that was here before -->
+    </div>
+  </section>
+
+  <footer>
+    Anatropic &mdash; Sheng-Kai Huang (2026)<br />
+    <a href="https://github.com/akaiHuang/anatropic" target="_blank" rel="noopener">GitHub</a>
+    &middot;
+    <a href="index.html">Three-model comparison</a>
+    &middot;
+    <a href="https://github.com/akaiHuang/petz-recovery-unification" target="_blank" rel="noopener">Paper 1</a>
+  </footer>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="sim_original.js"></script>
+</body>
+</html>
