@@ -8,11 +8,21 @@ for running 3D self-gravitating fluid simulations.
 Uses Strang splitting for gravity:
     half-gravity -> X-Y-Z sweeps -> half-gravity
 with sweep order alternating each timestep (XYZ/ZYX) for symmetry.
+
+The hot path goes through the backend abstraction in
+``anatropic._backend``, so a Simulation3D run goes either on NumPy
+float64 (CPU) or MLX float32 (Apple Silicon GPU) depending on
+``ANATROPIC_BACKEND``. Public APIs (``setup``, ``run``,
+``get_midplane_slice``, ``get_power_spectrum_3d``, snapshot dicts) keep
+their original semantics; consumers that expect NumPy arrays receive
+NumPy arrays.
 """
 
 import time as walltime
 import numpy as np
 
+from . import _backend as _be
+from ._backend import xp, xpfft
 from .euler3d import State3D, sweep_x, sweep_y, sweep_z
 from .euler3d import compute_dt_3d, add_gravity_source_3d
 from .gravity3d import solve_gravity_3d
@@ -150,11 +160,13 @@ class Simulation3D:
             raise RuntimeError("Call setup() before add_perturbation_mode().")
 
         Nz, Ny, Nx = self.Nz, self.Ny, self.Nx
+
+        # Build perturbation in NumPy (cheap setup-time work) then push to the
+        # active backend with from_numpy so the State3D arrays' dtype matches.
         x = (np.arange(Nx) + 0.5) * self.dx
         y = (np.arange(Ny) + 0.5) * self.dy
         z = (np.arange(Nz) + 0.5) * self.dz
 
-        # Build 3D perturbation via outer products
         if mode_x > 0:
             fx = np.sin(2.0 * np.pi * mode_x * x / self.Lx)
         else:
@@ -170,13 +182,13 @@ class Simulation3D:
         else:
             fz = np.ones(Nz)
 
-        # (Nz, Ny, Nx) perturbation
-        pert = amplitude * np.einsum('i,j,k->ijk', fz, fy, fx)
-        self.state.rho *= (1.0 + pert)
-        self.state.rho = np.maximum(self.state.rho, 1e-30)
+        pert_np = amplitude * np.einsum('i,j,k->ijk', fz, fy, fx)
+        pert = _be.from_numpy(pert_np)
+
+        self.state.rho = xp.maximum(self.state.rho * (1.0 + pert), 1e-30)
 
         # Recompute eint for consistency
-        P = self.eos.pressure(self.state.rho, np.zeros_like(self.state.rho))
+        P = self.eos.pressure(self.state.rho, _be.zeros(self.state.rho.shape))
         self.state.eint = self.eos.internal_energy(self.state.rho, P)
 
         return self
@@ -202,15 +214,18 @@ class Simulation3D:
         if self.state is None:
             raise RuntimeError("Call setup() before add_random_perturbation().")
 
-        if seed is not None:
-            np.random.seed(seed)
+        rng = np.random.default_rng(seed)
+        # Snapshot current rho on host so we can broadcast amplitude * rho0.
+        rho_host = _be.to_numpy(self.state.rho)
+        delta_np = amplitude * rho_host * rng.standard_normal(
+            (self.Nz, self.Ny, self.Nx)
+        )
 
-        rho0 = self.state.rho.copy()
-        delta = amplitude * rho0 * np.random.randn(self.Nz, self.Ny, self.Nx)
-        self.state.rho = np.maximum(rho0 + delta, 1e-30)
+        new_rho_np = np.maximum(rho_host + delta_np, 1e-30)
+        self.state.rho = _be.from_numpy(new_rho_np)
 
         # Recompute eint for consistency
-        P = self.eos.pressure(self.state.rho, np.zeros_like(self.state.rho))
+        P = self.eos.pressure(self.state.rho, _be.zeros(self.state.rho.shape))
         self.state.eint = self.eos.internal_energy(self.state.rho, P)
 
         return self
@@ -301,6 +316,14 @@ class Simulation3D:
             # 3. Half-step gravity kick (with updated density)
             self._gravity_kick(0.5 * dt)
 
+            # MLX is lazy; force evaluation here so each step's compute graph
+            # actually executes (otherwise the loop would just keep stacking
+            # work and the timestep / progress logic operates on stale views).
+            _be.evaluate(
+                self.state.rho, self.state.vx,
+                self.state.vy, self.state.vz, self.state.eint,
+            )
+
             self.t += dt
             self.step += 1
 
@@ -312,8 +335,8 @@ class Simulation3D:
             # Progress report
             if self.step % print_every == 0:
                 elapsed = walltime.time() - t_wall_start
-                rho_max = np.max(self.state.rho)
-                rho_min = np.min(self.state.rho)
+                rho_max = float(_be.to_numpy(xp.max(self.state.rho)))
+                rho_min = float(_be.to_numpy(xp.min(self.state.rho)))
                 t_ff = self.compute_jeans_time()
                 print(
                     f"  step {self.step:>7d} | "
@@ -339,22 +362,24 @@ class Simulation3D:
         t_ff = self.compute_jeans_time()
         print(f"\n  Simulation complete: {self.step} steps, {elapsed:.1f}s")
         print(f"  Final time: t = {self.t:.4e} ({self.t/t_ff:.2f} t_ff)")
-        rho = self.state.rho
-        print(f"  Density range: [{np.min(rho):.4e}, {np.max(rho):.4e}]")
-        print(f"  Density contrast: {np.max(rho)/max(np.min(rho), 1e-30):.2e}")
+        rho_np = _be.to_numpy(self.state.rho)
+        print(f"  Density range: [{np.min(rho_np):.4e}, {np.max(rho_np):.4e}]")
+        print(f"  Density contrast: {np.max(rho_np)/max(np.min(rho_np), 1e-30):.2e}")
 
         return self
 
     def _save_snapshot(self):
-        """Store current state as a snapshot dict."""
+        """Store current state as a snapshot dict (NumPy arrays)."""
+        # Snapshots are exposed as NumPy for downstream analysis / plotting,
+        # which has always been the public expectation of this API.
         self.snapshots.append({
             't': self.t,
             'step': self.step,
-            'rho': self.state.rho.copy(),
-            'vx': self.state.vx.copy(),
-            'vy': self.state.vy.copy(),
-            'vz': self.state.vz.copy(),
-            'eint': self.state.eint.copy(),
+            'rho': _be.to_numpy(self.state.rho).copy(),
+            'vx': _be.to_numpy(self.state.vx).copy(),
+            'vy': _be.to_numpy(self.state.vy).copy(),
+            'vz': _be.to_numpy(self.state.vz).copy(),
+            'eint': _be.to_numpy(self.state.eint).copy(),
         })
 
     def save_snapshot(self, filename):
@@ -370,11 +395,11 @@ class Simulation3D:
             filename,
             t=self.t,
             step=self.step,
-            rho=self.state.rho,
-            vx=self.state.vx,
-            vy=self.state.vy,
-            vz=self.state.vz,
-            eint=self.state.eint,
+            rho=_be.to_numpy(self.state.rho),
+            vx=_be.to_numpy(self.state.vx),
+            vy=_be.to_numpy(self.state.vy),
+            vz=_be.to_numpy(self.state.vz),
+            eint=_be.to_numpy(self.state.eint),
             Nx=self.Nx, Ny=self.Ny, Nz=self.Nz,
             Lx=self.Lx, Ly=self.Ly, Lz=self.Lz,
             G=self.G,
@@ -391,35 +416,32 @@ class Simulation3D:
         Returns
         -------
         k_bins : ndarray
-            Bin-center wavenumbers.
+            Bin-center wavenumbers (NumPy).
         P_k : ndarray
-            Spherically-averaged power per bin.
+            Spherically-averaged power per bin (NumPy).
         """
-        rho = self.state.rho
+        # Power-spectrum diagnostics are typically called once per output, so
+        # we evaluate them on the host in NumPy float64 to keep accuracy
+        # independent of the simulation backend's working precision.
+        rho = _be.to_numpy(self.state.rho).astype(np.float64)
         Nz, Ny, Nx = rho.shape
 
-        # Density contrast
         rho_mean = np.mean(rho)
         delta = (rho - rho_mean) / rho_mean
 
-        # 3D FFT (normalized)
         delta_hat = np.fft.fftn(delta) / (Nx * Ny * Nz)
         power_3d = np.abs(delta_hat) ** 2
 
-        # Wavenumber grid
         kx = 2.0 * np.pi * np.fft.fftfreq(Nx, d=self.dx)
         ky = 2.0 * np.pi * np.fft.fftfreq(Ny, d=self.dy)
         kz = 2.0 * np.pi * np.fft.fftfreq(Nz, d=self.dz)
 
-        # Build 3D |k| array
         KX, KY, KZ = np.meshgrid(kx, ky, kz, indexing='ij')
-        # meshgrid with 'ij' gives (Nx, Ny, Nz) -> transpose to (Nz, Ny, Nx)
         KX = KX.transpose(2, 1, 0)
         KY = KY.transpose(2, 1, 0)
         KZ = KZ.transpose(2, 1, 0)
         K = np.sqrt(KX ** 2 + KY ** 2 + KZ ** 2)
 
-        # Bin by |k|
         dk = 2.0 * np.pi / min(self.Lx, self.Ly, self.Lz)
         k_nyquist = np.pi / max(self.dx, self.dy, self.dz)
         k_edges = np.arange(0.5 * dk, k_nyquist + dk, dk)
@@ -431,7 +453,6 @@ class Simulation3D:
             if np.any(mask):
                 P_k[i] = np.mean(power_3d[mask])
 
-        # Remove empty bins
         valid = P_k > 0
         return k_bins[valid], P_k[valid]
 
@@ -445,7 +466,7 @@ class Simulation3D:
         -------
         t_ff : float
         """
-        rho0 = np.mean(self.state.rho)
+        rho0 = float(_be.to_numpy(xp.mean(self.state.rho)))
         return 1.0 / np.sqrt(4.0 * np.pi * self.G * rho0)
 
     def compute_jeans_length(self):
@@ -458,7 +479,7 @@ class Simulation3D:
         -------
         lambda_J : float
         """
-        rho0 = np.mean(self.state.rho)
+        rho0 = float(_be.to_numpy(xp.mean(self.state.rho)))
         cs = self.eos.cs
         return cs * np.sqrt(np.pi / (self.G * rho0))
 
@@ -474,9 +495,9 @@ class Simulation3D:
         Returns
         -------
         rho_slice : ndarray, shape (N1, N2)
-            2D density slice.
+            2D density slice as a NumPy array.
         """
-        rho = self.state.rho  # (Nz, Ny, Nx)
+        rho = _be.to_numpy(self.state.rho)  # (Nz, Ny, Nx)
         if axis == 'z':
             return rho[self.Nz // 2, :, :].copy()
         elif axis == 'y':

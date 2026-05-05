@@ -10,9 +10,17 @@ Each EOS class implements three methods with a uniform interface:
 - pressure(rho, eint)    : compute pressure from density and specific internal energy
 - sound_speed(rho, eint) : compute adiabatic sound speed
 - internal_energy(rho, P): compute specific internal energy from density and pressure
+
+All elementwise math goes through the backend abstraction in
+``anatropic._backend``, so a TauEOS / IsothermalEOS / IdealGasEOS object
+operates correctly on either NumPy or MLX arrays without changing its
+public interface.
 """
 
 import numpy as np
+
+from . import _backend as _be
+from ._backend import xp
 
 
 class IdealGasEOS:
@@ -65,9 +73,9 @@ class IdealGasEOS:
             Sound speed.
         """
         P = self.pressure(rho, eint)
-        P = np.maximum(P, 0.0)
-        rho_safe = np.maximum(rho, 1e-30)
-        return np.sqrt(self.gamma * P / rho_safe)
+        P = xp.maximum(P, 0.0)
+        rho_safe = xp.maximum(rho, 1e-30)
+        return xp.sqrt(self.gamma * P / rho_safe)
 
     def internal_energy(self, rho, P):
         """
@@ -85,7 +93,7 @@ class IdealGasEOS:
         eint : ndarray
             Specific internal energy.
         """
-        rho_safe = np.maximum(rho, 1e-30)
+        rho_safe = xp.maximum(rho, 1e-30)
         return P / ((self.gamma - 1.0) * rho_safe)
 
     def __repr__(self):
@@ -136,12 +144,12 @@ class IsothermalEOS:
 
     def sound_speed(self, rho, eint):
         """
-        Return the constant sound speed.
+        Return the constant sound speed (broadcast to match rho's shape).
 
         Parameters
         ----------
         rho : ndarray
-            Mass density (ignored).
+            Mass density (used only for shape).
         eint : ndarray
             Specific internal energy (ignored).
 
@@ -150,7 +158,7 @@ class IsothermalEOS:
         cs : ndarray
             Sound speed (constant, broadcast to match rho shape).
         """
-        return np.full_like(rho, self.cs, dtype=float)
+        return _be.full_like(rho, self.cs)
 
     def internal_energy(self, rho, P):
         """
@@ -170,7 +178,7 @@ class IsothermalEOS:
         eint : ndarray
             Specific internal energy (= c_s^2 everywhere).
         """
-        return np.full_like(rho, self.cs2, dtype=float)
+        return _be.full_like(rho, self.cs2)
 
     def __repr__(self):
         return f"IsothermalEOS(cs={self.cs})"
@@ -248,7 +256,7 @@ class TauEOS:
         Parameters
         ----------
         rho : ndarray
-            Mass density (ignored).
+            Mass density (used only for shape).
         eint : ndarray
             Specific internal energy (ignored).
 
@@ -257,7 +265,7 @@ class TauEOS:
         cs : ndarray
             Sound speed (constant for a given k_eff).
         """
-        return np.full_like(rho, self.cs, dtype=float)
+        return _be.full_like(rho, self.cs)
 
     def internal_energy(self, rho, P):
         """
@@ -275,7 +283,7 @@ class TauEOS:
         eint : ndarray
             Specific internal energy.
         """
-        return np.full_like(rho, self.cs2, dtype=float)
+        return _be.full_like(rho, self.cs2)
 
     @classmethod
     def from_box(cls, mu0, L_box, mode=1):
