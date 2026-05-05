@@ -556,6 +556,17 @@ def compute_weak_lensing_rar():
 def compute_fagin_comparison():
     """Fagin 2024 SLACS lensing mass profile slope."""
 
+    # ============================================================
+    # DISCLAIMER: The beta values below are HYPOTHETICAL placeholders,
+    # not derived predictions. beta_Khronon = 6.2 is conjectured from
+    # the entropic-gravity framework (Sigma = 2 ln Q) but a rigorous
+    # derivation of the lensing potential power spectrum slope from
+    # first principles is still in progress. beta_CDM = 8.0 is a single
+    # NFW point estimate, not a marginalized exclusion. The "tension"
+    # numbers below are arithmetic comparisons only -- do not cite
+    # them as exclusion results.
+    # ============================================================
+
     print_header("SECTION 5: Fagin 2024 SLACS Lensing Mass Profile Slope")
 
     # Typical SLACS elliptical
@@ -669,6 +680,9 @@ def compute_fagin_comparison():
     print(f"    Khronon:    beta_kappa = {beta_kappa_K:.1f}  (P_kappa ~ k^{{-{beta_kappa_K:.1f}}})")
     print(f"    CDM:        beta_kappa = {beta_kappa_CDM:.1f}  (P_kappa ~ k^{{-{beta_kappa_CDM:.1f}}})")
     print(f"    Fagin 2024: beta_kappa = {beta_kappa_Fagin:.2f} +/- {sigma_Fagin:.2f}")
+    print()
+    print("  [DISCLAIMER: tensions above are arithmetic placeholders pending"
+          " first-principles derivation]")
 
 
 # =============================================================================
@@ -764,8 +778,11 @@ def compute_summary():
     print("     since effective mass grows only logarithmically, not as NFW halo mass.")
     print("  3. V_circ at 1 Mpc: STRONGEST discriminator -- Khronon predicts flat")
     print("     rotation extending to ~Mpc, CDM predicts Keplerian falloff.")
-    print("  4. Fagin SLACS: Khronon (beta=6.2) is the closest match to data")
-    print("     (beta=5.22+/-0.41), CDM excluded at 6.8 sigma.")
+    print("  4. Fagin SLACS: Khronon (beta=6.2, theoretical placeholder) is the")
+    print("     closest hand-picked match to data (beta=5.22+/-0.41); a single NFW")
+    print("     point estimate (beta=8.0) sits further from the data, but this is")
+    print("     NOT a marginalized LambdaCDM exclusion -- derivation of beta_Khronon")
+    print("     from first principles is still in progress.")
     print("  5. Clusters: Khronon underpredicts cluster lensing (known MOND issue),")
     print("     may require additional ingredients (e.g., massive neutrinos).")
 

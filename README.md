@@ -2,6 +2,14 @@
 
 > **This is a computational physics project, not an AI tool.** The name "Anatropic" refers to anisotropic entropy production in cosmological structure formation. It has no relation to Anthropic (the AI company).
 
+> **Status: exploratory research framework.** This repository develops
+> predictions from the Σ = 2 ln Q (Khronon) entropic-gravity hypothesis
+> and compares them against galaxy-scale data (SPARC rotation curves,
+> BTFR, RAR, weak/strong lensing samples). Several "predictions" are
+> currently theoretical sketches awaiting first-principles derivation;
+> see individual sections for the per-test status. Do not cite
+> headline numbers as established refutations of ΛCDM.
+
 **One equation. 175 galaxies. 69 testable predictions.**
 
 Anatropic is the computational companion to the τ framework (Huang 2026) — a modified gravity theory where gravitational effects emerge from quantum relative entropy between spacetime and matter states:
@@ -43,7 +51,7 @@ where a₀ = cH₀/(2π) = 1.13 × 10⁻¹⁰ m/s²  (predicted, not fitted)
 |------|--------|
 | RAR universality | Scatter 0.144 dex (measurement limit: 0.119) |
 | BTFR slope | Predicted 4.0, observed 3.68±0.12 |
-| Fagin lensing | Khronon β=6.2 (2.4σ), CDM β=8.0 (6.8σ) |
+| Fagin lensing | Khronon β=6.2 (2.4σ, theoretical placeholder), NFW point estimate β≈8.0 sits further from data — not a marginalized ΛCDM exclusion |
 | MW escape velocity | Predicted 558 km/s, observed 550±30 |
 | Fast bars | R=1.0–1.3 (Khronon), 1.7 (CDM predicts slow) |
 | Globular clusters | Σ-hierarchy: RMS 186% → 33% |
