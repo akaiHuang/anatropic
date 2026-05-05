@@ -10,13 +10,13 @@
 > see individual sections for the per-test status. Do not cite
 > headline numbers as established refutations of ΛCDM.
 
-**One equation. 175 galaxies. 69 testable predictions.**
+**Open falsification lab for Σ = 2 ln Q entropic gravity** — currently consistent with SPARC RAR; 69 falsifiable predictions queued; CMB / BAO / cluster checks pending.
 
 Anatropic is the computational companion to the τ framework (Huang 2026) — a modified gravity theory where gravitational effects emerge from quantum relative entropy between spacetime and matter states:
 
 **Σ = D(ρ_spacetime ‖ ρ_matter)**
 
-This single equation, under different boundary conditions, reproduces galaxy rotation curves, cluster dynamics, gravitational lensing, and large-scale structure — without dark matter particles.
+In its weak-field limit this ansatz reduces to the empirical Radial Acceleration Relation (RAR) established on SPARC by McGaugh, Lelli & Schombert (2016), and is therefore consistent with galaxy rotation curves, BTFR, and the low scatter in the g_obs–g_bar plane. Cluster dynamics, lensing power spectra, and large-scale structure are explored as candidate domains; covariant field equations and cosmological-scale predictions remain in development.
 
 ## Live Demo
 
@@ -41,9 +41,29 @@ g_obs = g_bar / (1 − exp(−√(g_bar / a₀)))
 where a₀ = cH₀/(2π) = 1.13 × 10⁻¹⁰ m/s²  (predicted, not fitted)
 ```
 
-- **1 free parameter per galaxy** (mass-to-light ratio M/L)
-- **a₀ derived from first principles** (de Sitter horizon temperature)
-- **175 galaxies, 175 total parameters** (vs NFW: 525 parameters)
+Per-galaxy fits use **1 baryonic nuisance parameter (M/L ratio) per
+galaxy** plus **one global acceleration scale a₀ = c H₀ / (2π)**, so
+175 galaxies → 175 nuisance + 1 global. NFW fits in the SPARC literature
+typically use 2–3 halo parameters per galaxy. The reduced parameter count
+is a feature inherited from the underlying RAR / MOND-class relation
+(McGaugh+ 2016; Lelli+ 2017), not a unique contribution of this work.
+
+## Relation to MOND / RAR
+
+The weak-field formula
+
+    g_obs = g_bar / (1 - exp(-sqrt(g_bar / a₀)))
+
+is the **Radial Acceleration Relation (RAR) interpolating function**
+established empirically by McGaugh, Lelli & Schombert (2016, ApJL 836,
+L21; arXiv:1610.08981) on SPARC data. Its galaxy-scale phenomenological
+successes (rotation curves, BTFR, low scatter in g_obs–g_bar plane) are
+inherited from this relation, **not original to this framework**.
+
+The novel claim of this project is that the same RAR limit emerges
+from the entropic-gravity ansatz Σ = D(ρ_spacetime ∥ ρ_matter), with
+a₀ identified as c H₀ / (2π). The covariant field equations and
+cosmological-scale predictions remain in development.
 
 ## Key Results
 
@@ -56,6 +76,26 @@ where a₀ = cH₀/(2π) = 1.13 × 10⁻¹⁰ m/s²  (predicted, not fitted)
 | Fast bars | R=1.0–1.3 (Khronon), 1.7 (CDM predicts slow) |
 | Globular clusters | Σ-hierarchy: RMS 186% → 33% |
 | Galaxy clusters | Three-layer solution: IGIMF × hydrostatic bias × thermal QRE = 1.50 |
+
+## What this framework has *not* (yet) demonstrated
+
+Honest scoreboard. Each item is required before any claim of
+replacing ΛCDM can be taken seriously.
+
+| Test | Status |
+|------|--------|
+| Galaxy rotation curves (SPARC) | ✅ consistent (inherited from RAR) |
+| Baryonic Tully-Fisher (BTFR) | ✅ consistent (inherited from RAR) |
+| Weak lensing in galaxies | ⚠️ formula written, not fit to data |
+| Strong lensing substructure (Fagin 2024) | ⚠️ β=6.2 conjectured, derivation pending |
+| Covariant field equations | ❌ not derived |
+| CMB acoustic peaks | ❌ not computed |
+| BAO peak position | ❌ not computed |
+| Linear growth rate fσ₈ | ❌ not computed |
+| Cluster lensing profiles | ❌ not fit |
+| Solar System PPN limits | ❌ not checked |
+| Binary pulsar GW emission | ❌ not checked |
+| Equivalence principle | ❌ not checked |
 
 ## 69-Galaxy Prediction Supplement
 
