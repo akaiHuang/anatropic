@@ -10,11 +10,17 @@ The conservative variables per 1D pencil are U = [rho, rho*v_par, E] where
 E = rho*e_int + 0.5*rho*(v_par^2 + v_perp1^2 + v_perp2^2).
 Transverse velocities are passively advected with a donor-cell (upwind) scheme.
 
+The numerical kernel is written against the backend abstraction in
+``anatropic._backend``: it runs on NumPy (float64, CPU) by default and on
+MLX (float32, Apple Silicon GPU) when ``ANATROPIC_BACKEND=mlx``.
+
 Author: Anatropic project
 """
 
 import numpy as np
 
+from . import _backend as _be
+from ._backend import xp
 from .euler import DENSITY_FLOOR, PRESSURE_FLOOR
 
 
@@ -49,12 +55,12 @@ class State3D:
         self.Nx = Nx
         self.eos = eos
 
-        self.rho = np.full((Nz, Ny, Nx), rho0)
-        self.vx = np.zeros((Nz, Ny, Nx))
-        self.vy = np.zeros((Nz, Ny, Nx))
-        self.vz = np.zeros((Nz, Ny, Nx))
+        self.rho = _be.full((Nz, Ny, Nx), rho0)
+        self.vx = _be.zeros((Nz, Ny, Nx))
+        self.vy = _be.zeros((Nz, Ny, Nx))
+        self.vz = _be.zeros((Nz, Ny, Nx))
 
-        P0 = eos.pressure(self.rho, np.zeros_like(self.rho))
+        P0 = eos.pressure(self.rho, _be.zeros((Nz, Ny, Nx)))
         self.eint = eos.internal_energy(self.rho, P0)
 
 
@@ -77,15 +83,15 @@ def _primitive_from_conservative_batch(U, eos):
     -------
     rho, v, P, cs, eint : ndarrays, each shape (batch, N)
     """
-    rho = np.maximum(U[0], DENSITY_FLOOR)
+    rho = xp.maximum(U[0], DENSITY_FLOOR)
     v = U[1] / rho
     eint = U[2] / rho - 0.5 * v ** 2
-    eint = np.maximum(eint, 0.0)
+    eint = xp.maximum(eint, 0.0)
 
     P = eos.pressure(rho, eint)
-    P = np.maximum(P, PRESSURE_FLOOR)
+    P = xp.maximum(P, PRESSURE_FLOOR)
     cs = eos.sound_speed(rho, eint)
-    cs = np.maximum(cs, 0.0)
+    cs = xp.maximum(cs, 0.0)
 
     return rho, v, P, cs, eint
 
@@ -108,11 +114,7 @@ def _flux_batch(rho, v, P, E):
     -------
     F : ndarray, shape (3, batch, N)
     """
-    F = np.empty((3,) + rho.shape)
-    F[0] = rho * v
-    F[1] = rho * v ** 2 + P
-    F[2] = (E + P) * v
-    return F
+    return _be.stack([rho * v, rho * v ** 2 + P, (E + P) * v], axis=0)
 
 
 def _hlle_flux_batch(U_L, U_R, eos):
@@ -140,25 +142,27 @@ def _hlle_flux_batch(U_L, U_R, eos):
     E_R = U_R[2]
 
     # Wave speed estimates (Davis)
-    S_L = np.minimum(v_L - cs_L, v_R - cs_R)
-    S_R = np.maximum(v_L + cs_L, v_R + cs_R)
+    S_L = xp.minimum(v_L - cs_L, v_R - cs_R)
+    S_R = xp.maximum(v_L + cs_L, v_R + cs_R)
 
     F_L = _flux_batch(rho_L, v_L, P_L, E_L)
     F_R = _flux_batch(rho_R, v_R, P_R, E_R)
 
-    # HLLE flux
+    # HLLE flux. Stable denominator (S_R - S_L can vanish in static dust).
     denom = S_R - S_L
-    denom = np.where(np.abs(denom) < 1e-30, 1e-30, denom)
+    denom = xp.where(xp.abs(denom) < 1e-30, 1e-30, denom)
 
-    F_hlle = np.empty_like(F_L)
+    F_components = []
     for i in range(3):
-        F_mid = (S_R * F_L[i] - S_L * F_R[i]
-                 + S_L * S_R * (U_R[i] - U_L[i])) / denom
-        F_mid = np.where(S_L >= 0, F_L[i], F_mid)
-        F_mid = np.where(S_R <= 0, F_R[i], F_mid)
-        F_hlle[i] = F_mid
+        F_mid = (
+            S_R * F_L[i] - S_L * F_R[i]
+            + S_L * S_R * (U_R[i] - U_L[i])
+        ) / denom
+        F_mid = xp.where(S_L >= 0, F_L[i], F_mid)
+        F_mid = xp.where(S_R <= 0, F_R[i], F_mid)
+        F_components.append(F_mid)
 
-    return F_hlle
+    return _be.stack(F_components, axis=0)
 
 
 # ============================================================================
@@ -181,7 +185,7 @@ def _add_ghost_cells_batch(U, nghosts=2):
     # U[..., -nghosts:]  and U[..., :nghosts] give periodic wraps
     left = U[:, :, -nghosts:]
     right = U[:, :, :nghosts]
-    return np.concatenate([left, U, right], axis=2)
+    return xp.concatenate([left, U, right], axis=2)
 
 
 def _add_ghost_cells_1d_batch(arr, nghosts=2):
@@ -199,7 +203,7 @@ def _add_ghost_cells_1d_batch(arr, nghosts=2):
     """
     left = arr[:, -nghosts:]
     right = arr[:, :nghosts]
-    return np.concatenate([left, arr, right], axis=1)
+    return xp.concatenate([left, arr, right], axis=1)
 
 
 # ============================================================================
@@ -219,11 +223,14 @@ def _build_conservative_batch(rho, vpar, vperp1, vperp2, eint):
     U : ndarray, shape (3, batch, N)
         [rho, rho*vpar, E_total] where E includes all three KE components.
     """
-    U = np.empty((3,) + rho.shape)
-    U[0] = rho
-    U[1] = rho * vpar
-    U[2] = rho * (eint + 0.5 * (vpar ** 2 + vperp1 ** 2 + vperp2 ** 2))
-    return U
+    return _be.stack(
+        [
+            rho,
+            rho * vpar,
+            rho * (eint + 0.5 * (vpar ** 2 + vperp1 ** 2 + vperp2 ** 2)),
+        ],
+        axis=0,
+    )
 
 
 def _decompose_conservative_batch(U, vperp1, vperp2, eos):
@@ -242,10 +249,10 @@ def _decompose_conservative_batch(U, vperp1, vperp2, eos):
     -------
     rho, vpar, eint : ndarrays, shape (batch, N)
     """
-    rho = np.maximum(U[0], DENSITY_FLOOR)
+    rho = xp.maximum(U[0], DENSITY_FLOOR)
     vpar = U[1] / rho
     eint = U[2] / rho - 0.5 * (vpar ** 2 + vperp1 ** 2 + vperp2 ** 2)
-    eint = np.maximum(eint, 0.0)
+    eint = xp.maximum(eint, 0.0)
     return rho, vpar, eint
 
 
@@ -275,16 +282,32 @@ def _upwind_advect_batch(vperp, vpar, rho_old, rho_new, dt, dx):
     vperp_updated : ndarray, shape (batch, N)
     """
     # Periodic shifts along the last axis
-    vperp_ip = np.roll(vperp, -1, axis=-1)   # vperp[i+1]
-    vperp_im = np.roll(vperp, 1, axis=-1)    # vperp[i-1]
-    vpar_im = np.roll(vpar, 1, axis=-1)      # vpar[i-1]
+    vperp_ip = xp.roll(vperp, -1, axis=-1)   # vperp[i+1]
+    vperp_im = xp.roll(vperp, 1, axis=-1)    # vperp[i-1]
+    vpar_im = xp.roll(vpar, 1, axis=-1)      # vpar[i-1]
 
-    flux_R = np.where(vpar >= 0, vpar * vperp, vpar * vperp_ip)
-    flux_L = np.where(vpar_im >= 0, vpar_im * vperp_im, vpar_im * vperp)
+    flux_R = xp.where(vpar >= 0, vpar * vperp, vpar * vperp_ip)
+    flux_L = xp.where(vpar_im >= 0, vpar_im * vperp_im, vpar_im * vperp)
 
-    rho_new_safe = np.maximum(rho_new, DENSITY_FLOOR)
+    rho_new_safe = xp.maximum(rho_new, DENSITY_FLOOR)
     vperp_updated = vperp - (dt / dx) * (flux_R - flux_L) * (rho_old / rho_new_safe)
     return vperp_updated
+
+
+# ============================================================================
+# Conservative update helper
+# ============================================================================
+
+def _conservative_update_batch(U, F_interface, dt_over_dx):
+    """
+    Apply U_new = U - (dt/dx) * (F_{i+1/2} - F_{i-1/2}) along the last axis,
+    rebuilding the (3, batch, N) stack so we never rely on index assignment.
+    Also floors the density component to DENSITY_FLOOR.
+    """
+    diff = F_interface[:, :, 1:] - F_interface[:, :, :-1]
+    U_new = U - dt_over_dx * diff
+    rho_floored = xp.maximum(U_new[0], DENSITY_FLOOR)
+    return _be.stack([rho_floored, U_new[1], U_new[2]], axis=0)
 
 
 # ============================================================================
@@ -330,13 +353,8 @@ def sweep_x(state, dx, dt, eos):
     U_R = U_ext[:, :, nghosts: nghosts + Nx + 1]
     F_interface = _hlle_flux_batch(U_L, U_R, eos)  # (3, batch, Nx+1)
 
-    # Conservative update
-    U_updated = U.copy()
-    for k in range(3):
-        U_updated[k] = U[k] - (dt / dx) * (F_interface[k, :, 1:] - F_interface[k, :, :-1])
-
-    # Floor density
-    U_updated[0] = np.maximum(U_updated[0], DENSITY_FLOOR)
+    # Conservative update + density floor
+    U_updated = _conservative_update_batch(U, F_interface, dt / dx)
 
     # Extract primitives (transverse velocities unchanged by the Euler solve)
     rho_new, vpar_new, eint_new = _decompose_conservative_batch(
@@ -394,11 +412,7 @@ def sweep_y(state, dy, dt, eos):
     U_R = U_ext[:, :, nghosts: nghosts + Ny + 1]
     F_interface = _hlle_flux_batch(U_L, U_R, eos)
 
-    U_updated = U.copy()
-    for k in range(3):
-        U_updated[k] = U[k] - (dt / dy) * (F_interface[k, :, 1:] - F_interface[k, :, :-1])
-
-    U_updated[0] = np.maximum(U_updated[0], DENSITY_FLOOR)
+    U_updated = _conservative_update_batch(U, F_interface, dt / dy)
 
     rho_new, vpar_new, eint_new = _decompose_conservative_batch(
         U_updated, vperp1, vperp2, eos
@@ -454,11 +468,7 @@ def sweep_z(state, dz, dt, eos):
     U_R = U_ext[:, :, nghosts: nghosts + Nz + 1]
     F_interface = _hlle_flux_batch(U_L, U_R, eos)
 
-    U_updated = U.copy()
-    for k in range(3):
-        U_updated[k] = U[k] - (dt / dz) * (F_interface[k, :, 1:] - F_interface[k, :, :-1])
-
-    U_updated[0] = np.maximum(U_updated[0], DENSITY_FLOOR)
+    U_updated = _conservative_update_batch(U, F_interface, dt / dz)
 
     rho_new, vpar_new, eint_new = _decompose_conservative_batch(
         U_updated, vperp1, vperp2, eos
@@ -503,9 +513,9 @@ def add_gravity_source_3d(state, gx, gy, gz, dt):
     -------
     state : State3D (modified in-place)
     """
-    state.vx += dt * gx
-    state.vy += dt * gy
-    state.vz += dt * gz
+    state.vx = state.vx + dt * gx
+    state.vy = state.vy + dt * gy
+    state.vz = state.vz + dt * gz
     return state
 
 
@@ -540,9 +550,12 @@ def compute_dt_3d(state, dx, dy, dz, eos, cfl=0.3, G=1.0):
     """
     cs = eos.cs
 
-    max_speed_x = np.max(np.abs(state.vx)) + cs
-    max_speed_y = np.max(np.abs(state.vy)) + cs
-    max_speed_z = np.max(np.abs(state.vz)) + cs
+    # max() must be a host-side scalar; pull the reductions back to Python via
+    # the backend-aware helpers. xp.max returns an array on both backends, so
+    # we coerce to float through the to_numpy bridge.
+    max_speed_x = float(_be.to_numpy(xp.max(xp.abs(state.vx)))) + cs
+    max_speed_y = float(_be.to_numpy(xp.max(xp.abs(state.vy)))) + cs
+    max_speed_z = float(_be.to_numpy(xp.max(xp.abs(state.vz)))) + cs
 
     max_speed_x = max(max_speed_x, 1e-30)
     max_speed_y = max(max_speed_y, 1e-30)
@@ -551,7 +564,7 @@ def compute_dt_3d(state, dx, dy, dz, eos, cfl=0.3, G=1.0):
     dt_cfl = cfl * min(dx / max_speed_x, dy / max_speed_y, dz / max_speed_z)
 
     # Gravitational timescale
-    rho_max = np.max(state.rho)
+    rho_max = float(_be.to_numpy(xp.max(state.rho)))
     if rho_max > 0 and G > 0:
         dt_grav = cfl / np.sqrt(4.0 * np.pi * G * rho_max)
     else:
