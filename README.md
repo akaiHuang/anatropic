@@ -166,10 +166,43 @@ anatropic/
 └── papers/             # LaTeX manuscripts (separate repos)
 ```
 
+## GPU Acceleration (Apple Silicon, optional)
+
+The 3D hot path (HLLE Riemann sweeps in `euler3d`, FFT Poisson solver in
+`gravity3d`, Strang-splitting driver in `simulation3d`) is written
+against a small backend abstraction layer (`anatropic/_backend.py`) and
+can run on either NumPy (CPU, float64; default) or MLX (Apple Silicon
+GPU via Metal, float32). NumPy remains the default; MLX is opt-in:
+
+```bash
+pip install mlx                       # one-off
+ANATROPIC_BACKEND=mlx python your_script.py
+```
+
+Wall time per timestep on an `M1 Max` (10-core CPU, 32-core GPU, 32 GB)
+running the `Simulation3D` Jeans collapse driver for 30 timed steps
+after warm-up (`benchmarks/bench_3d.py`):
+
+| Grid    | NumPy ms/step | MLX ms/step | MLX speedup |
+|---------|---------------|-------------|-------------|
+| 64³     | 80.9          | 33.7        | 2.40×       |
+| 96³     | 278.5         | 21.0        | 13.24×      |
+| 128³    | 666.1         | 49.0        | 13.59×      |
+
+End-to-end accuracy: a 64³ self-gravity run for 50 steps reaching
+density contrast ~100 agrees with the NumPy reference to ~1×10⁻³
+relative on density (consistent with single-precision arithmetic).
+The 64³ point is dispatch-overhead-bound; the speedup grows as the
+grid does, which is the regime that motivates GPU work in the first
+place.
+
+Reproduce: `python3.11 benchmarks/bench_3d.py --grids 64 96 128 --steps 30`.
+
 ## Requirements
 
 - Python 3.9+
 - numpy, scipy, matplotlib
+- (Optional, Apple Silicon GPU) `mlx>=0.30`; activate with `ANATROPIC_BACKEND=mlx`.
 - (Website) Any modern browser with WebGL
 
 ## References
