@@ -178,7 +178,7 @@ anatropic/
 - Buscemi et al. 2024 (arXiv:2412.12489): Independent verification
 - Kumar 2025 (arXiv:2509.05246): Running G from QFT
 - Gubitosi et al. 2024 (arXiv:2403.00531): SPARC validation
-- Dorau-Much 2025 (PRL): Einstein equations from QRE
+- Dorau & Much 2025 (PRL, [arXiv:2510.24491](https://arxiv.org/abs/2510.24491)): Semiclassical Einstein equations from quantum relative entropy
 - Blanchet & Skordis 2024 (arXiv:2404.06584): Khronon = GDM
 - Thomas, Kopp & Skordis 2016 (arXiv:1601.05097): GDM constraints
 - Skordis & Złośnik 2021 (PRL 127, 161302): AeST theory
